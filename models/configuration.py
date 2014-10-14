@@ -3,7 +3,7 @@
 from openerp import models, fields
 
 
-class Course(models.Model):
+class Configuration(models.Model):
     _name = 'amdeb.amazon.configuration'
     _description = 'Amdeb Amazon integration configuration'
 
