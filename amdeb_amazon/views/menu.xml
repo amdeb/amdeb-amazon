@@ -2,29 +2,26 @@
 <openerp>
     <data>
 
-        <menuitem id="menu_main_amdeb_amzon"
+        <menuitem id="menu_main_amdeb_amazon"
                   sequence="10"
                   name="Amazon"
                   groups="group_amdeb_amazon_user"/>
 
-        <menuitem id="menu_group_amdeb_amzon"
-                  parent="menu_main_admdeb_amazon"
+        <menuitem id="menu_group_amdeb_amazon"
+                  parent="menu_main_amdeb_amazon"
                   name="Amazon Integration"/>
 
-        <record id="action_amdeb_amazon_settings"
+        <record id="action_amdeb_amazon_configuration"
                 model="ir.actions.act_window">
             <field name="name">Amazon Configuration</field>
+            <field name="view_id" ref="amdeb_amazon_configuration_form"/>
             <field name="res_model">amdeb.amazon.configuration</field>
+            <field name="view_type">form</field>
             <field name="view_mode">form</field>
-            <field name="help" type="html">
-                <p class="oe_view_nocontent_create">
-                    Configure Amazon Integration Parameters.
-                </p>
-            </field>
         </record>
 
         <menuitem id="menu_amdeb_amazon_configuration"
-                  parent="menu_group_amdeb_amzon"
+                  parent="menu_group_amdeb_amazon"
                   sequence="10"
                   action="action_amdeb_amazon_configuration"/>
 

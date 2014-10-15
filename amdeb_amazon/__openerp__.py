@@ -1,9 +1,10 @@
 # __openerp__.py
 
 {
-    'name': 'Amdeb_Amazon Integration',
+    'name': 'Amdeb Amazon Integration',
     'summary': 'Integrate Amazon Marketplace as an Odoo sales channel',
-    'version': '0.1',
+    'version': '0.1.1',
+    'category': 'Amdeb Integration',
     'website': 'https://github.com/amdeb/amdeb-amazon',
     'author' : "Amdeb Developers",
     'description': """
@@ -44,7 +45,7 @@ should be notified when there is any error.
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
-        'views/configure.xml',
+        'views/configuration.xml',
         'views/menu.xml',
     ],
     'depends': [

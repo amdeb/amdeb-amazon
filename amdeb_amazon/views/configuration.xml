@@ -6,12 +6,28 @@
             <field name="name">amdeb.amazon.configuration.form</field>
             <field name="model">amdeb.amazon.configuration</field>
             <field name="arch" type="xml">
-                <form string="Amazon Integration Configuration">
-                    <field name="account_id"/>
-                    <field name="access_key"/>
-                    <field name="secrete_key"/>
-                    <field name="integration_interval"/>
-                    <field name="automatic_flag"/>
+                <form string="Amazon Integration Configuration"
+                      version="7.0">
+                    <sheet>
+                        <group string="Account Settings">
+                            <field name="account_id"/>
+                            <field name="access_key"/>
+                            <field name="secrete_key"/>
+
+                        </group>
+
+                        <group>
+                            <button string="Test Amazon Connection"
+                                    name="test_connection"
+                                    type="object"/>
+                        </group>
+
+                        <group string="Integration Settings">
+                            <field name="integration_interval"/>
+                            <field name="automatic_flag"/>
+                        </group>
+
+                    </sheet>
                 </form>
             </field>
         </record>

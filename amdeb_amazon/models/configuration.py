@@ -33,3 +33,6 @@ class Configuration(models.Model):
         required=True,
         default=True,
     )
+
+    def test_connection(self):
+        return "Connection test is successful."
