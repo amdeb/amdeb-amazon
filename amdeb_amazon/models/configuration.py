@@ -7,16 +7,8 @@ class Configuration(models.Model):
     _name = 'amdeb.amazon.configuration'
     _description = 'Amdeb Amazon integration configuration'
 
-    # default is the US marketplace Id
-    marketplace_id = fields.Selection(
-        (('ATVPDKIKX0DER', 'US Marketplace'),),
-        string='Amazon Marketplace Id',
-        required=True,
-        default='US Marketplace',
-    )
-
     account_id = fields.Char(
-        string='Merchant Account Id',
+        string='Account Id',
         required=True,
     )
 
@@ -37,7 +29,7 @@ class Configuration(models.Model):
     )
 
     automatic_flag = fields.Boolean(
-        string="Automatic Amazon Integration",
+        string="Automatic Integration",
         required=True,
         default=True,
     )

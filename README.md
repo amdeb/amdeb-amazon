@@ -1,4 +1,4 @@
-amdeb-amazon
+Amdeb Amazon Integration
 ============
 
 This is an Odoo module that integrates Odoo with Amazon 

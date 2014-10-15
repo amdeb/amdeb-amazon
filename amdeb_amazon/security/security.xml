@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<openerp>
+    <data>
+        <record id="category_amdeb_amazon"
+                model="ir.module.category">
+            <field name="name">
+                Amdeb Amazon Integration
+            </field>
+        </record>
+
+        <record id="group_amdeb_amazon_user"
+                model="res.groups">
+            <field name="category_id"
+                   ref="category_amdeb_amazon"/>
+            <field name="name">
+                Amdeb Amazon User
+            </field>
+        </record>
+
+        <record id="group_amdeb_amazon_manager"
+                model="res.groups">
+            <field name="category_id"
+                   ref="category_amdeb_amazon"/>
+            <field name="name">
+                Amdeb Amazon Manager
+            </field>
+            <field name="implied_ids"
+                   eval="[(4, ref('group_amdeb_amazon_user'))]"/>
+        </record>
+    </data>
+</openerp>

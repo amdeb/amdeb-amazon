@@ -1,5 +1,0 @@
-id,name,model_id/id,group_id/id,perm_read,perm_write,perm_create,perm_unlink
-access_amdeb_amazon_user,amdeb_amazon_user,model_amdeb_amazon_product,group_amdeb_amazon_user,1,0,0,0
-access_amdeb_amazon_manager,amdeb_amazon_manager,model_amdeb_amazon_product,group_amdeb_amazon_manager,1,1,1,1
-access_amdeb_amazon_user,amdeb_amazon_user,model_amdeb_amazon_order,group_amdeb_amazon_user,1,0,0,0
-access_amdeb_amazon_manager,amdeb_amazon_manager,model_amdeb_amazon_order,group_amdeb_amazon_manager,1,1,1,1
