@@ -2,13 +2,13 @@
 <openerp>
     <data>
 
-        <menuitem id="menu_main_amdeb_amazon"
+        <menuitem id="menu_root_amdeb_amazon"
                   sequence="10"
                   name="Amazon"
                   groups="group_amdeb_amazon_user"/>
 
         <menuitem id="menu_group_amdeb_amazon"
-                  parent="menu_main_amdeb_amazon"
+                  parent="menu_root_amdeb_amazon"
                   name="Amazon Integration"/>
 
         <record id="action_amdeb_amazon_configuration"
@@ -18,6 +18,8 @@
             <field name="res_model">amdeb.amazon.configuration</field>
             <field name="view_type">form</field>
             <field name="view_mode">form</field>
+            <field name="target">inline</field>
+            <field name="res_id">1</field>
         </record>
 
         <menuitem id="menu_amdeb_amazon_configuration"
