@@ -3,7 +3,7 @@
 {
     'name': 'Amdeb Amazon Integration',
     'summary': 'Integrate Amazon Marketplace as an Odoo sales channel',
-    'version': '0.2.1',
+    'version': '0.2',
     'category': 'Amdeb Integration',
     'website': 'https://github.com/amdeb/amdeb-amazon',
     'author' : "Amdeb Developers",
@@ -46,7 +46,7 @@ should be notified when there is any error.
         'views/res_config_view.xml',
     ],
     'depends': [
-        'website_sale',
+        'base',
     ],
     'installable': True,
     'application': True,
