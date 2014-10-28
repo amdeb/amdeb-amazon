@@ -6,7 +6,7 @@
     'version': '0.2',
     'category': 'Amdeb Integration',
     'website': 'https://github.com/amdeb/amdeb-amazon',
-    'author' : "Amdeb Developers",
+    'author': 'Amdeb Developers',
     'description': """
 Amdeb Amazon Integrator
 ==================
