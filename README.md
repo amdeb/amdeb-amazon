@@ -1,3 +1,5 @@
+[![Build Status](https://travis-ci.org/amdeb/amdeb-amazon.svg?branch=master)](https://travis-ci.org/amdeb/amdeb-amazon)
+
 Amdeb Amazon Integration
 ============
 
