@@ -6,7 +6,7 @@ import mock
 from amdeb_amazon.event.event import Event
 
 
-class TestEvent(unittest2.TestCase):
+class EventTest(unittest2.TestCase):
 
     def setUp(self):
         self.event = Event()
