@@ -24,7 +24,7 @@ All synchronization supports two modes: an automatic mode and a manual mode.
 In automatic mode, all synchronizations (including both upload and download) 
 are executed by background processes at the specific interval. In manual mode,
 an Odoo user can request a synchronization at any time. It can specify 
-the range of synchronization or a full data synchronization. 
+the range of synchronization or a full catalog synchronization. 
 Following are several manual synchronization examples:
 
 * Upload all product data to Amazon
