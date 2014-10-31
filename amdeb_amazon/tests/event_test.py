@@ -6,7 +6,7 @@ from mock import Mock
 from ..integrator.event import Event
 
 
-class EventTest(unittest2.TestCase):
+class TestEvent(unittest2.TestCase):
 
     def setUp(self):
         self.event = Event()
