@@ -2,6 +2,10 @@
 
 
 class Event():
+    """
+    Store a model and its subscribers as a dict entry.
+    Subscribes of a model are stored in a set.
+    """
 
     def __init__(self):
         self._model_dict = {}
