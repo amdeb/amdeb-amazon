@@ -3,7 +3,7 @@
 import unittest2
 from mock import Mock, call
 
-from amdeb_amazon.event.event import Event
+from ..event.event import Event
 
 
 class EventTest(unittest2.TestCase):
