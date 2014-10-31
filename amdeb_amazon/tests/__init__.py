@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-from .event_test import EventTest
+from . import event_test
 
 fast_suite = [
 ]
 
 checks = [
-    EventTest
+    event_test
 ]
