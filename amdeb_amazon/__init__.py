@@ -4,3 +4,5 @@
 # use relative import path here because
 # absolute path doesn't work when the module is not loaded
 from openerp.addons.amdeb_amazon.models import res_config
+
+import tests
