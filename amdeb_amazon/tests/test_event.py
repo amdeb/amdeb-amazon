@@ -5,8 +5,8 @@ from mock import Mock
 
 from ..integrator.event import Event
 
-
-class TestEvent(unittest2.TestCase):
+# the class name
+class EventTest(unittest2.TestCase):
 
     def setUp(self):
         self.event = Event()
