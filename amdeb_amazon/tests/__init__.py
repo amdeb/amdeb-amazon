@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from .event_test import EventTest
+from amdeb_amazon.tests.event_test import EventTest
 
 fast_suite = [
 ]

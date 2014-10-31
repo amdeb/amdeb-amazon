@@ -3,7 +3,7 @@
 import unittest2
 from mock import Mock, call
 
-from ..event.event import Event
+from amdeb_amazon.event.event import Event
 
 
 class EventTest(unittest2.TestCase):
@@ -50,5 +50,5 @@ class EventTest(unittest2.TestCase):
             self.event_arg)
 
         self.subscriber2.assert_called_once_with(
-            self.model_name2,
+            self.model_name,
             self.event_arg)
