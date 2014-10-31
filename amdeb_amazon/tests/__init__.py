@@ -1,10 +1,10 @@
 # -*- coding: utf-8 -*-
 
-import amdeb_amazon.tests.test_event
+from .event_test import EventTest
 
 fast_suite = [
 ]
 
 checks = [
-    TestEvent
+    EventTest
 ]
