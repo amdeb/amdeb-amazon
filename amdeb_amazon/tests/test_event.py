@@ -3,7 +3,11 @@
 import unittest2
 from mock import Mock
 
-from ..integrator.event import Event
+# use absolute import for pycharm
+if __name__ == "test_event":
+    from amdeb_amazon.integrator.event import Event
+else:
+    from ..integrator.event import Event
 
 
 # the filename has to be test_XXX to be executed by Odoo testing
