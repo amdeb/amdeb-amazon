@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import unittest2
+from unittest2 import TestCase
 from mock import Mock
 
 # use absolute import for pycharm
@@ -12,7 +12,7 @@ else:
 
 # the filename has to be test_XXX to be executed by Odoo testing
 # the class name doesn't have this convention
-class TestEvent(unittest2.TestCase):
+class TestEvent(TestCase):
 
     def setUp(self):
         self.event = Event()
@@ -30,8 +30,8 @@ class TestEvent(unittest2.TestCase):
             self.model_name,
             self.event_arg)
 
-    def test_subscribe_multi_models(self):
-        """ Subscribers called on multiple models """
+    def test_subscribe_different_models(self):
+        """ Different subscribers for different models """
         self.event.subscribe(self.model_name, self.subscriber)
         self.event.fire(self.model_name, self.event_arg)
         self.event.subscribe(self.model_name2, self.subscriber2)
@@ -46,7 +46,7 @@ class TestEvent(unittest2.TestCase):
             self.event_arg)
 
     def test_subscribe_multi_subscribers(self):
-        """ Multiple subscribers of a model are called """
+        """ Multiple subscribers for a model """
         self.event.subscribe(self.model_name, self.subscriber)
         self.event.subscribe(self.model_name, self.subscriber2)
         self.event.fire(self.model_name, self.event_arg)

@@ -3,4 +3,4 @@
 # need to load models used by views and security files
 # use relative import path here because
 # Odoo add prefix to module name
-import models
+from .models import res_config
