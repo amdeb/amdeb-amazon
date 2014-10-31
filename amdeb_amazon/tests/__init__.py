@@ -6,5 +6,5 @@ fast_suite = [
 ]
 
 checks = [
-    event_test
+    event_test,
 ]

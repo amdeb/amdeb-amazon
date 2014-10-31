@@ -17,7 +17,7 @@ class EventTest(unittest2.TestCase):
         self.event_arg = 'test_event_arg'
 
     def test_subscribe(self):
-        """A matched subscriber is called when an event fires"""
+        """ A matched subscriber is called when an event fires """
         self.event.subscribe(self.model_name, self.subscriber)
         self.event.fire(self.model_name, self.event_arg)
         self.subscriber.assert_called_once_with(
@@ -25,7 +25,7 @@ class EventTest(unittest2.TestCase):
             self.event_arg)
 
     def test_subscribe_multi_models(self):
-        """Subscribers called on multiple models"""
+        """ Subscribers called on multiple models """
         self.event.subscribe(self.model_name, self.subscriber)
         self.event.fire(self.model_name, self.event_arg)
         self.event.subscribe(self.model_name2, self.subscriber2)
@@ -40,7 +40,7 @@ class EventTest(unittest2.TestCase):
             self.event_arg)
 
     def test_subscribe_multi_subscribers(self):
-        """Multiple subscribers of a model are called"""
+        """ Multiple subscribers of a model are called """
         self.event.subscribe(self.model_name, self.subscriber)
         self.event.subscribe(self.model_name, self.subscriber2)
         self.event.fire(self.model_name, self.event_arg)
