@@ -3,8 +3,8 @@
 from unittest2 import TestCase
 from mock import Mock
 
-# use absolute import for pycharm
-if __name__ == "test_event":
+# use absolute import for PyCharm, relative import for Odoo
+if '.' not in __name__:
     from amdeb_amazon.integrator.event import Event
 else:
     from ..integrator.event import Event
@@ -25,6 +25,18 @@ class TestEvent(TestCase):
     def test_subscribe(self):
         """ A matched subscriber is called when an event fires """
         self.event.subscribe(self.model_name, self.subscriber)
+        self.event.fire(self.model_name, self.event_arg)
+        self.subscriber.assert_called_once_with(
+            self.model_name,
+            self.event_arg)
+
+    def test_event_decorator(self):
+        """ subscribe using event decorator """
+        @self.event(self.model_name)
+        def subscriber(model_name, event_arg):
+            mock = self.subscriber
+            mock(model_name, event_arg)
+
         self.event.fire(self.model_name, self.event_arg)
         self.subscriber.assert_called_once_with(
             self.model_name,
