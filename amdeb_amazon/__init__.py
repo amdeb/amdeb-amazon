@@ -1,3 +1,3 @@
 # -*- coding: utf-8 -*-
 
-import amdeb_amazon.models.res_config
+from amdeb_amazon.models.res_config import Configuration
