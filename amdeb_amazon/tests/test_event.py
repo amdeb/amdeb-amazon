@@ -5,8 +5,9 @@ from mock import Mock
 
 from ..integrator.event import Event
 
+
 # the filename has to be test_XXX to be executed by Odoo testing
-# the class name doesn't matter
+# the class name doesn't have this convention
 class TestEvent(unittest2.TestCase):
 
     def setUp(self):
