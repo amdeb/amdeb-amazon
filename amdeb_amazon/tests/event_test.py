@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import unittest2
-from mock import Mock, call
+from mock import Mock
 
 from amdeb_amazon.event.event import Event
 
