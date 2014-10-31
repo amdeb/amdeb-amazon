@@ -1,11 +1,11 @@
 # -*- coding: utf-8 -*-
 
 # import all test modules
-import event_test
+import test_event
 
 fast_suite = [
 ]
 
 checks = [
-    event_test,
+    test_event,
 ]
