@@ -4,5 +4,3 @@
 # use relative import path here because
 # Odoo add prefix to module name
 from .models import res_config
-
-
