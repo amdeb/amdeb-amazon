@@ -20,4 +20,3 @@ class EventTest(unittest2.TestCase):
         self.subscriber.assert_called_once_with(
             self.model_name,
             self.event_arg)
-
