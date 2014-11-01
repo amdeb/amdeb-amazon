@@ -51,7 +51,7 @@ models.BaseModel.write = write
 
 def unlink(self, cr, uid, ids, context=None):
     _logger.debug("In unlink() for model: {} ids: {}".format(
-        self._name, self._ids))
+        self._name, ids))
 
     original_unlink(self, cr, uid, ids, context=context)
     if not utility.is_sequence(ids):
