@@ -15,7 +15,7 @@ else:
 class TestEvent(TestCase):
 
     def setUp(self):
-        self.event = Event()
+        self.event = Event('test_event')
         self.model_name = 'test_model'
         self.subscriber = Mock(name='test_subscriber', return_value=None)
         self.model_name2 = 'test_model2'
