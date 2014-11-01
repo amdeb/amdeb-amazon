@@ -6,14 +6,14 @@
     an event. The new function signatures are copied from openerp/models.py
 """
 
-import logging
-
 from openerp import models, api
 
 from ..shared import utility
 from .event import (create_record_event,
                     write_record_event,
                     unlink_record_event)
+
+import logging
 
 _logger = logging.getLogger(__name__)
 

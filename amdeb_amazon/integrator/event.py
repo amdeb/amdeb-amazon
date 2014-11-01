@@ -16,6 +16,7 @@ class Event(object):
         self._model_dict = {}
         Event._logger.info("Event {} is created.".format(self.name))
 
+    # one subscriber for one model makes a simple life
     def subscribe(self, model_name, subscriber):
         Event._logger.info(
             "Event {} subscribes {} for model {}".format(
@@ -41,7 +42,7 @@ class Event(object):
                         self, subscriber, model_name
                     )
                 )
-                subscriber(model_name, *args, **kwargs)
+                subscriber(*args, **kwargs)
 
     def __call__(self, model_name):
         """ decorator syntax for subscribing an event """

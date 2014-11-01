@@ -26,21 +26,17 @@ class TestEvent(TestCase):
         """ A matched subscriber is called when an event fires """
         self.event.subscribe(self.model_name, self.subscriber)
         self.event.fire(self.model_name, self.event_arg)
-        self.subscriber.assert_called_once_with(
-            self.model_name,
-            self.event_arg)
+        self.subscriber.assert_called_once_with(self.event_arg)
 
     def test_event_decorator(self):
         """ subscribe using event decorator """
         @self.event(self.model_name)
-        def subscriber(model_name, event_arg):
+        def subscriber(event_arg):
             mock = self.subscriber
-            mock(model_name, event_arg)
+            mock(event_arg)
 
         self.event.fire(self.model_name, self.event_arg)
-        self.subscriber.assert_called_once_with(
-            self.model_name,
-            self.event_arg)
+        self.subscriber.assert_called_once_with(self.event_arg)
 
     def test_subscribe_different_models(self):
         """ Different subscribers for different models """
@@ -49,13 +45,9 @@ class TestEvent(TestCase):
         self.event.subscribe(self.model_name2, self.subscriber2)
         self.event.fire(self.model_name2, self.event_arg)
 
-        self.subscriber.assert_called_once_with(
-            self.model_name,
-            self.event_arg)
+        self.subscriber.assert_called_once_with(self.event_arg)
 
-        self.subscriber2.assert_called_once_with(
-            self.model_name2,
-            self.event_arg)
+        self.subscriber2.assert_called_once_with(self.event_arg)
 
     def test_subscribe_multi_subscribers(self):
         """ Multiple subscribers for a model """
@@ -63,10 +55,5 @@ class TestEvent(TestCase):
         self.event.subscribe(self.model_name, self.subscriber2)
         self.event.fire(self.model_name, self.event_arg)
 
-        self.subscriber.assert_called_once_with(
-            self.model_name,
-            self.event_arg)
-
-        self.subscriber2.assert_called_once_with(
-            self.model_name,
-            self.event_arg)
+        self.subscriber.assert_called_once_with(self.event_arg)
+        self.subscriber2.assert_called_once_with(self.event_arg)
