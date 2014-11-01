@@ -4,3 +4,6 @@
 # use relative import path here because
 # Odoo add prefix to module name
 from .models import res_config
+
+# import trigger to intercept record change calls
+from .integrator import trigger
