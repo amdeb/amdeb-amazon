@@ -25,11 +25,11 @@ original_unlink = models.BaseModel.unlink
 @api.model
 @api.returns('self', lambda value: value.id)
 def create(self, values):
-    _logger.debug("In create() for model {} values {}".format(
+    _logger.debug("In create record for model: {}".format(
         self._name, values))
 
     record = original_create(self, values)
-    create_record_event.fire(self._name, record)
+    create_record_event.fire(self._name, record.id)
     return record
 
 models.BaseModel.create = create
@@ -37,7 +37,7 @@ models.BaseModel.create = create
 
 @api.multi
 def write(self, values):
-    _logger.debug("In write() for model: {} ids: {}".format(
+    _logger.debug("In write record for model: {} ids: {}".format(
         self._name, self._ids))
 
     original_write(self, values)
@@ -50,7 +50,7 @@ models.BaseModel.write = write
 
 
 def unlink(self, cr, uid, ids, context=None):
-    _logger.debug("In unlink() for model: {} ids: {}".format(
+    _logger.debug("In unlink record for model: {} ids: {}".format(
         self._name, ids))
 
     original_unlink(self, cr, uid, ids, context=context)

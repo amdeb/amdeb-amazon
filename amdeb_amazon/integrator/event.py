@@ -19,7 +19,7 @@ class Event(object):
     def subscribe(self, model_name, subscriber):
         Event._logger.info(
             "Event {} subscribes {} for model {}".format(
-                self.name, subscriber, model_name
+                self, subscriber, model_name
             )
         )
 
@@ -30,16 +30,15 @@ class Event(object):
 
     def fire(self, model_name, *args, **kwargs):
         Event._logger.debug(
-            "Event {} fires for model {}".format(self.name, model_name)
-        )
+            "Event {} fires for model {}. args: {}, kwargs: {}.".format(
+                self, model_name, args, kwargs))
 
         if model_name in self._model_dict:
             subscribers = self._model_dict[model_name]
             for subscriber in subscribers:
                 Event._logger.debug(
-                    "Event {} calls {} for model {}. args: {}, "
-                    "kwargs: {}.".format(
-                        self.name, subscriber, model_name, args, kwargs
+                    "Event {} calls {} for model {}.".format(
+                        self, subscriber, model_name
                     )
                 )
                 subscriber(model_name, *args, **kwargs)
@@ -50,6 +49,9 @@ class Event(object):
             self.subscribe(model_name, subscriber)
             return subscriber
         return wrapper
+
+    def __str__(self):
+        return self.name
 
 create_record_event = Event("create_record_event")
 write_record_event = Event("write_record_event")
