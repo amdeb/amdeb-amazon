@@ -50,7 +50,8 @@ def write_product_template(env, id, values):
 
 @write_record_event(PRODUCT_PRODUCT)
 def write_product_product(env, id, values):
-    _logger.debug('write product_product id: {}, values: {}'.format(id, values))
+    _logger.debug('write product_product id: {}, values: {}'.format(
+        id, values))
 
 
 @unlink_record_event(PRODUCT_PRODUCT)
