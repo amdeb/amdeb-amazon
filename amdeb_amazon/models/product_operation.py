@@ -2,18 +2,27 @@
 
 from openerp import models, fields
 
+from ..shared.model_names import AMDEB_PRODUCT_OPERATION
+
 
 class ProductOperation(models.Model):
-    _name = 'amdeb.product.operation'
+    _name = AMDEB_PRODUCT_OPERATION
     _description = 'Product Operation'
     _order = 'operation_timestamp'
+    _log_access = False
 
     # don't use Many2One because we keep the record
     # even if the referred product is deleted
-    product_id = fields.Integer(
-        string='Product Id',
+    record_id = fields.Integer(
+        string='Record Id',
         required=True,
         index=True,
+        readonly=True,
+    )
+
+    model_name = fields.Char(
+        string='Model Name',
+        required=True,
         readonly=True,
     )
 
@@ -51,6 +60,5 @@ class ProductOperation(models.Model):
     site_name = fields.Char(
         string='Site Name',
         required=False,
-        size=128,
         readonly=True,
     )

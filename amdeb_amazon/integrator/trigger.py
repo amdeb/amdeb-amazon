@@ -29,7 +29,7 @@ def create(self, values):
         self._name, values))
 
     record = original_create(self, values)
-    create_record_event.fire(self._name, record.id)
+    create_record_event.fire(self._name, self.env, record.id)
     return record
 
 models.BaseModel.create = create
@@ -42,7 +42,7 @@ def write(self, values):
 
     original_write(self, values)
     for record_id in self._ids:
-        write_record_event.fire(self._name, record_id, values)
+        write_record_event.fire(self._name, self.env, record_id, values)
 
     return True
 
@@ -57,7 +57,7 @@ def unlink(self, cr, uid, ids, context=None):
     if not utility.is_sequence(ids):
         ids = [ids]
     for record_id in ids:
-        unlink_record_event.fire(self._name, record_id)
+        unlink_record_event.fire(self._name, self.env, record_id)
 
     return True
 
