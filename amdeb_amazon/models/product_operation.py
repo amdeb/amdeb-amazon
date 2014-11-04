@@ -38,10 +38,10 @@ class ProductOperation(models.Model):
         readonly=True,
     )
 
-    # the record operation data
+    # the pickled record operation data
     # it is updating values in write
     # it is not set for create and unlink
-    operation_data = fields.Text(
+    operation_data = fields.Binary(
         string='Operation Data',
         required=False,
         readonly=True,
