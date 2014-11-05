@@ -22,15 +22,24 @@ original_write = models.BaseModel.write
 original_unlink = models.BaseModel.unlink
 
 
+# To make this also work correctly for traditional-style call,
+# We need to 1) override @api.returns defined in the BaseModel
+# and 2) check the return value type to get the id
 @api.model
-@api.returns('self', lambda value: value.id)
+@api.returns('self', lambda value: value)
 def create(self, values):
     _logger.debug("In create record for model: {}".format(
         self._name, values))
 
-    record = original_create(self, values)
-    create_record_event.fire(self._name, self.env, record.id)
-    return record
+    result = original_create(self, values)
+
+    # record could be a record in new calling convention
+    # or an id in old calling convention
+    record_id = result
+    if hasattr(record_id, 'id'):
+        record_id = record_id.id
+    create_record_event.fire(self._name, self.env, record_id)
+    return result
 
 models.BaseModel.create = create
 
@@ -49,6 +58,9 @@ def write(self, values):
 models.BaseModel.write = write
 
 
+# To make it also work correctly for record-style call,
+# we need to apply the decorator here
+@api.cr_uid_ids_context
 def unlink(self, cr, uid, ids, context=None):
     _logger.debug("In unlink record for model: {} ids: {}".format(
         self._name, ids))
