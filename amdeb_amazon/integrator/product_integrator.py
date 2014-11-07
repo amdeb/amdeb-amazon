@@ -7,6 +7,8 @@ product.template and product.product.
 We need to subscribe both in write operation.
 """
 
+from openerp import SUPERUSER_ID
+
 from ..shared.model_names import (
     PRODUCT_PRODUCT,
     PRODUCT_TEMPLATE,
@@ -34,6 +36,7 @@ def create_product_product(env, id):
         'record_operation': 'create_record',
     }
 
+    env = env(user=SUPERUSER_ID)
     model = env[AMDEB_PRODUCT_OPERATION]
     record = model.create(values)
 
@@ -47,13 +50,18 @@ def write_product_template(env, id, values):
         id, values)
     )
 
+    env = env(user=SUPERUSER_ID)
+
 
 @write_record_event(PRODUCT_PRODUCT)
 def write_product_product(env, id, values):
     _logger.debug('write product_product id: {}, values: {}'.format(
         id, values))
 
+    env = env(user=SUPERUSER_ID)
 
 @unlink_record_event(PRODUCT_PRODUCT)
 def unlink_product_product(env, id):
     _logger.debug('unlink product_product id: {}'.format(id))
+
+    env = env(user=SUPERUSER_ID)
