@@ -60,6 +60,7 @@ def write_product_product(env, id, values):
 
     env = env(user=SUPERUSER_ID)
 
+
 @unlink_record_event(PRODUCT_PRODUCT)
 def unlink_product_product(env, id):
     _logger.debug('unlink product_product id: {}'.format(id))
