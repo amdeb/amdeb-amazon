@@ -75,7 +75,7 @@ def unlink(self, cr, uid, ids, context=None):
 
     env = api.Environment(cr, SUPERUSER_ID, context)
     for record_id in ids:
-        unlink_record_event.fire(self._name, self.env, record_id)
+        unlink_record_event.fire(self._name, env, record_id)
 
     return True
 
