@@ -6,7 +6,7 @@
     an event. The new function signatures are copied from openerp/models.py
 """
 
-from openerp import models, api
+from openerp import models, api, SUPERUSER_ID
 
 from ..shared import utility
 from .event import (create_record_event,
@@ -38,7 +38,9 @@ def create(self, values):
     record_id = result
     if hasattr(record_id, 'id'):
         record_id = record_id.id
-    create_record_event.fire(self._name, self.env, record_id)
+
+    env = self.env(user=SUPERUSER_ID)
+    create_record_event.fire(self._name, env, record_id)
     return result
 
 models.BaseModel.create = create
@@ -50,8 +52,10 @@ def write(self, values):
         self._name, self._ids))
 
     original_write(self, values)
+
+    env = self.env(user=SUPERUSER_ID)
     for record_id in self._ids:
-        write_record_event.fire(self._name, self.env, record_id, values)
+        write_record_event.fire(self._name, env, record_id, values)
 
     return True
 
@@ -68,6 +72,8 @@ def unlink(self, cr, uid, ids, context=None):
     original_unlink(self, cr, uid, ids, context=context)
     if not utility.is_sequence(ids):
         ids = [ids]
+
+    env = api.Environment(cr, SUPERUSER_ID, context)
     for record_id in ids:
         unlink_record_event.fire(self._name, self.env, record_id)
 
