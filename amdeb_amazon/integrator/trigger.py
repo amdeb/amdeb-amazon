@@ -73,6 +73,9 @@ def unlink(self, cr, uid, ids, context=None):
     if not utility.is_sequence(ids):
         ids = [ids]
 
+    if context is None:
+        context = {}
+
     env = api.Environment(cr, SUPERUSER_ID, context)
     for record_id in ids:
         unlink_record_event.fire(self._name, env, record_id)
