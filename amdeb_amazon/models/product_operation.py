@@ -2,11 +2,11 @@
 
 from openerp import models, fields
 
-from ..shared.model_names import AMDEB_PRODUCT_OPERATION
+from ..shared.model_names import PRODUCT_OPERATION_TABLE
 
 
 class ProductOperation(models.Model):
-    _name = AMDEB_PRODUCT_OPERATION
+    _name = PRODUCT_OPERATION_TABLE
     _description = 'Product Operation'
     _order = 'operation_timestamp'
     _log_access = False
