@@ -24,24 +24,21 @@ original_unlink = models.BaseModel.unlink
 
 # To make this also work correctly for traditional-style call,
 # We need to 1) override @api.returns defined in the BaseModel
+# to support old-style api that returns an id
 # and 2) check the return value type to get the id
 @api.model
-@api.returns('self', lambda value: value)
+@api.returns('self', lambda value: value.id)
 def create(self, values):
-    _logger.debug("In create record for model: {}".format(
+    _logger.debug("In create record for model: {} values: {}".format(
         self._name, values))
 
-    result = original_create(self, values)
-
-    # record could be a record in new calling convention
-    # or an id in old calling convention
-    record_id = result
-    if hasattr(record_id, 'id'):
-        record_id = record_id.id
+    # because we use the record-style api,
+    # the return is always an record
+    record = original_create(self, values)
 
     env = self.env(user=SUPERUSER_ID)
-    create_record_event.fire(self._name, env, record_id)
-    return result
+    create_record_event.fire(self._name, env, record.id)
+    return record
 
 models.BaseModel.create = create
 
@@ -53,9 +50,11 @@ def write(self, values):
 
     original_write(self, values)
 
-    env = self.env(user=SUPERUSER_ID)
-    for record_id in self._ids:
-        write_record_event.fire(self._name, env, record_id, values)
+    # many times values is empty, skip it
+    if(values):
+        env = self.env(user=SUPERUSER_ID)
+        for record_id in self._ids:
+            write_record_event.fire(self._name, env, record_id, values)
 
     return True
 

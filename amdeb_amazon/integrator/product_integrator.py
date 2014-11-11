@@ -32,19 +32,29 @@ import logging
 _logger = logging.getLogger(__name__)
 
 
+def _create_product_create_record(model_name, env, product_id):
+    record_values = {
+        'record_id': product_id,
+        'model_name': model_name,
+        'record_operation': CREATE_RECORD,
+    }
+    model = env[PRODUCT_OPERATION_TABLE]
+    record = model.create(record_values)
+    return record
+
+
+@create_record_event(PRODUCT_TEMPLATE)
+def create_product_template(env, product_id):
+    _logger.debug('entering create_product_template id: {}'.format(product_id))
+    record = _create_product_create_record(PRODUCT_TEMPLATE, env, product_id)
+    _logger.debug('create_product_template created record id: {}'.format(
+        record.id))
+
+
 @create_record_event(PRODUCT_PRODUCT)
 def create_product_product(env, product_id):
     _logger.debug('entering create_product_product id: {}'.format(product_id))
-
-    record_values = {
-        'record_id': product_id,
-        'model_name': PRODUCT_PRODUCT,
-        'record_operation': CREATE_RECORD,
-    }
-
-    model = env[PRODUCT_OPERATION_TABLE]
-    record = model.create(record_values)
-
+    record = _create_product_create_record(PRODUCT_PRODUCT, env, product_id)
     _logger.debug('create_product_product created record id: {}'.format(
         record.id))
 
@@ -52,7 +62,7 @@ def create_product_product(env, product_id):
 def _write_product_write_record(model_name, env, product_id, values):
     """ Write a product write record for the model name """
 
-    data = cPickle.dump(values, cPickle.HIGHEST_PROTOCOL)
+    data = cPickle.dumps(values, cPickle.HIGHEST_PROTOCOL)
     record_values = {
         'record_id': product_id,
         'model_name': model_name,

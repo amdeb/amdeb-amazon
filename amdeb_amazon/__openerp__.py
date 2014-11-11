@@ -9,7 +9,7 @@
     'author': 'Amdeb Developers',
     'description': """
 Amdeb Amazon Integrator
-==================
+=========================
 
 This is an Odoo module that integrates Odoo with Amazon
 Marketplace Web Service (MWS). It supports the following functions:
