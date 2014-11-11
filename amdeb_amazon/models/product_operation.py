@@ -3,6 +3,7 @@
 from openerp import models, fields
 
 from ..shared.model_names import PRODUCT_OPERATION_TABLE
+from ..shared.utility import field_utcnow
 
 
 class ProductOperation(models.Model):
@@ -50,7 +51,7 @@ class ProductOperation(models.Model):
     operation_timestamp = fields.Datetime(
         string='Operation Timestamp',
         required=True,
-        default=fields.Datetime.now(),
+        default=field_utcnow,
         readonly=True,
     )
 
