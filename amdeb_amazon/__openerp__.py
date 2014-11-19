@@ -46,7 +46,7 @@ should be notified when there is any error.
         'views/res_config_view.xml',
     ],
     'depends': [
-        'base',
+        'amdeb_integrator',
     ],
     'installable': True,
     'application': True,
