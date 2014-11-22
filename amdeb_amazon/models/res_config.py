@@ -31,7 +31,7 @@ class Configuration(models.TransientModel):
     default_integration_interval = fields.Integer(
         string='Integration Interval (seconds)',
         required=True,
-        default=60,
+        default=600,
         help="The minimum interval for Amazon automatic integration",
         default_model='amdeb.amazon.config.settings',
     )
