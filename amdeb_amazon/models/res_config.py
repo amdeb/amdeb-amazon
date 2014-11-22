@@ -2,30 +2,37 @@
 
 from openerp import models, fields
 
+from ..shared.model_names import (
+    AMAZON_SETTINGS_TABLE,
+    IR_CRON,
+)
+
+IR_CRON_XMLID = "ir_cron_amazon_sync"
+
 
 class Configuration(models.TransientModel):
-    _name = 'amdeb.amazon.config.settings'
+    _name = AMAZON_SETTINGS_TABLE
     _inherit = 'res.config.settings'
 
     default_account_id = fields.Char(
         string='Account Id',
         required=True,
         help="The Amazon Merchant Identifier",
-        default_model='amdeb.amazon.config.settings',
+        default_model=AMAZON_SETTINGS_TABLE,
     )
 
     default_access_key = fields.Char(
         string='Access Key',
         required=True,
         help="The Amazon Marketplace Web Service (MWS) access key",
-        default_model='amdeb.amazon.config.settings',
+        default_model=AMAZON_SETTINGS_TABLE,
     )
 
     default_secrete_key = fields.Char(
         string='Secret Key',
         required=True,
         help="The Amazon Marketplace Web Service (MWS) secret key",
-        default_model='amdeb.amazon.config.settings',
+        default_model=AMAZON_SETTINGS_TABLE,
     )
 
     default_synchronization_interval = fields.Integer(
@@ -33,12 +40,20 @@ class Configuration(models.TransientModel):
         required=True,
         default=10,
         help="The minimum interval for Amazon automatic synchronization",
-        default_model='amdeb.amazon.config.settings',
+        default_model=AMAZON_SETTINGS_TABLE,
     )
 
     default_automatic_flag = fields.Boolean(
         string='Automatic Integration',
         default=True,
         help="Enable or disable Amazon automatic integration",
-        default_model='amdeb.amazon.config.settings',
+        default_model=AMAZON_SETTINGS_TABLE,
     )
+
+    # set cron job interval
+    def set_synchronization_interval(self, cr, uid, ids, context):
+        cron_record = self.env.ref(IR_CRON_XMLID)
+        cron_record.write({
+            "interval_number": self.default_synchronization_interval})
+
+

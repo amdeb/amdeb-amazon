@@ -24,5 +24,6 @@ class ProductOperation(models.Model):
                    (SYNCHRONIZED_STATUS, SYNCHRONIZED_STATUS),
                    (ERROR_STATUS, ERROR_STATUS),
                    ],
+        default=NEW_STATUS,
         readonly=True,
     )

@@ -44,6 +44,7 @@ should be notified when there is any error.
         """,
     'data': [
         'views/res_config_view.xml',
+        'data/cron_job.xml',
     ],
     'depends': [
         'base',
