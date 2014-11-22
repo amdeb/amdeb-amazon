@@ -1,13 +1,13 @@
 # -*- coding: utf-8 -*-
 
-from openerp import models, fields
+from openerp import models, fields, api
 
 from ..shared.model_names import (
     AMAZON_SETTINGS_TABLE,
     IR_CRON,
 )
 
-IR_CRON_XMLID = "ir_cron_amazon_sync"
+IR_CRON_XMLID = 'amdeb_amazon.ir_cron_amazon_sync'
 
 
 class Configuration(models.TransientModel):
@@ -52,8 +52,9 @@ class Configuration(models.TransientModel):
 
     # set cron job interval
     def set_synchronization_interval(self, cr, uid, ids, context):
-        cron_record = self.env.ref(IR_CRON_XMLID)
-        cron_record.write({
-            "interval_number": self.default_synchronization_interval})
+        env = api.Environment(cr, uid, context)
+        cron_record = env.ref(IR_CRON_XMLID)
 
-
+        config = self.browse(cr, uid, ids[0], context)
+        interval = config.default_synchronization_interval
+        cron_record.write({"interval_number": interval})

@@ -47,7 +47,7 @@ should be notified when there is any error.
         'data/cron_job.xml',
     ],
     'depends': [
-        'base',
+        'amdeb_integrator',
     ],
     'installable': True,
     'application': True,

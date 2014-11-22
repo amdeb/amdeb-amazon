@@ -2,7 +2,7 @@
 
 import logging
 
-from openerp import models, fields
+from openerp import models, fields, api
 
 from ..shared.model_names import (
     AMAZON_INTEGRATOR_TABLE,
@@ -34,9 +34,10 @@ class AmazonIntegrator(models.Model):
         ir_values = self.env[IR_VALUES]
         self.settings = ir_values.get_defaults_dict(AMAZON_SETTINGS_TABLE)
 
-    def synchronize_cron(self, cr, uid, context=None):
+    @api.model
+    def synchronize_cron(self):
         _logger.info("Amazon Synchronization running")
-        self.create()
+        record = self.create({})
         self._get_settings()
 
         result = {
@@ -44,7 +45,7 @@ class AmazonIntegrator(models.Model):
             'sync_response': str(self.settings),
             'sync_end_time': field_utcnow(),
         }
-        self.write(result)
+        record.write(result)
 
     sync_status = fields.Selection(
         string='Synchronization Status',
@@ -73,9 +74,6 @@ class AmazonIntegrator(models.Model):
 
     sync_end_time = fields.Datetime(
         string='Synchronization End Timestamp',
-        required=True,
         index=True,
         readonly=True,
     )
-
-
