@@ -22,7 +22,7 @@ class Boto(object):
         self.conn = connection.MWSConnection(
             aws_access_key_id=settings['access_key'],
             aws_secret_access_key=settings['secret_key'],
-            Merchant=self.merchant_id )
+            Merchant=self.merchant_id)
 
     def send(self, values):
         namespace = dict(MerchantId=self.merchant_id, FeedMessages=values)

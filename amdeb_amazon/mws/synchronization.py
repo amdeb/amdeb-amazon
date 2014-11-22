@@ -20,7 +20,6 @@ from ..shared.integration_status import (
 
 
 class Synchronization(object):
-
     # the eve is caller's environment
     def __init__(self, env):
         self.env = env
@@ -45,9 +44,8 @@ class Synchronization(object):
         result = 'Empty Value Done'
         sync_values = []
         for operation in operations:
-            if (operation['record_operation'] == WRITE_RECORD
-                and operation['model_name'] == PRODUCT_TEMPLATE):
-
+            if (operation['record_operation'] == WRITE_RECORD and
+                    operation['model_name'] == PRODUCT_TEMPLATE):
                 operation_data = pickle.loads(operation['operation_data'])
                 title = operation_data['name']
                 product_template = self.product_template.browse(
