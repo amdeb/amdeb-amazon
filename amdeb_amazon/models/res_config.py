@@ -28,11 +28,11 @@ class Configuration(models.TransientModel):
         default_model='amdeb.amazon.config.settings',
     )
 
-    default_integration_interval = fields.Integer(
-        string='Integration Interval (seconds)',
+    default_synchronization_interval = fields.Integer(
+        string='Synchronization Interval (minutes)',
         required=True,
-        default=600,
-        help="The minimum interval for Amazon automatic integration",
+        default=10,
+        help="The minimum interval for Amazon automatic synchronization",
         default_model='amdeb.amazon.config.settings',
     )
 

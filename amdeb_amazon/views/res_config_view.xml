@@ -29,7 +29,7 @@
                         </group>
 
                         <group string="Integration Settings">
-                            <field name="default_integration_interval" />
+                            <field name="default_synchronization_interval" />
                             <field name="default_automatic_flag" />
                         </group>
                     </sheet>
