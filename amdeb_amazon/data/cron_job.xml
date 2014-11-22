@@ -11,8 +11,9 @@
             <field name="interval_type">minutes</field>
             <field name="numbercall">-1</field>
             <field eval="False" name="doall" />
-            <field eval="'amazon.integrator" name="model" />
+            <field eval="'amazon.integrator'" name="model" />
             <field eval="'synchronize_cron'" name="function" />
+            <field eval="'()'" name="args" />
         </record>
     </data>
 </openerp>

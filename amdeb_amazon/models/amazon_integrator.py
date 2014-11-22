@@ -34,7 +34,7 @@ class AmazonIntegrator(models.Model):
         ir_values = self.env[IR_VALUES]
         self.settings = ir_values.get_defaults_dict(AMAZON_SETTINGS_TABLE)
 
-    def synchronize_cron(self):
+    def synchronize_cron(self, cr, uid, context=None):
         _logger.info("Amazon Synchronization running")
         self.create()
         self._get_settings()
