@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 
 NEW_STATUS = 'New'
-SYNCHRONIZING_STATUS = 'Synchronizing'
-SYNCHRONIZED_STATUS = 'Synchronized'
+SUCCESS_STATUS = 'Success'
 ERROR_STATUS = 'Error'

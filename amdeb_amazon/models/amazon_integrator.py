@@ -4,21 +4,14 @@ import logging
 
 from openerp import models, fields, api
 
-from ..shared.model_names import (
-    AMAZON_INTEGRATOR_TABLE,
-    PRODUCT_OPERATION_TABLE,
-    PRODUCT_TEMPLATE,
-    PRODUCT_PRODUCT,
-    IR_VALUES,
-    AMAZON_SETTINGS_TABLE,
-)
+from ..shared.model_names import AMAZON_INTEGRATOR_TABLE
 from ..shared.integration_status import (
     NEW_STATUS,
-    SYNCHRONIZING_STATUS,
-    SYNCHRONIZED_STATUS,
+    SUCCESS_STATUS,
     ERROR_STATUS,
 )
 from ..shared.utility import field_utcnow
+from ..mws import Synchronization
 
 _logger = logging.getLogger(__name__)
 
@@ -30,29 +23,29 @@ class AmazonIntegrator(models.Model):
     _description = 'Amazon Integration Job Log'
     _log_access = False
 
-    def _get_settings(self):
-        ir_values = self.env[IR_VALUES]
-        self.settings = ir_values.get_defaults_dict(AMAZON_SETTINGS_TABLE)
-
     @api.model
     def synchronize_cron(self):
         _logger.info("Amazon Synchronization running")
-        record = self.create({})
-        self._get_settings()
 
-        result = {
-            'sync_status': SYNCHRONIZED_STATUS,
-            'sync_response': str(self.settings),
-            'sync_end_time': field_utcnow(),
-        }
-        record.write(result)
+        # write the start time
+        record = self.create({})
+        values = {}
+        try:
+            result = Synchronization(self.env).synchronize()
+            values['sync_status'] = SUCCESS_STATUS
+        except Exception as e:
+            result = str(e)
+            values['sync_status'] = ERROR_STATUS
+
+        values['sync_response'] = result
+        values['sync_end_time'] = field_utcnow()
+        record.write(values)
 
     sync_status = fields.Selection(
         string='Synchronization Status',
         required=True,
         selection=[(NEW_STATUS, NEW_STATUS),
-                   (SYNCHRONIZING_STATUS, SYNCHRONIZING_STATUS),
-                   (SYNCHRONIZED_STATUS, SYNCHRONIZED_STATUS),
+                   (SUCCESS_STATUS, SUCCESS_STATUS),
                    (ERROR_STATUS, ERROR_STATUS),
                    ],
         default=NEW_STATUS,

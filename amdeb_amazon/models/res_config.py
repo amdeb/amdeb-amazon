@@ -28,7 +28,7 @@ class Configuration(models.TransientModel):
         default_model=AMAZON_SETTINGS_TABLE,
     )
 
-    default_secrete_key = fields.Char(
+    default_secret_key = fields.Char(
         string='Secret Key',
         required=True,
         help="The Amazon Marketplace Web Service (MWS) secret key",

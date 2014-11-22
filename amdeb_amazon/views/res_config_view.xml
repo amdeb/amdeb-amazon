@@ -25,7 +25,7 @@
                         <group string="Account Settings">
                             <field name="default_account_id" />
                             <field name="default_access_key" />
-                            <field name="default_secrete_key" />
+                            <field name="default_secret_key" />
                         </group>
 
                         <group string="Integration Settings">

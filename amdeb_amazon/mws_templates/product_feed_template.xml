@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<AmazonEnvelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="amzn-envelope.xsd">
+    <Header>
+        <DocumentVersion>1.01</DocumentVersion>
+        <MerchantIdentifier>{{ MerchantId }}</MerchantIdentifier>
+    </Header>
+
+    <MessageType>Product</MessageType>
+    <PurgeAndReplace>false</PurgeAndReplace>
+
+    {% for message in FeedMessages %}
+    <Message>
+        <MessageID>{{ loop.index }}</MessageID>
+        <OperationType>PartialUpdate</OperationType>
+        <Product>
+            <SKU>{{ message['SKU'] }}</SKU>
+            <DescriptionData>
+                <Title>{{ message['Title'] }}</Title>
+            </DescriptionData>
+        </Product>
+    </Message>
+    {% endfor %}
+
+</AmazonEnvelope>
