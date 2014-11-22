@@ -43,7 +43,8 @@ class Boto(object):
             submission_list = self.conn.get_feed_submission_list(
                 FeedSubmissionIdList=[feed_info.FeedSubmissionId]
             )
-            info =  submission_list.GetFeedSubmissionListResult.FeedSubmissionInfo[0]
+            list_result = submission_list.GetFeedSubmissionListResult
+            info = list_result.FeedSubmissionInfo[0]
             id = info.FeedSubmissionId
             status = info.FeedProcessingStatus
             _logger.debug('Submission Id: {}. Current status: {}'.format(
@@ -53,7 +54,8 @@ class Boto(object):
                 _logger.debug('Sleeping and check again....')
                 time.sleep(60)
             elif (status == '_DONE_'):
-                feedResult = self.conn.get_feed_submission_result(FeedSubmissionId=id)
+                feedResult = self.conn.get_feed_submission_result(
+                    FeedSubmissionId=id)
                 _logger.debug(str(feedResult))
                 break
             else:

@@ -2,10 +2,7 @@
 
 from openerp import models, fields, api
 
-from ..shared.model_names import (
-    AMAZON_SETTINGS_TABLE,
-    IR_CRON,
-)
+from ..shared.model_names import AMAZON_SETTINGS_TABLE
 
 IR_CRON_XMLID = 'amdeb_amazon.ir_cron_amazon_sync'
 

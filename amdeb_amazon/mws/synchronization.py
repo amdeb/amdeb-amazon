@@ -36,17 +36,17 @@ class Synchronization(object):
     def _get_operations(self):
         search_domain = [
             (OPERATION_AMAZON_STATUS_FIELD, '=', NEW_STATUS),
-             '|', (OPERATION_SITE_NAME_FIELD, '=', False),
-             (OPERATION_SITE_NAME_FIELD, '=', OPERATION_SITE_NAME_AMAZON)
-            ]
+            '|', (OPERATION_SITE_NAME_FIELD, '=', False),
+            (OPERATION_SITE_NAME_FIELD, '=', OPERATION_SITE_NAME_AMAZON)
+        ]
         return self.product_operations.search_read(domain=search_domain)
 
     def _sync_product(self, mws, operations):
         result = 'Empty Value Done'
         sync_values = []
         for operation in operations:
-            if (operation['record_operation'] == WRITE_RECORD and
-                        operation['model_name'] == PRODUCT_TEMPLATE):
+            if (operation['record_operation'] == WRITE_RECORD
+                and operation['model_name'] == PRODUCT_TEMPLATE):
 
                 operation_data = pickle.loads(operation['operation_data'])
                 title = operation_data['name']
