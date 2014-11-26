@@ -17,7 +17,7 @@ class Boto(object):
         env = jinja2.Environment(loader=loader, autoescape=True,
                                  trim_blocks=True, lstrip_blocks=True)
         self.template = env.get_template('product_feed_template.xml')
-        self.merchant_id = settings['account_id']
+        self.merchant_id = settings['merchant_id']
 
         self.conn = connection.MWSConnection(
             aws_access_key_id=settings['access_key'],

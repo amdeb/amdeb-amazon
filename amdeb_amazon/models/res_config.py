@@ -11,8 +11,8 @@ class Configuration(models.TransientModel):
     _name = AMAZON_SETTINGS_TABLE
     _inherit = 'res.config.settings'
 
-    default_account_id = fields.Char(
-        string='Account Id',
+    default_merchant_id = fields.Char(
+        string='Merchant Id',
         required=True,
         help="The Amazon Merchant Identifier",
         default_model=AMAZON_SETTINGS_TABLE,
@@ -21,14 +21,14 @@ class Configuration(models.TransientModel):
     default_access_key = fields.Char(
         string='Access Key',
         required=True,
-        help="The Amazon Marketplace Web Service (MWS) access key",
+        help="The Amazon MWS access key",
         default_model=AMAZON_SETTINGS_TABLE,
     )
 
     default_secret_key = fields.Char(
         string='Secret Key',
         required=True,
-        help="The Amazon Marketplace Web Service (MWS) secret key",
+        help="The Amazon MWS secret key",
         default_model=AMAZON_SETTINGS_TABLE,
     )
 
@@ -40,18 +40,21 @@ class Configuration(models.TransientModel):
         default_model=AMAZON_SETTINGS_TABLE,
     )
 
-    default_automatic_flag = fields.Boolean(
-        string='Automatic Integration',
+    default_active_flag = fields.Boolean(
+        string='Active Flag',
         default=True,
         help="Enable or disable Amazon automatic integration",
         default_model=AMAZON_SETTINGS_TABLE,
     )
 
-    # set cron job interval
-    def set_synchronization_interval(self, cr, uid, ids, context):
+    # set cron job interval and active status
+    def set_settings(self, cr, uid, ids, context):
         env = api.Environment(cr, uid, context)
         cron_record = env.ref(IR_CRON_XMLID)
 
         config = self.browse(cr, uid, ids[0], context)
         interval = config.default_synchronization_interval
-        cron_record.write({"interval_number": interval})
+        active = config.default_active_flag
+        values = {"interval_number": interval,
+                  "active": active, }
+        cron_record.write(values)

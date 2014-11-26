@@ -23,14 +23,14 @@
                         </div>
 
                         <group string="Account Settings">
-                            <field name="default_account_id" />
+                            <field name="default_merchant_id" />
                             <field name="default_access_key" />
                             <field name="default_secret_key" />
                         </group>
 
                         <group string="Integration Settings">
                             <field name="default_synchronization_interval" />
-                            <field name="default_automatic_flag" />
+                            <field name="default_active_flag" />
                         </group>
                     </sheet>
                 </form>
