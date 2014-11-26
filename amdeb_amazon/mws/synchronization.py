@@ -9,8 +9,6 @@ from ..shared.model_names import (
     PRODUCT_PRODUCT,
     IR_VALUES,
     AMAZON_SETTINGS_TABLE,
-    OPERATION_SITE_NAME_AMAZON,
-    OPERATION_SITE_NAME_FIELD,
     OPERATION_AMAZON_STATUS_FIELD,
     WRITE_RECORD,
 )
@@ -33,11 +31,8 @@ class Synchronization(object):
         return Boto(settings)
 
     def _get_operations(self):
-        search_domain = [
-            (OPERATION_AMAZON_STATUS_FIELD, '=', NEW_STATUS),
-            '|', (OPERATION_SITE_NAME_FIELD, '=', False),
-            (OPERATION_SITE_NAME_FIELD, '=', OPERATION_SITE_NAME_AMAZON)
-        ]
+        search_domain = [(OPERATION_AMAZON_STATUS_FIELD, '=', NEW_STATUS), ]
+
         return self.product_operations.search_read(domain=search_domain)
 
     def _sync_product(self, mws, operations):
