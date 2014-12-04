@@ -32,22 +32,21 @@ class Synchronization(object):
 
     def _get_operations(self):
         search_domain = [(OPERATION_AMAZON_STATUS_FIELD, '=', NEW_STATUS), ]
-
-        return self.product_operations.search_read(domain=search_domain)
+        return self.product_operations.search(search_domain)
 
     def _sync_product(self, mws, operations):
         result = 'Empty Value Done'
         sync_values = []
         for operation in operations:
-            if (operation['record_operation'] == WRITE_RECORD and
-                    operation['model_name'] == PRODUCT_TEMPLATE):
-                operation_data = pickle.loads(operation['operation_data'])
-                title = operation_data['name']
-                product_template = self.product_template.browse(
-                    operation['record_id'])
-                sku = product_template.default_code
-                sync_value = {'SKU': sku, 'Title': title}
-                sync_values.append(sync_value)
+            if (operation.record_operation == WRITE_RECORD and
+                    operation.model_name == PRODUCT_TEMPLATE):
+                operation_data = pickle.loads(operation.operation_data)
+                if 'name' in operation_data:
+                    title = operation_data['name']
+                    pt = self.product_template.browse(operation.record_id)
+                    sku = pt.default_code
+                    sync_value = {'SKU': sku, 'Title': title}
+                    sync_values.append(sync_value)
 
         if sync_values:
             result = mws.send(sync_values)

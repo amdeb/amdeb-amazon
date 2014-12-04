@@ -1,10 +1,6 @@
-<?xml version="1.0" encoding="utf-8" ?>
-<AmazonEnvelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="amzn-envelope.xsd">
-    <Header>
-        <DocumentVersion>1.01</DocumentVersion>
-        <MerchantIdentifier>{{ MerchantId }}</MerchantIdentifier>
-    </Header>
+{% extends "amazon_envelope_template.xml" %}
 
+{% block message %}
     <MessageType>Product</MessageType>
     <PurgeAndReplace>false</PurgeAndReplace>
 
@@ -21,4 +17,4 @@
     </Message>
     {% endfor %}
 
-</AmazonEnvelope>
+{% endblock message %}

@@ -25,7 +25,7 @@ class AmazonIntegrator(models.Model):
 
     @api.model
     def synchronize_cron(self):
-        _logger.info("Amazon Synchronization running")
+        _logger.info("Amazon Synchronization cron job running")
 
         # write the start time
         record = self.create({})
@@ -34,8 +34,9 @@ class AmazonIntegrator(models.Model):
             result = Synchronization(self.env).synchronize()
             values['sync_status'] = SUCCESS_STATUS
         except Exception as e:
-            result = str(e)
+            result = e.message
             values['sync_status'] = ERROR_STATUS
+            _logger.exception("Exception threw in Amazon Synchronization.")
 
         values['sync_response'] = result
         values['sync_end_time'] = field_utcnow()
