@@ -16,7 +16,7 @@ from ..shared.model_names import (
     SYNC_IMAGE,
     SYNC_DEACTIVATE,
 )
-from ..shared.integration_status import (
+from ..shared.sync_status import (
     PENDING_STATUS,
     SUCCESS_STATUS,
     ERROR_STATUS,

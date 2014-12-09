@@ -10,10 +10,14 @@ from ..shared.model_names import (
     IR_VALUES,
     AMAZON_SETTINGS_TABLE,
     OPERATION_AMAZON_STATUS_FIELD,
+)
+
+from ..shared.operations_types import (
     WRITE_RECORD,
 )
-from ..shared.integration_status import (
-    NEW_STATUS,
+
+from ..shared.sync_status import (
+    PENDING_STATUS,
 )
 
 
@@ -31,7 +35,7 @@ class Synchronization(object):
         return Boto(settings)
 
     def _get_operations(self):
-        search_domain = [(OPERATION_AMAZON_STATUS_FIELD, '=', NEW_STATUS), ]
+        search_domain = [(OPERATION_AMAZON_STATUS_FIELD, '=', PENDING_STATUS), ]
         return self.product_operations.search(search_domain)
 
     def _sync_product(self, mws, operations):
