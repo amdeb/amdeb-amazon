@@ -2,4 +2,4 @@
 
 from . import res_config
 from . import product_operation
-from . import amazon_integrator
+from . import amazon_product_sync
