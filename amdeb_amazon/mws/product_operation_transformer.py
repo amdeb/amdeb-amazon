@@ -42,8 +42,3 @@ class ProductOperationTransformer(object):
 
     def transform(self):
         self._get_operations()
-
-
-
-
-
