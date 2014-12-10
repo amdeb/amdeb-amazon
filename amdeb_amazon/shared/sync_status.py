@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
-PENDING_STATUS = 'PENDING'
-SUCCESS_STATUS = 'Success'
-ERROR_STATUS = 'Error'
+SYNC_NEW = 'New'
+SYNC_PENDING = 'Pending'
+SYNC_SUCCESS = 'Success'
+SYNC_ERROR = 'Error'

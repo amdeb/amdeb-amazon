@@ -10,12 +10,10 @@ IR_VALUES = 'ir.values'
 IR_CRON = 'ir.cron'
 
 PRODUCT_OPERATION_TABLE = 'amdeb.product.operation'
-AMAZON_INTEGRATOR_TABLE = 'amdeb.amazon.product.sync'
+AMAZON_PRODUCT_SYNC_TABLE = 'amdeb.amazon.product.sync'
 AMAZON_SETTINGS_TABLE = 'amdeb.amazon.config.settings'
 
-OPERATION_SITE_NAME_AMAZON = 'Amazon'
-OPERATION_SITE_NAME_FIELD = 'site_name'
-OPERATION_AMAZON_STATUS_FIELD = 'amazon_sync_status'
+AMAZON_SYNC_TIMESTAMP_FIELD = 'amazon_sync_timestamp'
 
 # definition of integration table record operations
 SYNC_CREATE = 'sync_create'

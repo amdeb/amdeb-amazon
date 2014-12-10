@@ -5,7 +5,7 @@ import logging
 from openerp import models, fields, api
 
 from ..shared.model_names import (
-    AMAZON_INTEGRATOR_TABLE,
+    AMAZON_PRODUCT_SYNC_TABLE,
     PRODUCT_TEMPLATE,
     PRODUCT_PRODUCT,
     SYNC_CREATE,
@@ -17,26 +17,28 @@ from ..shared.model_names import (
     SYNC_DEACTIVATE,
 )
 from ..shared.sync_status import (
-    PENDING_STATUS,
-    SUCCESS_STATUS,
-    ERROR_STATUS,
+    SYNC_NEW,
+    SYNC_PENDING,
+    SYNC_SUCCESS,
+    SYNC_ERROR,
 )
 from ..shared.utility import field_utcnow
-from ..mws import Synchronization
+from ..mws import ProductSynchronization
 
 _logger = logging.getLogger(__name__)
 
 
 class AmazonProductSync(models.Model):
 
-    _name = AMAZON_INTEGRATOR_TABLE
+    _name = AMAZON_PRODUCT_SYNC_TABLE
     _description = 'Amazon Product Synchronization'
     _log_access = False
 
     @api.model
     def synchronize_cron(self):
         _logger.info("Amazon Synchronization cron job running")
-        Synchronization(self.env).synchronize()
+        env = self.env()
+        ProductSynchronization(env).synchronize()
 
     model_name = fields.Selection(
         string='Model Name',
@@ -78,19 +80,19 @@ class AmazonProductSync(models.Model):
 
     sync_data = fields.Binary(
         string='Synchronization Data',
-        required=True,
-        default=False,
         readonly=True,
     )
 
     sync_status = fields.Selection(
         string='Synchronization Status',
         required=True,
-        selection=[(PENDING_STATUS, PENDING_STATUS),
-                   (SUCCESS_STATUS, SUCCESS_STATUS),
-                   (ERROR_STATUS, ERROR_STATUS),
-                   ],
-        default=PENDING_STATUS,
+        selection=[
+            (SYNC_NEW, SYNC_NEW)
+            (SYNC_PENDING, SYNC_PENDING),
+            (SYNC_SUCCESS, SYNC_SUCCESS),
+            (SYNC_ERROR, SYNC_ERROR),
+        ],
+        default=SYNC_NEW,
         readonly=True,
     )
 

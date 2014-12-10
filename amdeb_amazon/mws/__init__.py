@@ -1,3 +1,4 @@
 # -*- coding: utf-8 -*-
 
-from .synchronization import Synchronization
+from .product_sync import ProductSynchronization
+from .product_operation_transformer import ProductOperationTransformer

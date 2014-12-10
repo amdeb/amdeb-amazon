@@ -9,20 +9,16 @@ from ..shared.model_names import (
     PRODUCT_PRODUCT,
     IR_VALUES,
     AMAZON_SETTINGS_TABLE,
-    OPERATION_AMAZON_STATUS_FIELD,
 )
-
 from ..shared.operations_types import (
     WRITE_RECORD,
 )
-
-from ..shared.sync_status import (
-    PENDING_STATUS,
+from ..mws import (
+    ProductOperationTransformer,
 )
 
 
-class Synchronization(object):
-    # the eve is caller's environment
+class ProductSynchronization(object):
     def __init__(self, env):
         self.env = env
         self.product_operations = self.env[PRODUCT_OPERATION_TABLE]
@@ -33,12 +29,6 @@ class Synchronization(object):
         ir_values = self.env[IR_VALUES]
         settings = ir_values.get_defaults_dict(AMAZON_SETTINGS_TABLE)
         return Boto(settings)
-
-    def _get_operations(self):
-        search_domain = [
-            (OPERATION_AMAZON_STATUS_FIELD, '=', PENDING_STATUS),
-        ]
-        return self.product_operations.search(search_domain)
 
     def _sync_product(self, mws, operations):
         result = 'Empty Value Done'
@@ -59,6 +49,17 @@ class Synchronization(object):
         return result
 
     def synchronize(self):
-        mws = self._get_mws()
-        operations = self._get_operations()
-        self._sync_product(mws, operations)
+        ''' synchronize product operations to Amazon
+
+        There are several steps:
+        1. convert new product operations to sync operations
+        2. execute sync operations and update end timestamp
+        3. get sync results for pending sync operations and update
+        end timestamp
+        4. create and execute new price, image and inventory sync
+        operations for successful create sync operation
+        '''
+        transformer = ProductOperationTransformer(self.env)
+        transformer.transform()
+        #mws = self._get_mws()
+        #self._sync_product(mws, operations)
