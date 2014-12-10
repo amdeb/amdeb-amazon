@@ -35,7 +35,9 @@ class Synchronization(object):
         return Boto(settings)
 
     def _get_operations(self):
-        search_domain = [(OPERATION_AMAZON_STATUS_FIELD, '=', PENDING_STATUS), ]
+        search_domain = [
+            (OPERATION_AMAZON_STATUS_FIELD, '=', PENDING_STATUS),
+        ]
         return self.product_operations.search(search_domain)
 
     def _sync_product(self, mws, operations):
