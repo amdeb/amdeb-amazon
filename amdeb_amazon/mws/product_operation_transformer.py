@@ -6,18 +6,16 @@ from ..shared.model_names import (
     PRODUCT_OPERATION_TABLE,
     AMAZON_SYNC_TIMESTAMP_FIELD,
     AMAZON_PRODUCT_SYNC_TABLE,
-    SYNC_CREATE,
-    SYNC_UPDATE,
-    SYNC_DELETE,
-    SYNC_PRICE,
-    SYNC_INVENTORY,
-    SYNC_IMAGE,
-    SYNC_DEACTIVATE,
-)
-from ..shared.sync_status import (
-    SYNC_NEW,
+    # SYNC_CREATE,
+    # SYNC_UPDATE,
+    # SYNC_DELETE,
+    # SYNC_PRICE,
+    # SYNC_INVENTORY,
+    # SYNC_IMAGE,
+    # SYNC_DEACTIVATE,
 )
 from ..shared.utility import field_utcnow
+
 
 class ProductOperationTransformer(object):
     """ Transform product operations into sync operations

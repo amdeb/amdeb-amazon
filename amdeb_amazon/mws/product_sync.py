@@ -59,5 +59,5 @@ class ProductSynchronization(object):
         '''
         transformer = ProductOperationTransformer(self.env)
         transformer.transform()
-        #mws = self._get_mws()
-        #self._sync_product(mws, operations)
+        # mws = self._get_mws()
+        # self._sync_product(mws, operations)
