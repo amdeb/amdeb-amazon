@@ -13,9 +13,7 @@ from ..shared.model_names import (
 from ..shared.operations_types import (
     WRITE_RECORD,
 )
-from ..mws import (
-    ProductOperationTransformer,
-)
+from .product_operation_transformer import ProductOperationTransformer
 
 
 class ProductSynchronization(object):

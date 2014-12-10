@@ -87,7 +87,7 @@ class AmazonProductSync(models.Model):
         string='Synchronization Status',
         required=True,
         selection=[
-            (SYNC_NEW, SYNC_NEW)
+            (SYNC_NEW, SYNC_NEW),
             (SYNC_PENDING, SYNC_PENDING),
             (SYNC_SUCCESS, SYNC_SUCCESS),
             (SYNC_ERROR, SYNC_ERROR),

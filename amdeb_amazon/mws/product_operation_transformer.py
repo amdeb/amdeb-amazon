@@ -33,10 +33,13 @@ class ProductOperationTransformer(object):
 
     def _get_operations(self):
         search_domain = [
-            (AMAZON_SYNC_TIMESTAMP_FIELD, '!=', False),
+            (AMAZON_SYNC_TIMESTAMP_FIELD, '=', False),
         ]
         operations = self.product_operation.search(search_domain)
-        operations[AMAZON_SYNC_TIMESTAMP_FIELD] = field_utcnow()
+
+        # set sync timestamp for each operation
+        for operation in operations:
+            operation[AMAZON_SYNC_TIMESTAMP_FIELD] = field_utcnow()
         return operations
 
     def transform(self):
