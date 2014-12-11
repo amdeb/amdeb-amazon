@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-import pickle
+import cPickle
 
 from .connector import Boto
 from ..shared.model_names import (
@@ -34,7 +34,7 @@ class ProductSynchronization(object):
         for operation in operations:
             if (operation.record_operation == WRITE_RECORD and
                     operation.model_name == PRODUCT_TEMPLATE):
-                operation_data = pickle.loads(operation.operation_data)
+                operation_data = cPickle.loads(operation.operation_data)
                 if 'name' in operation_data:
                     title = operation_data['name']
                     pt = self.product_template.browse(operation.record_id)
