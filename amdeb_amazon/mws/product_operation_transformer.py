@@ -68,6 +68,7 @@ class ProductOperationTransformer(object):
         return sync_active, created
 
     def _add_sync_record(self, operation, sync_type, sync_data=None):
+        """Create a sync operation record"""
         sync_data = sync_data if sync_data else operation.operation_data
         sync_record = dict(
             model_name=operation.model_name,
@@ -88,8 +89,9 @@ class ProductOperationTransformer(object):
         ))
 
     def _transform_unlink(self, operation):
-        sync_active, created = self._get_sync_active(operation)
-        if sync_active and created:
+        # there is no reason to not delete it in Amazon
+        (_, created) = self._get_sync_active(operation)
+        if created:
             self._add_sync_record(operation, SYNC_DELETE)
         else:
             template = "Sync is inactive for unlink operation {0}: {1}"
@@ -202,7 +204,7 @@ class ProductOperationTransformer(object):
             write_values
         ))
 
-        # if there is a create, ignore write
+        # if there is a create operation, ignore write
         if self._check_create(operation):
             _logger.debug("found a create operation, ignore write operation")
             return
@@ -245,9 +247,13 @@ class ProductOperationTransformer(object):
                 elif operation.record_operation == WRITE_RECORD:
                     self._merge_write(operation)
                 else:
-                    message = "Unknown product operation type: {}".format(
-                        operation.record_operation)
+                    template = "Unknown operation type {0} for {1}: {2}"
+                    message = template.format(
+                        operation.record_operation,
+                        operation.model_name,
+                        operation.record_id)
                     _logger.warning(message)
+                    raise ValueError(message)
 
     def transform(self):
         self._get_operations()
