@@ -29,7 +29,6 @@ from ..shared.operations_types import (
 
 class ProductOperationTransformer(object):
     """ Transform product operations into sync operations
-
     1. get new operations sorted by id
     2. set operation sync timestamps
     3. merge operations
@@ -45,6 +44,7 @@ class ProductOperationTransformer(object):
         self.processed = set()
 
     def _get_operations(self):
+        """get product operation and set sync timestamp"""
         search_domain = [
             (AMAZON_SYNC_TIMESTAMP_FIELD, '=', False),
         ]
@@ -71,7 +71,7 @@ class ProductOperationTransformer(object):
         )
         record = self.amazon_sync.create(sync_record)
         logger_template = "Model: {0}, record id: {1}, template id: {2}. " \
-                      "sync type: {3}, sync record id {4}."
+                          "sync type: {3}, sync record id {4}."
         _logger.debug(logger_template.format(
             sync_record['model_name'],
             sync_record['record_id'],
@@ -80,13 +80,12 @@ class ProductOperationTransformer(object):
             record.id
         ))
 
-
     def _transform_unlink(self, operation):
         sync_active = self._get_sync_active(operation)
         if sync_active:
             self._add_sync_record(operation, SYNC_DELETE)
         else:
-            template = "Sync is not active for unlink {0}: {1}"
+            template = "Sync is not active for unlink operation {0}: {1}"
             _logger.debug(template.format(
                 operation.model_name, operation.record_id
             ))
@@ -107,7 +106,7 @@ class ProductOperationTransformer(object):
         if sync_active:
             self._add_sync_record(operation, SYNC_CREATE)
         else:
-            template = "Sync is not active for create {0}: {1}"
+            template = "Sync is not active for create operation {0}: {1}"
             _logger.debug(template.format(
                 operation.model_name, operation.record_id
             ))
@@ -190,4 +189,12 @@ class ProductOperationTransformer(object):
 
     def transform(self):
         self._get_operations()
-        self._merge_operations()
+
+        # unexpected sync errors should be handled manually
+        try:
+            self._merge_operations()
+        except Exception as ex:
+            # will send a notification to admin
+            _logger.exception("Error in Amazon sync: {}".format(
+                ex.message
+            ))
