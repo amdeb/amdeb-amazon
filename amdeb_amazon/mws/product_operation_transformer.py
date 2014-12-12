@@ -41,8 +41,6 @@ class ProductOperationTransformer(object):
 
     def __init__(self, env):
         self.env = env
-        self.product_template = self.env[PRODUCT_TEMPLATE]
-        self.product_product = self.env[PRODUCT_PRODUCT]
         self.product_operation = self.env[PRODUCT_OPERATION_TABLE]
         self.amazon_sync = self.env[AMAZON_PRODUCT_SYNC_TABLE]
         self.processed = set()
@@ -69,7 +67,11 @@ class ProductOperationTransformer(object):
 
     def _add_sync_record(self, operation, sync_type, sync_data=None):
         """Create a sync operation record"""
-        sync_data = sync_data if sync_data else operation.operation_data
+        if sync_data:
+            sync_data = cPickle.dumps(sync_data, cPickle.HIGHEST_PROTOCOL)
+        else:
+            sync_data = operation.operation_data
+
         sync_record = dict(
             model_name=operation.model_name,
             record_id=operation.record_id,
@@ -209,7 +211,7 @@ class ProductOperationTransformer(object):
             _logger.debug("found a create operation, ignore write operation")
             return
 
-        # merge all writes
+        # merge all writes that are ordered by operation id
         other_writes = [
             element for element in self.operations if
             element.model_name == operation.model_name and
