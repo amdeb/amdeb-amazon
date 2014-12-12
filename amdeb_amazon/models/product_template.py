@@ -20,9 +20,10 @@ class product_template(models.Model):
         related='product_variant_ids.amazon_image_trigger',
     )
 
-    amazon_asin = fields.Char(
-        string="Amazon Product ASIN Number",
-        related='product_variant_ids.amazon_asin',
+    amazon_creation_success = fields.Boolean(
+        string="Created in Amazon",
+        readonly=True,
+        related='product_variant_ids.amazon_creation_success',
     )
 
     amazon_bullet_point1 = fields.Char(
