@@ -11,9 +11,9 @@ from ..shared.model_names import (
     PRODUCT_OPERATION_TABLE,
     AMAZON_SYNC_TIMESTAMP_FIELD,
     AMAZON_PRODUCT_SYNC_TABLE,
-    # SYNC_CREATE,
+    SYNC_CREATE,
     # SYNC_UPDATE,
-    # SYNC_DELETE,
+    SYNC_DELETE,
     # SYNC_PRICE,
     # SYNC_INVENTORY,
     # SYNC_IMAGE,
@@ -56,11 +56,40 @@ class ProductOperationTransformer(object):
         for operation in self.operations:
             operation[AMAZON_SYNC_TIMESTAMP_FIELD] = field_utcnow()
 
-    def _add_unlink_sync(self, operation):
-        pass
+    def _get_sync_active(self, operation):
+        model = self.env[operation.model_name]
+        records = model.browse(operation.record_id)
+        return records[0].amazon_sync_active
+
+    def _add_sync_record(self, operation, sync_type):
+        sync_record = dict(
+            model_name=operation.model_name,
+            record_id=operation.record_id,
+            template_id=operation.template_id,
+            sync_type=sync_type,
+            sync_data=operation.operation_data,
+        )
+        record = self.amazon_sync.create(sync_record)
+        logger_template = "Model: {0}, record id: {1}, template id: {2}. " \
+                      "sync type: {3}, sync record id {4}."
+        _logger.debug(logger_template.format(
+            sync_record['model_name'],
+            sync_record['record_id'],
+            sync_record['template_id'],
+            sync_record['sync_type'],
+            record.id
+        ))
+
 
     def _transform_unlink(self, operation):
-        self._add_unlink_sync(operation)
+        sync_active = self._get_sync_active(operation)
+        if sync_active:
+            self._add_sync_record(operation, SYNC_DELETE)
+        else:
+            template = "Sync is not active for unlink {0}: {1}"
+            _logger.debug(template.format(
+                operation.model_name, operation.record_id
+            ))
 
         # assume that MWS has cascade delete -- TBD
         # remove all variant operations if this is a template unlink
@@ -74,7 +103,14 @@ class ProductOperationTransformer(object):
             self.processed.update(ignored)
 
     def _add_create_sync(self, operation):
-        pass
+        sync_active = self._get_sync_active(operation)
+        if sync_active:
+            self._add_sync_record(operation, SYNC_CREATE)
+        else:
+            template = "Sync is not active for create {0}: {1}"
+            _logger.debug(template.format(
+                operation.model_name, operation.record_id
+            ))
 
     def _add_write_sync(self, operation, write_values):
         pass
@@ -94,8 +130,19 @@ class ProductOperationTransformer(object):
         return found
 
     def _transform_write(self, operation):
+        write_values = cPickle.loads(operation.operation_data)
+        logger_template = "transform write operation for Model: {0} " \
+                          "record id: {1}, template id: {2}, values {3}."
+        _logger.debug(logger_template.format(
+            operation.model_name,
+            operation.record_id,
+            operation.template_id,
+            write_values
+        ))
+
         # if there is a create, ignore write
         if self._check_create(operation):
+            _logger.debug("found a create operation, ignore write operation")
             return
 
         # merge all writes
@@ -106,11 +153,13 @@ class ProductOperationTransformer(object):
             element.record_id == operation.record_id
         ]
 
-        write_values = cPickle.loads(operation.operation_data)
         for other_write in other_writes:
             other_values = cPickle.loads(other_write.operation_data)
             other_values.update(write_values)
             write_values = other_values
+            _logger.debug("merged write values: {}".format(
+                write_values
+            ))
 
         self._add_write_sync(operation, write_values)
 
@@ -123,12 +172,11 @@ class ProductOperationTransformer(object):
         # for template unlink, ignore all variant unlink operations
         # ignore write if there is a create
         for operation in self.operations:
-            source_key = (operation.model_name,
-                          operation.record_id)
-            if source_key in self.processed:
+            record_key = (operation.model_name, operation.record_id)
+            if record_key in self.processed:
                 continue
             else:
-                self.processed.add(source_key)
+                self.processed.add(record_key)
                 if operation.record_operation == CREATE_RECORD:
                     self._add_create_sync(operation)
                 elif operation.record_operation == UNLINK_RECORD:

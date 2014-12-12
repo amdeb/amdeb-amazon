@@ -105,12 +105,10 @@ class AmazonProductSync(models.Model):
         string='Synchronization Start Timestamp',
         required=True,
         default=field_utcnow,
-        index=True,
         readonly=True,
     )
 
     sync_end_time = fields.Datetime(
         string='Synchronization End Timestamp',
-        index=True,
         readonly=True,
     )
