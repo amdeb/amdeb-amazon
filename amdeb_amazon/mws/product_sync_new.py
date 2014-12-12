@@ -42,5 +42,6 @@ class ProductSyncNew(object):
     def _sync_update(self):
         self._get_updates()
 
+
     def synchronize(self):
         self._sync_update()

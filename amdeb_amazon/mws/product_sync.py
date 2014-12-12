@@ -18,6 +18,7 @@ from ..shared.db_operation_types import (
 from .product_operation_transformer import ProductOperationTransformer
 from .product_sync_new import ProductSyncNew
 
+
 class ProductSynchronization(object):
     def __init__(self, env):
         self.env = env
