@@ -6,7 +6,7 @@
 
     {% for message in FeedMessages %}
     <Message>
-        <MessageID>{{ loop.index }}</MessageID>
+        <MessageID>{{ message['ID'] }}</MessageID>
         <OperationType>PartialUpdate</OperationType>
         <Product>
             <SKU>{{ message['SKU'] }}</SKU>

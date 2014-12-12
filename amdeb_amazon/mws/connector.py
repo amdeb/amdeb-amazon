@@ -2,16 +2,23 @@
 
 import jinja2
 import logging
-import time
 
 from boto.mws import connection
 
 MarketPlaceID = 'ATVPDKIKX0DER'
 _logger = logging.getLogger(__name__)
 
+from ..shared.model_names import (
+    IR_VALUES,
+    AMAZON_SETTINGS_TABLE,
+)
+
 
 class Boto(object):
-    def __init__(self, settings):
+    def __init__(self, odoo_env):
+        ir_values = odoo_env[IR_VALUES]
+        settings = ir_values.get_defaults_dict(AMAZON_SETTINGS_TABLE)
+
         loader = jinja2.PackageLoader(
             'openerp.addons.amdeb_amazon', "mws_templates")
         env = jinja2.Environment(loader=loader, autoescape=True,
@@ -25,6 +32,7 @@ class Boto(object):
             Merchant=self.merchant_id)
 
     def send(self, values):
+        _logger.debug("Boto send data: {}", values)
         namespace = dict(MerchantId=self.merchant_id, FeedMessages=values)
         feed_content = self.template.render(namespace).encode('utf-8')
 
@@ -37,29 +45,25 @@ class Boto(object):
         )
 
         feed_info = feed.SubmitFeedResult.FeedSubmissionInfo
-        _logger.debug(str(feed_info))
+        _logger.debug("Boto submit feed result: {}", feed_info)
 
-        while True:
-            submission_list = self.conn.get_feed_submission_list(
-                FeedSubmissionIdList=[feed_info.FeedSubmissionId]
-            )
-            list_result = submission_list.GetFeedSubmissionListResult
-            info = list_result.FeedSubmissionInfo[0]
-            id = info.FeedSubmissionId
-            status = info.FeedProcessingStatus
-            _logger.debug('Submission Id: {}. Current status: {}'.format(
-                id, status))
+    def check_sync_status(self, submission_id_list):
 
-            if (status in ('_SUBMITTED_', '_IN_PROGRESS_', '_UNCONFIRMED_')):
-                _logger.debug('Sleeping and check again....')
-                time.sleep(60)
-            elif (status == '_DONE_'):
-                feedResult = self.conn.get_feed_submission_result(
-                    FeedSubmissionId=id)
-                _logger.debug(str(feedResult))
-                break
-            else:
-                _logger.warning("Submission processing error. Quit.")
-                break
+        submission_list = self.conn.get_feed_submission_list(
+            FeedSubmissionIdList=submission_id_list
+        )
+        list_result = submission_list.GetFeedSubmissionListResult
+        info = list_result.FeedSubmissionInfo[0]
+        submission_id = info.FeedSubmissionId
+        status = info.FeedProcessingStatus
+        _logger.debug('Submission Id: {}. Current status: {}'.format(
+            submission_id, status))
 
-        return status
+        if status in ('_SUBMITTED_', '_IN_PROGRESS_', '_UNCONFIRMED_'):
+            _logger.debug('still pending....')
+        elif status == '_DONE_':
+            feed_result = self.conn.get_feed_submission_result(
+                FeedSubmissionId=submission_id)
+            _logger.debug(str(feed_result))
+        else:
+            _logger.warning("Submission processing error. Quit.")

@@ -45,19 +45,19 @@ class ProductOperationTransformer(object):
         self.env = env
         self.product_operation = self.env[PRODUCT_OPERATION_TABLE]
         self.amazon_sync = self.env[AMAZON_PRODUCT_SYNC_TABLE]
-        self.processed = set()
+        self._processed_operations = set()
 
     def _get_operations(self):
         search_domain = [
             (AMAZON_SYNC_TIMESTAMP_FIELD, '=', False),
         ]
-        self.operations = self.product_operation.search(
+        self._product_operations = self.product_operation.search(
             search_domain,
             order="id desc")
 
     def _set_operation_sync_timestamp(self):
         # set sync timestamp for each operation
-        for operation in self.operations:
+        for operation in self._product_operations:
             operation[AMAZON_SYNC_TIMESTAMP_FIELD] = field_utcnow()
 
     def _get_sync_active(self, operation):
@@ -108,11 +108,11 @@ class ProductOperationTransformer(object):
         if operation.model_name == PRODUCT_TEMPLATE:
             ignored = [
                 (variant.model_name, variant.record_id) for
-                variant in self.operations if
+                variant in self._product_operations if
                 variant.model_name == PRODUCT_PRODUCT and
                 variant.template_id == operation.record_id
             ]
-            self.processed.update(ignored)
+            self._processed_operations.update(ignored)
 
     def _add_create_sync(self, operation):
         (sync_active, _) = self._get_sync_active(operation)
@@ -128,7 +128,7 @@ class ProductOperationTransformer(object):
         found = False
         creations = [
             element for
-            element in self.operations if
+            element in self._product_operations if
             element.model_name == operation.model_name and
             element.record_id == operation.record_id and
             element.record_operation == CREATE_RECORD
@@ -215,7 +215,7 @@ class ProductOperationTransformer(object):
 
         # merge all writes that are ordered by operation id
         other_writes = [
-            element for element in self.operations if
+            element for element in self._product_operations if
             element.model_name == operation.model_name and
             element.record_id == operation.record_id
         ]
@@ -238,12 +238,12 @@ class ProductOperationTransformer(object):
         # unlink is always the last for a model_name + record_id
         # for template unlink, ignore all variant unlink operations
         # ignore write if there is a create
-        for operation in self.operations:
+        for operation in self._product_operations:
             record_key = (operation.model_name, operation.record_id)
-            if record_key in self.processed:
+            if record_key in self._processed_operations:
                 continue
             else:
-                self.processed.add(record_key)
+                self._processed_operations.add(record_key)
                 if operation.record_operation == CREATE_RECORD:
                     self._add_create_sync(operation)
                 elif operation.record_operation == UNLINK_RECORD:
