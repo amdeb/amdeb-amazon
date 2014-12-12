@@ -2,17 +2,12 @@
 
 # this class is the entry to all product synchronization functions
 
-import cPickle
-
-from .connector import Boto
 from ..shared.model_names import (
     PRODUCT_OPERATION_TABLE,
     PRODUCT_TEMPLATE,
     PRODUCT_PRODUCT,
 )
-from ..shared.db_operation_types import (
-    WRITE_RECORD,
-)
+
 from .product_operation_transformer import ProductOperationTransformer
 from .product_sync_new import ProductSyncNew
 
@@ -24,12 +19,8 @@ class ProductSynchronization(object):
         self.product_template = self.env[PRODUCT_TEMPLATE]
         self.product_product = self.env[PRODUCT_PRODUCT]
 
-
-
-
     def synchronize(self):
         ''' synchronize product operations to Amazon
-
         There are several steps:
         1. convert new product operations to sync operations
         2. execute sync operations and update end timestamp
