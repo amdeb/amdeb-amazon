@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+_logger = logging.getLogger(__name__)
 
 from openerp import models, fields, api
 
@@ -8,6 +9,8 @@ from ..shared.model_names import (
     AMAZON_PRODUCT_SYNC_TABLE,
     PRODUCT_TEMPLATE,
     PRODUCT_PRODUCT,
+)
+from ..shared.sync_operation_types import (
     SYNC_CREATE,
     SYNC_UPDATE,
     SYNC_DELETE,
@@ -24,8 +27,6 @@ from ..shared.sync_status import (
 )
 from ..shared.utility import field_utcnow
 from ..mws import ProductSynchronization
-
-_logger = logging.getLogger(__name__)
 
 
 class AmazonProductSync(models.Model):
@@ -96,19 +97,29 @@ class AmazonProductSync(models.Model):
         readonly=True,
     )
 
-    sync_message = fields.Text(
-        string='Synchronization Response Result',
-        readonly=True,
-    )
-
-    sync_start_time = fields.Datetime(
-        string='Synchronization Start Timestamp',
+    sync_creation_timestamp = fields.Datetime(
+        string='Synchronization Creation Timestamp',
         required=True,
         default=field_utcnow,
         readonly=True,
     )
 
-    sync_end_time = fields.Datetime(
-        string='Synchronization End Timestamp',
+    sync_response_timestamp = fields.Datetime(
+        string='Synchronization Response Timestamp',
+        readonly=True,
+    )
+
+    sync_response_message = fields.Text(
+        string='Synchronization Response Message',
+        readonly=True,
+    )
+
+    sync_response_status = fields.Char(
+        string='Synchronization Response Status Code',
+        readonly=True,
+    )
+
+    sync_response_request_id = fields.Char(
+        string='Synchronization Response Request Id',
         readonly=True,
     )

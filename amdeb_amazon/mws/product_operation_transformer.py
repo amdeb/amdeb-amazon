@@ -10,6 +10,8 @@ from ..shared.model_names import (
     PRODUCT_OPERATION_TABLE,
     AMAZON_SYNC_TIMESTAMP_FIELD,
     AMAZON_PRODUCT_SYNC_TABLE,
+)
+from ..shared.sync_operation_types import (
     SYNC_CREATE,
     SYNC_UPDATE,
     SYNC_DELETE,
@@ -19,7 +21,7 @@ from ..shared.model_names import (
     SYNC_DEACTIVATE,
 )
 from ..shared.utility import field_utcnow
-from ..shared.operations_types import (
+from ..shared.db_operation_types import (
     CREATE_RECORD,
     WRITE_RECORD,
     UNLINK_RECORD,

@@ -1,5 +1,7 @@
 # -*- coding: utf-8 -*-
 
+# this class is the entry to all product synchronization functions
+
 import cPickle
 
 from .connector import Boto
@@ -10,11 +12,11 @@ from ..shared.model_names import (
     IR_VALUES,
     AMAZON_SETTINGS_TABLE,
 )
-from ..shared.operations_types import (
+from ..shared.db_operation_types import (
     WRITE_RECORD,
 )
 from .product_operation_transformer import ProductOperationTransformer
-
+from .product_sync_new import ProductSyncNew
 
 class ProductSynchronization(object):
     def __init__(self, env):
@@ -59,5 +61,9 @@ class ProductSynchronization(object):
         '''
         transformer = ProductOperationTransformer(self.env)
         transformer.transform()
+
+        sync_new = ProductSyncNew(self.env)
+        sync_new.synchronize()
+
         # mws = self._get_mws()
         # self._sync_product(mws, operations)

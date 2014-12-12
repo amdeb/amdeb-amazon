@@ -15,11 +15,5 @@ AMAZON_SETTINGS_TABLE = 'amdeb.amazon.config.settings'
 
 AMAZON_SYNC_TIMESTAMP_FIELD = 'amazon_sync_timestamp'
 
-# definition of integration table record operations
-SYNC_CREATE = 'sync_create'
-SYNC_UPDATE = 'sync_update'
-SYNC_DELETE = 'sync_delete'
-SYNC_PRICE = 'sync_price'
-SYNC_INVENTORY = 'sync_inventory'
-SYNC_IMAGE = 'sync_image'
-SYNC_DEACTIVATE = 'sync_deactivate'
+SYNC_STATUS_FIELD = 'sync_status'
+SYNC_TYPE_FIELD = 'sync_type'
