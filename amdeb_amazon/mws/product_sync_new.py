@@ -10,6 +10,9 @@ from ..shared.model_names import (
     AMAZON_PRODUCT_SYNC_TABLE,
     SYNC_STATUS_FIELD,
     SYNC_TYPE_FIELD,
+    AMAZON_MESSAGE_CODE_FIELD,
+    AMAZON_REQUEST_TIMESTAMP_FIELD,
+    AMAZON_SUBMISSION_ID_FIELD,
 )
 from ..shared.sync_operation_types import (
     # SYNC_CREATE,
@@ -56,10 +59,10 @@ class ProductSyncNew(object):
     def _call_updates(self, sync_values):
         feed_id, feed_time, feed_status = self._mws.send(sync_values)
         sync_values = {
-            'sync_status': SYNC_PENDING,
-            'amazon_submission_id': feed_id,
-            'amazon_request_timestamp': feed_time,
-            'amazon_message_code': feed_status,
+            SYNC_STATUS_FIELD: SYNC_PENDING,
+            AMAZON_SUBMISSION_ID_FIELD: feed_id,
+            AMAZON_REQUEST_TIMESTAMP_FIELD: feed_time,
+            AMAZON_MESSAGE_CODE_FIELD: feed_status,
         }
         self._updates.write(sync_values)
 
