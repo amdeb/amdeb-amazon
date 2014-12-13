@@ -2,22 +2,16 @@
 
 # this class is the entry to all product synchronization functions
 
-from ..shared.model_names import (
-    PRODUCT_OPERATION_TABLE,
-    PRODUCT_TEMPLATE,
-    PRODUCT_PRODUCT,
-)
+from .connector import Boto
 
 from .product_operation_transformer import ProductOperationTransformer
 from .product_sync_new import ProductSyncNew
-
+from .product_sync_pending import ProductSyncPending
 
 class ProductSynchronization(object):
     def __init__(self, env):
-        self.env = env
-        self.product_operations = self.env[PRODUCT_OPERATION_TABLE]
-        self.product_template = self.env[PRODUCT_TEMPLATE]
-        self.product_product = self.env[PRODUCT_PRODUCT]
+        self._env = env
+        self._mws = Boto(env)
 
     def synchronize(self):
         ''' synchronize product operations to Amazon
@@ -29,11 +23,11 @@ class ProductSynchronization(object):
         4. create and execute new price, image and inventory sync
         operations for successful create sync operation
         '''
-        transformer = ProductOperationTransformer(self.env)
+        transformer = ProductOperationTransformer(self._env)
         transformer.transform()
 
-        sync_new = ProductSyncNew(self.env)
+        sync_new = ProductSyncNew(self._env, self._mws)
         sync_new.synchronize()
 
-        # mws = self._get_mws()
-        # self._sync_product(mws, operations)
+        sync_pending = ProductSyncPending(self._env, self._mws)
+        sync_pending.synchronize()

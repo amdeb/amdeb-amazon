@@ -103,6 +103,7 @@ class AmazonProductSync(models.Model):
         string='Synchronization Creation Timestamp',
         required=True,
         default=field_utcnow,
+        index=True,
         readonly=True,
     )
 
@@ -125,12 +126,13 @@ class AmazonProductSync(models.Model):
         readonly=True,
     )
 
-    amazon_response_description = fields.Text(
+    amazon_result_description = fields.Text(
         string='Amazon Result Description',
         readonly=True,
     )
 
     amazon_submission_id = fields.Char(
         string='Amazon Submission Id',
+        index=True,
         readonly=True,
     )

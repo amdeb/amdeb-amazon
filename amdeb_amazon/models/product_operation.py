@@ -10,6 +10,7 @@ class ProductOperation(models.Model):
 
     _inherit = [PRODUCT_OPERATION_TABLE]
 
+    # This is set by Sync process regardless the sync results
     amazon_sync_timestamp = fields.Datetime(
         string='Amazon Synchronization Timestamp',
         readonly=True,

@@ -2,11 +2,9 @@
 
 import cPickle
 
-from .connector import Boto
 from ..shared.model_names import (
     # PRODUCT_TEMPLATE,
     # PRODUCT_PRODUCT,
-    # AMAZON_SYNC_TIMESTAMP_FIELD,
     AMAZON_PRODUCT_SYNC_TABLE,
     SYNC_STATUS_FIELD,
     SYNC_TYPE_FIELD,
@@ -30,11 +28,15 @@ from ..shared.sync_status import (
 
 
 class ProductSyncNew(object):
-    """This class processes new sync operations"""
-    def __init__(self, env):
+    """
+    This class processes new sync operations
+    To match a request with response result, we use
+    the sync table record id as the message id
+    """
+    def __init__(self, env, mws):
         self._env = env
+        self._mws = mws
         self._amazon_sync = self._env[AMAZON_PRODUCT_SYNC_TABLE]
-        self._mws = Boto(env)
 
     def _get_updates(self):
         search_domain = [
