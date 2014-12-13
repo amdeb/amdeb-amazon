@@ -36,7 +36,7 @@ class Boto(object):
         namespace = dict(MerchantId=self.merchant_id, FeedMessages=values)
         feed_content = self.template.render(namespace).encode('utf-8')
 
-        feed = self.conn.submit_feed(
+        response = self.conn.submit_feed(
             FeedType='_POST_PRODUCT_DATA_',
             PurgeAndReplace=False,
             MarketplaceIdList=[MarketPlaceID],
@@ -44,26 +44,32 @@ class Boto(object):
             FeedContent=feed_content
         )
 
-        feed_info = feed.SubmitFeedResult.FeedSubmissionInfo
+        feed_info = response.SubmitFeedResult.FeedSubmissionInfo
         _logger.debug("Boto submit feed result: {}", feed_info)
 
-    def check_sync_status(self, submission_id_list):
+        feed_id = feed_info.FeedSubmissionId
+        feed_time = feed_info.SubmittedDate
+        feed_status = feed_info.FeedProcessingStatus
+        return feed_id, feed_time, feed_status
 
+    def check_sync_status(self, submission_id_list):
+        status_list = {}
+
+        # ToDo: handle pagination
         submission_list = self.conn.get_feed_submission_list(
             FeedSubmissionIdList=submission_id_list
         )
         list_result = submission_list.GetFeedSubmissionListResult
-        info = list_result.FeedSubmissionInfo[0]
-        submission_id = info.FeedSubmissionId
-        status = info.FeedProcessingStatus
-        _logger.debug('Submission Id: {}. Current status: {}'.format(
-            submission_id, status))
+        for info in list_result.FeedSubmissionInfo:
+            submission_id = info.FeedSubmissionId
+            status = info.FeedProcessingStatus
+            _logger.debug('Submission Id: {}. Current status: {}'.format(
+                submission_id, status))
+            status_list[submission_id] = status
 
-        if status in ('_SUBMITTED_', '_IN_PROGRESS_', '_UNCONFIRMED_'):
-            _logger.debug('still pending....')
-        elif status == '_DONE_':
-            feed_result = self.conn.get_feed_submission_result(
-                FeedSubmissionId=submission_id)
-            _logger.debug(str(feed_result))
-        else:
-            _logger.warning("Submission processing error. Quit.")
+        return status_list
+
+    def get_sync_result(self, submission_id):
+        feed_result = self.conn.get_feed_submission_result(
+            FeedSubmissionId=submission_id)
+        _logger.debug(str(feed_result))
