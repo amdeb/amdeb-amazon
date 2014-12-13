@@ -22,7 +22,7 @@ from ..shared.sync_operation_types import (
 )
 from ..shared.sync_status import (
     SYNC_NEW,
-    # SYNC_PENDING,
+    SYNC_PENDING,
 )
 
 
@@ -38,11 +38,11 @@ class ProductSyncNew(object):
             (SYNC_STATUS_FIELD, '=', SYNC_NEW),
             (SYNC_TYPE_FIELD, '=', SYNC_UPDATE)
         ]
-        return self._amazon_sync.search(search_domain)
+        self._updates = self._amazon_sync.search(search_domain)
 
-    def _convert_updates(self, updates):
+    def _convert_updates(self):
         sync_values = []
-        for update in updates:
+        for update in self._updates:
             sync_data = cPickle.loads(update.sync_data)
             if 'name' in sync_data:
                 sync_value = {'ID': update.ids[0], 'Title': sync_data['name']}
@@ -54,11 +54,18 @@ class ProductSyncNew(object):
         return sync_values
 
     def _call_updates(self, sync_values):
-        result = self._mws.send(sync_values)
+        feed_id, feed_time, feed_status = self._mws.send(sync_values)
+        sync_values = {
+            'sync_status': SYNC_PENDING,
+            'amazon_submission_id': feed_id,
+            'amazon_request_timestamp': feed_time,
+            'amazon_message_code': feed_status,
+        }
+        self._updates.write(sync_values)
 
     def _sync_update(self):
-        updates = self._get_updates()
-        sync_values = self._convert_updates(updates)
+        self._get_updates()
+        sync_values = self._convert_updates()
         if sync_values:
             self._call_updates(sync_values)
 

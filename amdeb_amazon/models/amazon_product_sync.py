@@ -23,6 +23,7 @@ from ..shared.sync_status import (
     SYNC_NEW,
     SYNC_PENDING,
     SYNC_SUCCESS,
+    SYNC_WARNING,
     SYNC_ERROR,
 )
 from ..shared.utility import field_utcnow
@@ -91,6 +92,7 @@ class AmazonProductSync(models.Model):
             (SYNC_NEW, SYNC_NEW),
             (SYNC_PENDING, SYNC_PENDING),
             (SYNC_SUCCESS, SYNC_SUCCESS),
+            (SYNC_WARNING, SYNC_WARNING),
             (SYNC_ERROR, SYNC_ERROR),
         ],
         default=SYNC_NEW,
@@ -104,22 +106,31 @@ class AmazonProductSync(models.Model):
         readonly=True,
     )
 
-    sync_response_timestamp = fields.Datetime(
-        string='Synchronization Response Timestamp',
+    # use both creation timestamp and status count to
+    # get clean up old sync operations
+    sync_check_status_count = fields.Integer(
+        string='The Counter of Submission Status Check',
+        required=True,
+        default=0,
         readonly=True,
     )
 
-    sync_response_message = fields.Text(
-        string='Synchronization Response Message',
+    amazon_request_timestamp = fields.Char(
+        string='Amazon Request Timestamp',
         readonly=True,
     )
 
-    sync_response_status = fields.Char(
-        string='Synchronization Response Status Code',
+    amazon_message_code = fields.Char(
+        string='Amazon Result Message Code',
         readonly=True,
     )
 
-    sync_response_request_id = fields.Char(
-        string='Synchronization Response Request Id',
+    amazon_response_description = fields.Text(
+        string='Amazon Result Description',
+        readonly=True,
+    )
+
+    amazon_submission_id = fields.Char(
+        string='Amazon Submission Id',
         readonly=True,
     )

@@ -1,17 +1,18 @@
 # -*- coding: utf-8 -*-
 
 import jinja2
+from lxml import etree
 import logging
+_logger = logging.getLogger(__name__)
 
 from boto.mws import connection
-
-MarketPlaceID = 'ATVPDKIKX0DER'
-_logger = logging.getLogger(__name__)
 
 from ..shared.model_names import (
     IR_VALUES,
     AMAZON_SETTINGS_TABLE,
 )
+
+MarketPlaceID = 'ATVPDKIKX0DER'
 
 
 class Boto(object):
@@ -32,6 +33,11 @@ class Boto(object):
             Merchant=self.merchant_id)
 
     def send(self, values):
+        """
+        send MWS request and return feed id, feed time and feed status
+        :param values:
+        :return:
+        """
         _logger.debug("Boto send data: {}", values)
         namespace = dict(MerchantId=self.merchant_id, FeedMessages=values)
         feed_content = self.template.render(namespace).encode('utf-8')
@@ -53,7 +59,7 @@ class Boto(object):
         return feed_id, feed_time, feed_status
 
     def check_sync_status(self, submission_id_list):
-        status_list = {}
+        sync_status = {}
 
         # ToDo: handle pagination
         submission_list = self.conn.get_feed_submission_list(
@@ -65,11 +71,47 @@ class Boto(object):
             status = info.FeedProcessingStatus
             _logger.debug('Submission Id: {}. Current status: {}'.format(
                 submission_id, status))
-            status_list[submission_id] = status
+            sync_status[submission_id] = status
 
-        return status_list
+        return sync_status
+
+    def _parse_sync_result(self, feed_result):
+
+        # ToDo: depend on boto PR#2660 to return an XML doc
+        sync_result = {}
+        doc = etree.fromstring(feed_result)
+        message = doc.find('Message')
+        report = message.find('ProcessingReport')
+        processed = report.find('ProcessingSummary/MessagesProcessed').text
+        successful = report.find('ProcessingSummary/MessagesSuccessful').text
+        processed_count = int(processed)
+        successful_count = int(successful)
+        if successful_count < processed_count:
+            results = report.findall('Result')
+            for result in results:
+                message_id = int(result.find('MessageID').text)
+                result_code = result.find('ResultCode').text
+                result_message_code = result.find('ResultMessageCode')
+                result_description = result.find('ResultDescription').text
+
+                sync_result[message_id] = (
+                    result_code,
+                    result_message_code,
+                    result_description
+                )
+
+        return sync_result
 
     def get_sync_result(self, submission_id):
+        """
+        get feed submission processing result
+        The result is a dict that use message id as a key.
+        The value is a tuple of result code (Error or Warning),
+        Amazon error/warning message code and description.
+
+        :param submission_id: the feed submission id
+        :return: warning and error results indexed by message id
+        """
         feed_result = self.conn.get_feed_submission_result(
             FeedSubmissionId=submission_id)
-        _logger.debug(str(feed_result))
+        return self._parse_sync_result(feed_result)
