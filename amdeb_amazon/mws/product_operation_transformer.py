@@ -60,9 +60,6 @@ class ProductOperationTransformer(object):
 
     def __init__(self, env):
         self._env = env
-        self._operation_table = self._env[PRODUCT_OPERATION_TABLE]
-        self._amazon_sync = self._env[AMAZON_PRODUCT_SYNC_TABLE]
-
         self._new_operations = None
         # this set keeps transformed model_name and record_id
         self._transformed_operations = set()
@@ -72,10 +69,11 @@ class ProductOperationTransformer(object):
         Get the new operations ordered by descending id (creation time)
         A new operation doesn't have a sync timestamp
         """
+        operation_table = self._env[PRODUCT_OPERATION_TABLE]
         search_domain = [
             (AMAZON_SYNC_TIMESTAMP_FIELD, '=', False),
         ]
-        self._new_operations = self._operation_table.search(
+        self._new_operations = operation_table.search(
             search_domain,
             order="id desc")
 
@@ -95,6 +93,7 @@ class ProductOperationTransformer(object):
         """
         Create a sync operation record
         """
+
         if sync_data:
             sync_data = cPickle.dumps(sync_data, cPickle.HIGHEST_PROTOCOL)
         else:
@@ -107,7 +106,9 @@ class ProductOperationTransformer(object):
             SYNC_TYPE_FIELD: sync_type,
             SYNC_DATA_FIELD: sync_data,
         }
-        record = self._amazon_sync.create(sync_record)
+
+        amazon_sync_table = self._env[AMAZON_PRODUCT_SYNC_TABLE]
+        record = amazon_sync_table.create(sync_record)
         log_template = "Model: {0}, record id: {1}, template id: {2}. " \
                        "sync type: {3}, sync record id {4}."
         _logger.debug(log_template.format(
