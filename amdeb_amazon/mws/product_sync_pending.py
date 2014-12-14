@@ -4,6 +4,8 @@ import logging
 _logger = logging.getLogger(__name__)
 
 from ..shared.model_names import (
+    MODEL_NAME_FIELD,
+    RECORD_ID_FIELD,
     AMAZON_PRODUCT_SYNC_TABLE,
     SYNC_STATUS_FIELD,
     SYNC_TYPE_FIELD,
@@ -69,8 +71,8 @@ class ProductSyncPending(object):
             pending[SYNC_TYPE_FIELD] == SYNC_CREATE and
             result[SYNC_STATUS_FIELD] != SYNC_ERROR)
         if create_success:
-            model_name = pending.model_name
-            record_id = pending.record_id
+            model_name = pending[MODEL_NAME_FIELD]
+            record_id = pending[RECORD_ID_FIELD]
             _logger.debug("set creation success for {0}, {1}".format(
                 model_name, record_id
             ))

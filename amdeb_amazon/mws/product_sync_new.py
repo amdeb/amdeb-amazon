@@ -5,8 +5,8 @@ import logging
 _logger = logging.getLogger(__name__)
 
 from ..shared.model_names import (
-    # PRODUCT_TEMPLATE,
-    # PRODUCT_PRODUCT,
+    MODEL_NAME_FIELD,
+    RECORD_ID_FIELD,
     AMAZON_PRODUCT_SYNC_TABLE,
     SYNC_STATUS_FIELD,
     SYNC_TYPE_FIELD,
@@ -55,8 +55,8 @@ class ProductSyncNew(object):
             sync_data = cPickle.loads(update.sync_data)
             if 'name' in sync_data:
                 sync_value = {'ID': update.ids[0], 'Title': sync_data['name']}
-                product = self._env[update.model_name].browse(
-                    update.record_id)
+                product = self._env[update[MODEL_NAME_FIELD]].browse(
+                    update[RECORD_ID_FIELD])
                 sync_value['SKU'] = product.default_code
                 sync_values.append(sync_value)
 

@@ -10,6 +10,15 @@ from ..shared.model_names import (
     PRODUCT_OPERATION_TABLE,
     AMAZON_SYNC_TIMESTAMP_FIELD,
     AMAZON_PRODUCT_SYNC_TABLE,
+    SYNC_TYPE_FIELD,
+    SYNC_DATA_FIELD,
+    MODEL_NAME_FIELD,
+    RECORD_ID_FIELD,
+    TEMPLATE_ID_FIELD,
+    RECORD_OPERATION_FIELD,
+    OPERATION_DATA_FIELD,
+    AMAZON_SYNC_ACTIVE_FIELD,
+    AMAZON_CREATION_SUCCESS_FILED,
 )
 from ..shared.sync_operation_types import (
     SYNC_CREATE,
@@ -61,10 +70,10 @@ class ProductOperationTransformer(object):
             operation[AMAZON_SYNC_TIMESTAMP_FIELD] = field_utcnow()
 
     def _get_sync_active(self, operation):
-        model = self.env[operation.model_name]
-        records = model.browse(operation.record_id)
-        sync_active = records[0].amazon_sync_active
-        created = records[0].amazon_creation_success
+        model = self.env[operation[MODEL_NAME_FIELD]]
+        records = model.browse(operation[RECORD_ID_FIELD])
+        sync_active = records[0][AMAZON_SYNC_ACTIVE_FIELD]
+        created = records[0][AMAZON_CREATION_SUCCESS_FILED]
         return sync_active, created
 
     def _add_sync_record(self, operation, sync_type, sync_data=None):
@@ -72,23 +81,23 @@ class ProductOperationTransformer(object):
         if sync_data:
             sync_data = cPickle.dumps(sync_data, cPickle.HIGHEST_PROTOCOL)
         else:
-            sync_data = operation.operation_data
+            sync_data = operation[OPERATION_DATA_FIELD]
 
-        sync_record = dict(
-            model_name=operation.model_name,
-            record_id=operation.record_id,
-            template_id=operation.template_id,
-            sync_type=sync_type,
-            sync_data=sync_data,
-        )
+        sync_record = {
+            MODEL_NAME_FIELD: operation[MODEL_NAME_FIELD],
+            RECORD_ID_FIELD: operation[RECORD_ID_FIELD],
+            TEMPLATE_ID_FIELD: operation[TEMPLATE_ID_FIELD],
+            SYNC_TYPE_FIELD: sync_type,
+            SYNC_DATA_FIELD: sync_data,
+        }
         record = self.amazon_sync.create(sync_record)
         logger_template = "Model: {0}, record id: {1}, template id: {2}. " \
                           "sync type: {3}, sync record id {4}."
         _logger.debug(logger_template.format(
-            sync_record['model_name'],
-            sync_record['record_id'],
-            sync_record['template_id'],
-            sync_record['sync_type'],
+            sync_record[MODEL_NAME_FIELD],
+            sync_record[RECORD_ID_FIELD],
+            sync_record[TEMPLATE_ID_FIELD],
+            sync_record[SYNC_TYPE_FIELD],
             record.id
         ))
 
@@ -100,17 +109,17 @@ class ProductOperationTransformer(object):
         else:
             template = "Sync is inactive for unlink operation {0}: {1}"
             _logger.debug(template.format(
-                operation.model_name, operation.record_id
+                operation[MODEL_NAME_FIELD], operation[RECORD_ID_FIELD]
             ))
 
         # assume that MWS has cascade delete -- TBD
         # remove all variant operations if this is a template unlink
-        if operation.model_name == PRODUCT_TEMPLATE:
+        if operation[MODEL_NAME_FIELD] == PRODUCT_TEMPLATE:
             ignored = [
-                (variant.model_name, variant.record_id) for
+                (variant[MODEL_NAME_FIELD], variant[RECORD_ID_FIELD]) for
                 variant in self._product_operations if
-                variant.model_name == PRODUCT_PRODUCT and
-                variant.template_id == operation.record_id
+                variant[MODEL_NAME_FIELD] == PRODUCT_PRODUCT and
+                variant[TEMPLATE_ID_FIELD] == operation[RECORD_ID_FIELD]
             ]
             self._processed_operations.update(ignored)
 
@@ -121,7 +130,7 @@ class ProductOperationTransformer(object):
         else:
             template = "Sync is not active for create operation {0}: {1}"
             _logger.debug(template.format(
-                operation.model_name, operation.record_id
+                operation[MODEL_NAME_FIELD], operation[RECORD_ID_FIELD]
             ))
 
     def _check_create(self, operation):
@@ -129,9 +138,9 @@ class ProductOperationTransformer(object):
         creations = [
             element for
             element in self._product_operations if
-            element.model_name == operation.model_name and
-            element.record_id == operation.record_id and
-            element.record_operation == CREATE_RECORD
+            element[MODEL_NAME_FIELD] == operation[MODEL_NAME_FIELD] and
+            element[RECORD_ID_FIELD] == operation[RECORD_ID_FIELD] and
+            element[RECORD_OPERATION_FIELD] == CREATE_RECORD
         ]
         if creations:
             self._add_create_sync(creations[0])
@@ -161,8 +170,8 @@ class ProductOperationTransformer(object):
             self._add_sync_record(operation, SYNC_IMAGE)
 
             # should reset image trigger
-            model = self.env[operation.model_name]
-            records = model.browse(operation.record_id)
+            model = self.env[operation[MODEL_NAME_FIELD]]
+            records = model.browse(operation[RECORD_ID_FIELD])
             records.amazon_image_trigger = False
 
     def _transform_update(self, operation, write_values):
@@ -198,13 +207,13 @@ class ProductOperationTransformer(object):
         self._transform_update(operation, write_values)
 
     def _merge_write(self, operation):
-        write_values = cPickle.loads(operation.operation_data)
+        write_values = cPickle.loads(operation[OPERATION_DATA_FIELD])
         logger_template = "transform write operation for Model: {0} " \
                           "record id: {1}, template id: {2}, values {3}."
         _logger.debug(logger_template.format(
-            operation.model_name,
-            operation.record_id,
-            operation.template_id,
+            operation[MODEL_NAME_FIELD],
+            operation[RECORD_ID_FIELD],
+            operation[TEMPLATE_ID_FIELD],
             write_values
         ))
 
@@ -216,12 +225,12 @@ class ProductOperationTransformer(object):
         # merge all writes that are ordered by operation id
         other_writes = [
             element for element in self._product_operations if
-            element.model_name == operation.model_name and
-            element.record_id == operation.record_id
+            element[MODEL_NAME_FIELD] == operation[MODEL_NAME_FIELD] and
+            element[RECORD_ID_FIELD] == operation[RECORD_ID_FIELD]
         ]
 
         for other_write in other_writes:
-            other_values = cPickle.loads(other_write.operation_data)
+            other_values = cPickle.loads(other_write[OPERATION_DATA_FIELD])
             other_values.update(write_values)
             write_values = other_values
             _logger.debug("merged write values: {}".format(
@@ -239,23 +248,25 @@ class ProductOperationTransformer(object):
         # for template unlink, ignore all variant unlink operations
         # ignore write if there is a create
         for operation in self._product_operations:
-            record_key = (operation.model_name, operation.record_id)
+            record_key = (operation[MODEL_NAME_FIELD],
+                          operation[RECORD_ID_FIELD])
             if record_key in self._processed_operations:
                 continue
             else:
                 self._processed_operations.add(record_key)
-                if operation.record_operation == CREATE_RECORD:
+                record_operation = operation[RECORD_OPERATION_FIELD]
+                if record_operation == CREATE_RECORD:
                     self._add_create_sync(operation)
-                elif operation.record_operation == UNLINK_RECORD:
+                elif record_operation == UNLINK_RECORD:
                     self._transform_unlink(operation)
-                elif operation.record_operation == WRITE_RECORD:
+                elif record_operation == WRITE_RECORD:
                     self._merge_write(operation)
                 else:
                     template = "Unknown operation type {0} for {1}: {2}"
                     message = template.format(
-                        operation.record_operation,
-                        operation.model_name,
-                        operation.record_id)
+                        record_operation,
+                        operation[MODEL_NAME_FIELD],
+                        operation[RECORD_ID_FIELD])
                     _logger.warning(message)
                     raise ValueError(message)
 
