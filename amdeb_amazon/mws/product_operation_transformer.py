@@ -10,7 +10,7 @@ from ..shared.model_names import (
     PRODUCT_TEMPLATE_TABLE,
     PRODUCT_PRODUCT_TABLE,
     AMAZON_SYNC_ACTIVE_FIELD,
-    AMAZON_CREATION_SUCCESS_FILED,
+    AMAZON_CREATION_SUCCESS_FIELD,
     PRODUCT_PRICE_FIELD,
     PRODUCT_AVAILABLE_QUANTITY_FIELD,
     PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD,
@@ -88,7 +88,7 @@ class ProductOperationTransformer(object):
         model = self._env[operation[MODEL_NAME_FIELD]]
         records = model.browse(operation[RECORD_ID_FIELD])
         sync_active = records[0][AMAZON_SYNC_ACTIVE_FIELD]
-        created = records[0][AMAZON_CREATION_SUCCESS_FILED]
+        created = records[0][AMAZON_CREATION_SUCCESS_FIELD]
         return sync_active, created
 
     def _insert_sync_record(self, operation, sync_type, sync_data=None):
