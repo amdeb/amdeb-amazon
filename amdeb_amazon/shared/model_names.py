@@ -9,7 +9,7 @@ PRODUCT_PRODUCT = 'product.product'
 IR_VALUES = 'ir.values'
 IR_CRON = 'ir.cron'
 AMAZON_CREATION_SUCCESS_FIELD = 'amazon_creation_success'
-SYNC_CREATION_TIMESTAMP_FIELD ='sync_creation_timestamp'
+SYNC_CREATION_TIMESTAMP_FIELD = 'sync_creation_timestamp'
 
 PRODUCT_OPERATION_TABLE = 'amdeb.product.operation'
 AMAZON_PRODUCT_SYNC_TABLE = 'amdeb.amazon.product.sync'
