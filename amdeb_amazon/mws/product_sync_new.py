@@ -1,6 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import cPickle
+import logging
+_logger = logging.getLogger(__name__)
 
 from ..shared.model_names import (
     # PRODUCT_TEMPLATE,
@@ -39,6 +41,7 @@ class ProductSyncNew(object):
         self._amazon_sync = self._env[AMAZON_PRODUCT_SYNC_TABLE]
 
     def _get_updates(self):
+        _logger.debug("get product updates")
         search_domain = [
             (SYNC_STATUS_FIELD, '=', SYNC_NEW),
             (SYNC_TYPE_FIELD, '=', SYNC_UPDATE)
@@ -46,6 +49,7 @@ class ProductSyncNew(object):
         self._updates = self._amazon_sync.search(search_domain)
 
     def _convert_updates(self):
+        _logger.debug("convert product updates to sync operations")
         sync_values = []
         for update in self._updates:
             sync_data = cPickle.loads(update.sync_data)
@@ -59,6 +63,7 @@ class ProductSyncNew(object):
         return sync_values
 
     def _call_updates(self, sync_values):
+        _logger.debug("about to call MWS send for product updates.")
         feed_id, feed_time, feed_status = self._mws.send(sync_values)
         sync_values = {
             SYNC_STATUS_FIELD: SYNC_PENDING,
@@ -69,6 +74,7 @@ class ProductSyncNew(object):
         self._updates.write(sync_values)
 
     def _sync_update(self):
+        _logger.debug("about to sync product updates")
         self._get_updates()
         sync_values = self._convert_updates()
         if sync_values:

@@ -49,13 +49,15 @@ class Boto(object):
             content_type='text/xml',
             FeedContent=feed_content
         )
-
         feed_info = response.SubmitFeedResult.FeedSubmissionInfo
-        _logger.debug("Boto submit feed result: {}", feed_info)
-
         feed_id = feed_info.FeedSubmissionId
         feed_time = feed_info.SubmittedDate
         feed_status = feed_info.FeedProcessingStatus
+
+        logger_template = "Boto send result. Id: {0}, Time: {1},status {1}."
+        _logger.debug(logger_template.format(
+            feed_id, feed_time, feed_status
+        ))
         return feed_id, feed_time, feed_status
 
     def check_sync_status(self, submission_id_list):
@@ -100,6 +102,7 @@ class Boto(object):
                     result_description
                 )
 
+        _logger.debug("Submission results: {}".format(sync_result))
         return sync_result
 
     def get_sync_result(self, submission_id):
