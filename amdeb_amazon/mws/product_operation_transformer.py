@@ -5,20 +5,22 @@ import logging
 _logger = logging.getLogger(__name__)
 
 from ..shared.model_names import (
-    PRODUCT_TEMPLATE,
-    PRODUCT_PRODUCT,
+    PRODUCT_TEMPLATE_TABLE,
+    PRODUCT_PRODUCT_TABLE,
+    AMAZON_SYNC_ACTIVE_FIELD,
+    AMAZON_CREATION_SUCCESS_FILED,
+
     PRODUCT_OPERATION_TABLE,
-    AMAZON_SYNC_TIMESTAMP_FIELD,
-    AMAZON_PRODUCT_SYNC_TABLE,
-    SYNC_TYPE_FIELD,
-    SYNC_DATA_FIELD,
     MODEL_NAME_FIELD,
     RECORD_ID_FIELD,
     TEMPLATE_ID_FIELD,
     RECORD_OPERATION_FIELD,
     OPERATION_DATA_FIELD,
-    AMAZON_SYNC_ACTIVE_FIELD,
-    AMAZON_CREATION_SUCCESS_FILED,
+
+    AMAZON_PRODUCT_SYNC_TABLE,
+    AMAZON_SYNC_TIMESTAMP_FIELD,
+    SYNC_TYPE_FIELD,
+    SYNC_DATA_FIELD,
 )
 from ..shared.sync_operation_types import (
     SYNC_CREATE,
@@ -114,11 +116,11 @@ class ProductOperationTransformer(object):
 
         # assume that MWS has cascade delete -- TBD
         # remove all variant operations if this is a template unlink
-        if operation[MODEL_NAME_FIELD] == PRODUCT_TEMPLATE:
+        if operation[MODEL_NAME_FIELD] == PRODUCT_TEMPLATE_TABLE:
             ignored = [
                 (variant[MODEL_NAME_FIELD], variant[RECORD_ID_FIELD]) for
                 variant in self._product_operations if
-                variant[MODEL_NAME_FIELD] == PRODUCT_PRODUCT and
+                variant[MODEL_NAME_FIELD] == PRODUCT_PRODUCT_TABLE and
                 variant[TEMPLATE_ID_FIELD] == operation[RECORD_ID_FIELD]
             ]
             self._processed_operations.update(ignored)

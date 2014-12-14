@@ -3,12 +3,12 @@
 from openerp import models, fields
 
 from ..shared.model_names import (
-    PRODUCT_TEMPLATE,
+    PRODUCT_TEMPLATE_TABLE,
 )
 
 
 class product_template(models.Model):
-    _inherit = [PRODUCT_TEMPLATE]
+    _inherit = [PRODUCT_TEMPLATE_TABLE]
 
     amazon_sync_active = fields.Boolean(
         string="Amazon Synchronization Active Flag",

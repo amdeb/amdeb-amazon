@@ -7,8 +7,8 @@ from openerp import models, fields, api
 
 from ..shared.model_names import (
     AMAZON_PRODUCT_SYNC_TABLE,
-    PRODUCT_TEMPLATE,
-    PRODUCT_PRODUCT,
+    PRODUCT_TEMPLATE_TABLE,
+    PRODUCT_PRODUCT_TABLE,
 )
 from ..shared.sync_operation_types import (
     SYNC_CREATE,
@@ -45,8 +45,8 @@ class AmazonProductSync(models.Model):
     model_name = fields.Selection(
         string='Model Name',
         required=True,
-        selection=[(PRODUCT_PRODUCT, PRODUCT_PRODUCT),
-                   (PRODUCT_TEMPLATE, PRODUCT_TEMPLATE),
+        selection=[(PRODUCT_PRODUCT_TABLE, PRODUCT_PRODUCT_TABLE),
+                   (PRODUCT_TEMPLATE_TABLE, PRODUCT_TEMPLATE_TABLE),
                    ],
         readonly=True,
     )

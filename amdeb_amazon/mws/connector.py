@@ -7,19 +7,11 @@ _logger = logging.getLogger(__name__)
 
 from boto.mws import connection
 
-from ..shared.model_names import (
-    IR_VALUES,
-    AMAZON_SETTINGS_TABLE,
-)
-
 MarketPlaceID = 'ATVPDKIKX0DER'
 
 
 class Boto(object):
-    def __init__(self, odoo_env):
-        ir_values = odoo_env[IR_VALUES]
-        settings = ir_values.get_defaults_dict(AMAZON_SETTINGS_TABLE)
-
+    def __init__(self, settings):
         loader = jinja2.PackageLoader(
             'openerp.addons.amdeb_amazon', "mws_templates")
         env = jinja2.Environment(loader=loader, autoescape=True,

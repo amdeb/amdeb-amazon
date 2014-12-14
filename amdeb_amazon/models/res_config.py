@@ -4,8 +4,9 @@ from openerp import models, fields, api
 
 from ..shared.model_names import AMAZON_SETTINGS_TABLE
 
-IR_CRON_XMLID = 'amdeb_amazon.ir_cron_amazon_sync'
-
+_IR_CRON_XMLID = 'amdeb_amazon.ir_cron_amazon_sync'
+_INTERVAL_NUMBER_FIELD = 'interval_number'
+_ACTIVE_FIELD = 'active'
 
 class Configuration(models.TransientModel):
     _name = AMAZON_SETTINGS_TABLE
@@ -51,11 +52,11 @@ class Configuration(models.TransientModel):
     # set cron job interval and active status
     def set_settings(self, cr, uid, ids, context):
         env = api.Environment(cr, uid, context)
-        cron_record = env.ref(IR_CRON_XMLID)
+        cron_record = env.ref(_IR_CRON_XMLID)
 
         config = self.browse(cr, uid, ids[0], context)
         interval = config.default_synchronization_interval
         active = config.default_active_flag
-        values = {"interval_number": interval,
-                  "active": active, }
+        values = {_INTERVAL_NUMBER_FIELD: interval,
+                  _ACTIVE_FIELD: active, }
         cron_record.write(values)

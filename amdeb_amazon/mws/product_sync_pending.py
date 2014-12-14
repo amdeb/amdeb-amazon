@@ -118,6 +118,14 @@ class ProductSyncPending(object):
             self._update_result(submission_id, sync_result)
 
     def synchronize(self):
+        """
+        1. get pending submissions
+        2. update submission status
+        3. process success creations including creating and
+        executing new price, image and inventory sync
+        operations for successful create sync operation
+        """
+
         _logger.debug("about to check pending sync status")
         self._get_pending()
         submission_ids = self._get_submission_ids()
