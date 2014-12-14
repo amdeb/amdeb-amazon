@@ -42,7 +42,8 @@ class Configuration(models.TransientModel):
 
     default_active_flag = fields.Boolean(
         string='Active Flag',
-        default=True,
+        # set to False thus not run before configuration is done
+        default=False,
         help="Enable or disable Amazon automatic integration",
         default_model=AMAZON_SETTINGS_TABLE,
     )

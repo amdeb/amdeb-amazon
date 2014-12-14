@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
 # this class is the entry to all product synchronization functions
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, date
 import logging
 _logger = logging.getLogger(__name__)
 
@@ -69,7 +69,7 @@ class ProductSynchronization(object):
 
     def _daily_housekeeping(self):
         run = False
-        current_day = datetime.date.today()
+        current_day = date.today()
         if ProductSynchronization._last_housekeeping_date:
             diff = current_day - ProductSynchronization._last_housekeeping_date
             if diff.days > 0:
