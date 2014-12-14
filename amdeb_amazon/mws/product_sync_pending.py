@@ -84,7 +84,7 @@ class ProductSyncPending(object):
         ))
         for pending in self._pending_set:
             if pending[AMAZON_SUBMISSION_ID_FIELD] == submission_id:
-                sync_result = sync_status.get(pending.ids[0], None)
+                sync_result = sync_status.get(pending.id, None)
                 self._write_result(pending, sync_result)
 
     def _write_status(self, pending, sync_status):

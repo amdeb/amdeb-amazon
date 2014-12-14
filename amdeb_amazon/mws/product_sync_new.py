@@ -54,7 +54,7 @@ class ProductSyncNew(object):
         for update in self._updates:
             sync_data = cPickle.loads(update.sync_data)
             if 'name' in sync_data:
-                sync_value = {'ID': update.ids[0], 'Title': sync_data['name']}
+                sync_value = {'ID': update.id, 'Title': sync_data['name']}
                 product = self._env[update[MODEL_NAME_FIELD]].browse(
                     update[RECORD_ID_FIELD])
                 sync_value['SKU'] = product.default_code
