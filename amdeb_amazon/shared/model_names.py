@@ -19,10 +19,11 @@ RECORD_ID_FIELD = 'record_id'
 TEMPLATE_ID_FIELD = 'template_id'
 RECORD_OPERATION_FIELD = 'record_operation'
 OPERATION_DATA_FIELD = 'operation_data'
-SYNC_CREATION_TIMESTAMP_FIELD = 'sync_creation_timestamp'
+AMAZON_SYNC_TIMESTAMP_FIELD = 'amazon_sync_timestamp'
 
 AMAZON_PRODUCT_SYNC_TABLE = 'amdeb.amazon.product.sync'
-AMAZON_SYNC_TIMESTAMP_FIELD = 'amazon_sync_timestamp'
+SYNC_CREATION_TIMESTAMP_FIELD = 'sync_creation_timestamp'
+
 SYNC_STATUS_FIELD = 'sync_status'
 SYNC_TYPE_FIELD = 'sync_type'
 SYNC_DATA_FIELD = 'sync_data'

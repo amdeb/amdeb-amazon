@@ -8,6 +8,7 @@ _IR_CRON_XMLID = 'amdeb_amazon.ir_cron_amazon_sync'
 _INTERVAL_NUMBER_FIELD = 'interval_number'
 _ACTIVE_FIELD = 'active'
 
+
 class Configuration(models.TransientModel):
     _name = AMAZON_SETTINGS_TABLE
     _inherit = 'res.config.settings'
