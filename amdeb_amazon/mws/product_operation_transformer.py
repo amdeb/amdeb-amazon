@@ -4,11 +4,16 @@ import cPickle
 import logging
 _logger = logging.getLogger(__name__)
 
+from ..shared.utility import field_utcnow
+
 from ..shared.model_names import (
     PRODUCT_TEMPLATE_TABLE,
     PRODUCT_PRODUCT_TABLE,
     AMAZON_SYNC_ACTIVE_FIELD,
     AMAZON_CREATION_SUCCESS_FILED,
+    PRODUCT_PRICE_FIELD,
+    PRODUCT_AVAILABLE_QUANTITY_FIELD,
+    PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD,
 
     PRODUCT_OPERATION_TABLE,
     MODEL_NAME_FIELD,
@@ -22,6 +27,7 @@ from ..shared.model_names import (
     SYNC_TYPE_FIELD,
     SYNC_DATA_FIELD,
 )
+
 from ..shared.sync_operation_types import (
     SYNC_CREATE,
     SYNC_UPDATE,
@@ -31,14 +37,12 @@ from ..shared.sync_operation_types import (
     SYNC_IMAGE,
     SYNC_DEACTIVATE,
 )
-from ..shared.utility import field_utcnow
+
 from ..shared.db_operation_types import (
     CREATE_RECORD,
     WRITE_RECORD,
     UNLINK_RECORD,
 )
-
-from .product_field_map import OdooProductFieldName as ProductField
 
 
 class ProductOperationTransformer(object):
@@ -172,10 +176,10 @@ class ProductOperationTransformer(object):
         return found
 
     def _transform_price(self, operation, write_values):
-        price = write_values.pop(ProductField.PRICE, None)
+        price = write_values.pop(PRODUCT_PRICE_FIELD, None)
         if price is not None:
             if price >= 0:
-                update_value = {ProductField.PRICE: price}
+                update_value = {PRODUCT_PRICE_FIELD: price}
                 self._insert_sync_record(operation, SYNC_PRICE, update_value)
             else:
                 _logger.warning("Price {} is a negative number.".format(
@@ -184,21 +188,21 @@ class ProductOperationTransformer(object):
 
     def _transform_inventory(self, operation, write_values):
         qty_available = write_values.pop(
-            ProductField.AVAILABLE_QUANTITY, None)
+            PRODUCT_AVAILABLE_QUANTITY_FIELD, None)
         if qty_available is not None:
-            update_value = {ProductField.AVAILABLE_QUANTITY: qty_available}
+            update_value = {PRODUCT_AVAILABLE_QUANTITY_FIELD: qty_available}
             self._insert_sync_record(operation, SYNC_INVENTORY, update_value)
 
     def _transform_image(self, operation, write_values):
         image_trigger = write_values.pop(
-            ProductField.AMAZON_IMAGE_TRIGGER, None)
+            PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD, None)
         if image_trigger:
             self._insert_sync_record(operation, SYNC_IMAGE)
 
             # should reset image trigger
             model = self._env[operation[MODEL_NAME_FIELD]]
             records = model.browse(operation[RECORD_ID_FIELD])
-            records.write({ProductField.AMAZON_IMAGE_TRIGGER: False})
+            records.write({PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD: False})
 
     def _transform_update(self, operation, write_values):
         self._transform_price(operation, write_values)
