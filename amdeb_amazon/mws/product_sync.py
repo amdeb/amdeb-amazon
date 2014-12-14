@@ -8,6 +8,7 @@ from .product_operation_transformer import ProductOperationTransformer
 from .product_sync_new import ProductSyncNew
 from .product_sync_pending import ProductSyncPending
 
+
 class ProductSynchronization(object):
     def __init__(self, env):
         self._env = env
