@@ -27,8 +27,6 @@ class Boto(object):
     def send(self, values):
         """
         send MWS request and return feed id, feed time and feed status
-        :param values:
-        :return:
         """
         _logger.debug("Boto send data: {}", values)
         namespace = dict(MerchantId=self.merchant_id, FeedMessages=values)
@@ -55,7 +53,7 @@ class Boto(object):
     def check_sync_status(self, submission_id_list):
         sync_status = {}
 
-        # ToDo: handle pagination
+        # ToDo: handle pagination and return all results to make it simple
         submission_list = self.conn.get_feed_submission_list(
             FeedSubmissionIdList=submission_id_list
         )
@@ -67,12 +65,15 @@ class Boto(object):
                 submission_id, status))
             sync_status[submission_id] = status
 
+        log_template = "Got {0} sync statuses for {1} submissions."
+        _logger.debug(log_template.format(
+            len(sync_status), len(submission_id_list)))
         return sync_status
 
     def _parse_sync_result(self, feed_result):
 
         # ToDo: depend on boto PR#2660 to return an XML doc
-        sync_result = {}
+        completion_result = {}
         doc = etree.fromstring(feed_result)
         message = doc.find('Message')
         report = message.find('ProcessingReport')
@@ -88,14 +89,14 @@ class Boto(object):
                 result_message_code = result.find('ResultMessageCode')
                 result_description = result.find('ResultDescription').text
 
-                sync_result[message_id] = (
+                completion_result[message_id] = (
                     result_code,
                     result_message_code,
                     result_description
                 )
 
-        _logger.debug("Submission results: {}".format(sync_result))
-        return sync_result
+        _logger.debug("Submission results: {}".format(completion_result))
+        return completion_result
 
     def get_sync_result(self, submission_id):
         """

@@ -12,6 +12,7 @@ from .product_operation_transformer import ProductOperationTransformer
 from .product_sync_new import ProductSyncNew
 from .product_sync_pending import ProductSyncPending
 from .product_sync_chore import do_daily_chore
+from .product_sync_completed import ProductSyncCompleted
 
 
 class ProductSynchronization(object):
@@ -42,5 +43,9 @@ class ProductSynchronization(object):
 
         sync_pending = ProductSyncPending(self._env, self._mws)
         sync_pending.synchronize()
+
+        sync_completed = ProductSyncCompleted(self._env, self._mws)
+        if sync_completed.synchronize():
+            sync_new.synchronize()
 
         do_daily_chore(self._env)

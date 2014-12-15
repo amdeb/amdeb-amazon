@@ -121,6 +121,8 @@ class AmazonProductSync(models.Model):
         readonly=True,
     )
 
+    # this field stores Amazon processing status and when it is done,
+    # the message code for a warning or an error
     amazon_message_code = fields.Char(
         string='Amazon Result Message Code',
         readonly=True,
