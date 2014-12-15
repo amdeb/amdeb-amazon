@@ -45,9 +45,10 @@ class AmazonProductSync(models.Model):
     model_name = fields.Selection(
         string='Model Name',
         required=True,
-        selection=[(PRODUCT_PRODUCT_TABLE, PRODUCT_PRODUCT_TABLE),
-                   (PRODUCT_TEMPLATE_TABLE, PRODUCT_TEMPLATE_TABLE),
-                   ],
+        selection=[
+            (PRODUCT_PRODUCT_TABLE, PRODUCT_PRODUCT_TABLE),
+            (PRODUCT_TEMPLATE_TABLE, PRODUCT_TEMPLATE_TABLE),
+        ],
         readonly=True,
     )
 

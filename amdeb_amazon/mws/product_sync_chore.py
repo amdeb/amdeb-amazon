@@ -21,10 +21,11 @@ from ..shared.sync_status import (
 )
 
 _UNLINK_DAYS = 100
-_ARCHIVE_MAGIC_NUMBER = 10
+_ARCHIVE_DAYS = 5
+_ARCHIVE_CHECK_COUNT = 100
 _ARCHIVE_CODE = "Timeout"
-_ARCHIVE_MESSAGE = "Pending more than {0} days and checked {0} times".format(
-    _ARCHIVE_MAGIC_NUMBER
+_ARCHIVE_MESSAGE = "Pending more than {0} days and {1} checks".format(
+    _ARCHIVE_DAYS, _ARCHIVE_CHECK_COUNT
 )
 
 _last_chore_date = None
@@ -48,12 +49,12 @@ def _cleanup(amazon_sync):
 def _archive_old(amazon_sync):
     _logger.debug("running product synchronization archive")
     now = datetime.utcnow()
-    archive_date = now - timedelta(days=_ARCHIVE_MAGIC_NUMBER)
+    archive_date = now - timedelta(days=_ARCHIVE_DAYS)
     archive_date_str = archive_date.strftime(DATETIME_FORMAT)
     archive_records = amazon_sync.search([
         (SYNC_CREATION_TIMESTAMP_FIELD, '<', archive_date_str),
         (SYNC_STATUS_FIELD, '=', SYNC_PENDING),
-        (SYNC_CHECK_STATUS_COUNT_FILED, '>=', _ARCHIVE_MAGIC_NUMBER)
+        (SYNC_CHECK_STATUS_COUNT_FILED, '>=', _ARCHIVE_CHECK_COUNT)
     ])
     archive_status = {
         SYNC_STATUS_FIELD: SYNC_ERROR,

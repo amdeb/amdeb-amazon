@@ -59,13 +59,8 @@ class ProductSyncPending(object):
 
         for pending in self._pending_set:
             submission_id = pending[AMAZON_SUBMISSION_ID_FIELD]
-            sync_status = submission_statuses.get(submission_id, None)
-            if sync_status:
-                self._write_status(pending, sync_status)
-            else:
-                _logger.debug("No status for submission id: {}.".format(
-                    submission_id
-                ))
+            sync_status = submission_statuses[submission_id]
+            self._write_status(pending, sync_status)
 
     def _check_status(self, submission_ids):
         log_template = "Checking sync status for {} submissions."

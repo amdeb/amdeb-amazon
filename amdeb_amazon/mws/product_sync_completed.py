@@ -51,22 +51,26 @@ class ProductSyncCompleted(object):
             submission_ids.add(submission_id)
         return submission_ids
 
-    def _check_creation_success(self, pending, result_code):
+    def _write_creation_success(self, completed):
+        model_name = completed[MODEL_NAME_FIELD]
+        record_id = completed[RECORD_ID_FIELD]
+        _logger.debug("set creation success for {0}, {1}".format(
+            model_name, record_id
+        ))
+        model = self._env[model_name].browse(record_id)
+        model[AMAZON_CREATION_SUCCESS_FIELD] = True
+
+    def _check_creation_success(self, completed, result_code):
         # for warning and success, set success flag
-        is_sync_create = pending[SYNC_TYPE_FIELD] == SYNC_CREATE
+        is_sync_create = completed[SYNC_TYPE_FIELD] == SYNC_CREATE
         is_success = result_code != SYNC_ERROR
 
         # ToDo: generate price, image, inventory updates
         if is_sync_create and is_success:
-            model_name = pending[MODEL_NAME_FIELD]
-            record_id = pending[RECORD_ID_FIELD]
-            _logger.debug("set creation success for {0}, {1}".format(
-                model_name, record_id
-            ))
-            model = self._env[model_name].browse(record_id)
-            model[AMAZON_CREATION_SUCCESS_FIELD] = True
+            self._write_creation_success(completed)
+            # ToDo add other creation syncs
 
-    def _write_result(self, pending, sync_result):
+    def _write_result(self, completed, sync_result):
         result = {}
         if sync_result:
             result[SYNC_STATUS_FIELD] = sync_result[0]
@@ -74,28 +78,29 @@ class ProductSyncCompleted(object):
             result[AMAZON_RESULT_DESCRIPTION_FIELD] = sync_result[2]
         else:
             result[SYNC_STATUS_FIELD] = SYNC_SUCCESS
-        pending.write(result)
+        completed.write(result)
 
         return result[SYNC_STATUS_FIELD]
 
-    def _update_completion(self, submission_id, completion_result):
-        _logger.debug("updating completion result for {0}, {1}".format(
-            submission_id, completion_result
-        ))
-        search_domain = [
-            (AMAZON_SUBMISSION_ID_FIELD, '=', submission_id),
-        ]
-        completed_set = self._amazon_sync_table.search(search_domain)
-        for pending in completed_set:
+    def _update_completion(self, completion_results):
+
+        for completed in self._completed_set:
+            submission_id = completed[AMAZON_SUBMISSION_ID_FIELD]
+            completion_result = completion_results[submission_id]
+            _logger.debug("updating completion result for {0}, {1}".format(
+                submission_id, completion_result
+            ))
             # not found meanings success
-            sync_result = completion_result.get(pending.id, None)
-            result_code = self._write_result(pending, sync_result)
-            self._check_creation_success(pending, result_code)
+            sync_result = completion_result.get(completed.id, None)
+            result_code = self._write_result(completed, sync_result)
+            self._check_creation_success(completed, result_code)
 
     def _process_completions(self, submission_ids):
+        completion_results = {}
         for submission_id in submission_ids:
             completion_result = self._mws.get_sync_result(submission_id)
-            self._update_completion(submission_id, completion_result)
+            completion_results[submission_id] = completion_result
+        self._update_completion(completion_results)
 
     def synchronize(self):
         self._get_completed()

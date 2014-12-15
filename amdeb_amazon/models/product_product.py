@@ -11,12 +11,13 @@ class product_product(models.Model):
     _inherit = [PRODUCT_PRODUCT_TABLE]
 
     amazon_sync_active = fields.Boolean(
-        string="Amazon Synchronization Active Flag",
+        string="Amazon Sync Active Flag",
         default=True,
     )
 
     amazon_image_trigger = fields.Boolean(
-        string="Amazon Image Synchronization Trigger",
+        string="Amazon Image Sync Trigger",
+        help="Changing this value triggers Amazon image synchronization.",
         default=False,
     )
 

@@ -17,6 +17,7 @@ class product_template(models.Model):
 
     amazon_image_trigger = fields.Boolean(
         string="Amazon Image Synchronization Trigger",
+        help="Changing this value triggers Amazon image synchronization.",
         related='product_variant_ids.amazon_image_trigger',
     )
 
