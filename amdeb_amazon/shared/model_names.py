@@ -9,7 +9,11 @@ IR_CRON_TABLE = 'ir.cron'
 AMAZON_SETTINGS_TABLE = 'amdeb.amazon.config.settings'
 
 PRODUCT_TEMPLATE_TABLE = 'product.template'
+PRODUCT_VARIANT_COUNT_FIELD = 'product_variant_count'
+PRODUCT_VARIANT_IDS_FIELD = 'product_variant_ids'
+
 PRODUCT_PRODUCT_TABLE = 'product.product'
+PRODUCT_TEMPLATE_ID_FIELD = 'product_tmpl_id'
 AMAZON_SYNC_ACTIVE_FIELD = 'amazon_sync_active'
 AMAZON_CREATION_SUCCESS_FIELD = 'amazon_creation_success'
 PRODUCT_PRICE_FIELD = 'price'

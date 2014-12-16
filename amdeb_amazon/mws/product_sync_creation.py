@@ -5,6 +5,7 @@ import logging
 _logger = logging.getLogger(__name__)
 
 from ..shared.model_names import (
+    PRODUCT_PRODUCT_TABLE,
     MODEL_NAME_FIELD,
     RECORD_ID_FIELD,
     TEMPLATE_ID_FIELD,
@@ -23,12 +24,13 @@ from ..shared.sync_operation_types import (
     SYNC_INVENTORY,
     SYNC_IMAGE,
     SYNC_DEACTIVATE,
+    SYNC_RELATION,
 )
 
 
 class ProductSyncCreation(object):
     """
-    Insert new sync operations to prodcut sync table
+    Insert new sync operations to product sync table
     The header is an object that defines model_name,
     record_id and template_id. It could be a product operation record
     or an Amazon sync record
@@ -72,8 +74,9 @@ class ProductSyncCreation(object):
             sync_value = cPickle.dumps(price, cPickle.HIGHEST_PROTOCOL)
             self._insert_sync_record(header, SYNC_PRICE, sync_value)
         else:
-            _logger.warning("Price {0} is a negative number for "
-                            "Model: {1}, record id: {2}. ".format(
+            log_template = "Price {0} is a negative number for " \
+                           "Model: {1}, record id: {2}."
+            _logger.warning(log_template.format(
                 price,
                 header[MODEL_NAME_FIELD],
                 header[RECORD_ID_FIELD],
@@ -84,8 +87,9 @@ class ProductSyncCreation(object):
             sync_value = cPickle.dumps(inventory, cPickle.HIGHEST_PROTOCOL)
             self._insert_sync_record(header, SYNC_INVENTORY, sync_value)
         else:
-            _logger.warning("Inventory {0} is a negative number for "
-                            "Model: {1}, record id: {2}. ".format(
+            log_template = "Inventory {0} is a negative number for " \
+                           "Model: {1}, record id: {2}. "
+            _logger.warning(log_template.format(
                 inventory,
                 header[MODEL_NAME_FIELD],
                 header[RECORD_ID_FIELD],
@@ -100,14 +104,22 @@ class ProductSyncCreation(object):
                 write_values, cPickle.HIGHEST_PROTOCOL)
             self._insert_sync_record(header, SYNC_UPDATE, sync_value)
         else:
-            _logger.warning("Sync value is empty or None for Model: {1}, " \
-                       "record id: {2}.".format(
+            log_template = "Sync value is empty or None for " \
+                           "Model: {1}, record id: {2}."
+            _logger.warning(log_template.format(
                 header[MODEL_NAME_FIELD],
                 header[RECORD_ID_FIELD],
             ))
 
     def insert_deactivate(self, header):
         self._insert_sync_record(header, SYNC_DEACTIVATE)
+
+    def insert_relation(self, header):
+        # the header here should be only for variant
+        if header[MODEL_NAME_FIELD] != PRODUCT_PRODUCT_TABLE:
+            raise ValueError("Invalid model name value for insert_relation.")
+
+        self._insert_sync_record(header, SYNC_RELATION)
 
     def insert_operation_delete(self, operation):
         """

@@ -6,6 +6,8 @@ _logger = logging.getLogger(__name__)
 
 from ..shared.model_names import (
     PRODUCT_TEMPLATE_TABLE,
+    PRODUCT_VARIANT_COUNT_FIELD,
+
     PRODUCT_PRODUCT_TABLE,
     AMAZON_SYNC_ACTIVE_FIELD,
     AMAZON_CREATION_SUCCESS_FIELD,
@@ -33,7 +35,8 @@ from .product_sync_creation import ProductSyncCreation
 
 
 class ProductOperationTransformer(object):
-    """ Transform product operations into sync operations
+    """
+    Transform product operations into sync operations
     1. get new operations sorted by id
     2. set operation sync timestamps
     3. merge operations
@@ -44,7 +47,6 @@ class ProductOperationTransformer(object):
     reset image trigger. These changes should be saved
     regardless of sync operation results
     """
-
     def __init__(self, env):
         self._env = env
         self._sync_creation = ProductSyncCreation(env)
@@ -77,7 +79,27 @@ class ProductOperationTransformer(object):
         created = record[AMAZON_CREATION_SUCCESS_FIELD]
         return sync_active, created
 
+    def _has_multi_variants(self, operation):
+        # don't insert create sync if it is the only variant
+        result = False
+        template = self._env[PRODUCT_TEMPLATE_TABLE]
+        record = template.browse(operation[TEMPLATE_ID_FIELD])
+        if record[PRODUCT_VARIANT_COUNT_FIELD] > 1:
+            result = True
+        return result
+
     def _add_create_sync(self, operation):
+        # ignore variant creation if it is the only variant
+        model_name = operation[MODEL_NAME_FIELD]
+        if model_name == PRODUCT_PRODUCT_TABLE:
+            if not self._has_multi_variants(operation):
+                log_template = "Skip single variant creation " \
+                               "operation. Model: {0}, Record id: {1}"
+                _logger.debug(log_template.format(
+                    operation[MODEL_NAME_FIELD], operation[RECORD_ID_FIELD]
+                ))
+                return
+
         (sync_active, _) = self._get_sync_active(operation)
         if sync_active:
             self._sync_creation.insert_create(operation)

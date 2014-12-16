@@ -24,14 +24,17 @@ class ProductSynchronization(object):
         self._mws = Boto(settings)
 
     def synchronize(self):
-        """ synchronize product operations to Amazon
-
+        """
+        synchronize product operations to Amazon
         This is the entry to all product synchronization functions
         There are several steps:
         1. convert new product operations to sync operations
         2. execute sync operations and update end timestamp
         3. get sync results for pending sync operations and update
         end timestamp. This als process completed syncs
+        4. process successful creation syncs
+
+        Be aware that records may not exist when sync runs
         """
         _logger.debug("enter ProductSynchronization synchronize()")
 

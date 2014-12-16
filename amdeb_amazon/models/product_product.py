@@ -10,6 +10,7 @@ from ..shared.model_names import (
 class product_product(models.Model):
     _inherit = [PRODUCT_PRODUCT_TABLE]
 
+    # we don't care about the product 'active' field
     amazon_sync_active = fields.Boolean(
         string="Amazon Sync Active Flag",
         default=True,

@@ -15,13 +15,7 @@ from ..shared.model_names import (
     AMAZON_SUBMISSION_ID_FIELD,
 )
 from ..shared.sync_operation_types import (
-    # SYNC_CREATE,
     SYNC_UPDATE,
-    # SYNC_DELETE,
-    # SYNC_PRICE,
-    # SYNC_INVENTORY,
-    # SYNC_IMAGE,
-    # SYNC_DEACTIVATE,
 )
 from ..shared.sync_status import (
     SYNC_NEW,
