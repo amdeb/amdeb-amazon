@@ -60,11 +60,12 @@ class ProductSyncCompleted(object):
         self._completed_set = self._amazon_sync_table.search(search_domain)
 
     def _get_submission_ids(self):
-        _logger.debug("get submission ids")
         submission_ids = set()
         for pending in self._completed_set:
             submission_id = pending[AMAZON_SUBMISSION_ID_FIELD]
             submission_ids.add(submission_id)
+        log_template = "get {} submission ids for completed sync operations."
+        _logger.debug(log_template.format(len(submission_ids)))
         return submission_ids
 
     def _add_price_sync(self, record, completed):
@@ -100,7 +101,8 @@ class ProductSyncCompleted(object):
             if is_sync_create and is_success:
                 self._write_creation_success(completed)
 
-    def _write_result(self, completed, sync_result):
+    @staticmethod
+    def _write_result(completed, sync_result):
         result = {}
         if sync_result:
             result[SYNC_STATUS_FIELD] = sync_result[0]
@@ -108,26 +110,30 @@ class ProductSyncCompleted(object):
             result[AMAZON_RESULT_DESCRIPTION_FIELD] = sync_result[2]
         else:
             result[SYNC_STATUS_FIELD] = SYNC_SUCCESS
+
+        _logger.debug("write completion result {0} for sync id {1}".format(
+            sync_result, completed.id))
         completed.write(result)
 
-    def _update_completion(self, completion_results):
+    def _save_completion_results(self, completion_results):
         for completed in self._completed_set:
             submission_id = completed[AMAZON_SUBMISSION_ID_FIELD]
             # should have results for all
             completion_result = completion_results[submission_id]
-            _logger.debug("updating completion result for {0}, {1}".format(
-                submission_id, completion_result
-            ))
+
             # if success, Amazon gives no result
             sync_result = completion_result.get(completed.id, None)
             self._write_result(completed, sync_result)
 
-    def _process_completions(self, submission_ids):
+    def _get_completion_results(self, submission_ids):
         completion_results = {}
         for submission_id in submission_ids:
             completion_result = self._mws.get_sync_result(submission_id)
             completion_results[submission_id] = completion_result
-        self._update_completion(completion_results)
+
+        log_template = "get {} results for completed sync operations."
+        _logger.debug(log_template.format(len(completion_results)))
+        return completion_results
 
     def _check_template_created(self, completed):
         result = False
@@ -137,7 +143,8 @@ class ProductSyncCompleted(object):
             result = template_record[AMAZON_CREATION_SUCCESS_FIELD]
         return result
 
-    def _get_created_variants(self, template_record):
+    @staticmethod
+    def _get_created_variants(template_record):
         headers = []
         variants = template_record[PRODUCT_VARIANT_IDS_FIELD]
         for variant in variants:
@@ -154,6 +161,7 @@ class ProductSyncCompleted(object):
         headers = []
         template_id = completed[RECORD_ID_FIELD]
         template_record = self._product_template.browse(template_id)
+        # ToDo: what if template_record is not found (unlinked) ???
         if template_record[PRODUCT_VARIANT_COUNT_FIELD] > 1:
             headers = self._get_created_variants(template_record)
         return headers
@@ -163,7 +171,8 @@ class ProductSyncCompleted(object):
             if self._check_template_created(completed):
                 self._sync_creation.insert_relation(completed)
             else:
-                log_template = "Product template is not created for {}."
+                log_template = "Product template is not created for {}. " \
+                               "Don't create relation sync"
                 _logger.debug(log_template.format(
                     completed[RECORD_ID_FIELD]
                 ))
@@ -188,9 +197,10 @@ class ProductSyncCompleted(object):
     def synchronize(self):
         self._get_completed()
         submission_ids = self._get_submission_ids()
-        self._process_completions(submission_ids)
+        completion_results = self._get_completion_results(submission_ids)
+        self._save_completion_results(completion_results)
         self._process_creation_success()
 
-        # create relation sync because we need to know the
-        # creation status of both template and variant
+        # create relation sync in a separate step because we need to know the
+        # creation status of both the template and the variant
         self._process_creation_relations()
