@@ -77,4 +77,5 @@ class ProductSyncPending(object):
         _logger.debug("about to check pending sync status")
         self._get_pending()
         submission_ids = self._get_submission_ids()
-        self._check_status(submission_ids)
+        if submission_ids:
+            self._check_status(submission_ids)

@@ -50,6 +50,7 @@ class ProductSyncCompleted(object):
         self._product_template = env[PRODUCT_TEMPLATE_TABLE]
         self._product_product = env[PRODUCT_PRODUCT_TABLE]
         self._completed_set = None
+        self._is_new_sync_added = False
 
     def _get_completed(self):
         _logger.debug("get completed sync operations")
@@ -92,6 +93,7 @@ class ProductSyncCompleted(object):
         sync_active = record[AMAZON_SYNC_ACTIVE_FIELD]
         if sync_active:
             self._add_success_syncs(record, completed)
+            self._is_new_sync_added = True
 
     def _process_creation_success(self):
         for completed in self._completed_set:
@@ -195,12 +197,20 @@ class ProductSyncCompleted(object):
                 self._add_relation_sync(completed)
 
     def synchronize(self):
+        """
+        Process completed sync requests
+        :return: True if new sync record is added for create sync
+        """
         self._get_completed()
         submission_ids = self._get_submission_ids()
-        completion_results = self._get_completion_results(submission_ids)
-        self._save_completion_results(completion_results)
-        self._process_creation_success()
+        if submission_ids:
+            completion_results = self._get_completion_results(submission_ids)
+            self._save_completion_results(completion_results)
+            self._process_creation_success()
 
-        # create relation sync in a separate step because we need to know the
-        # creation status of both the template and the variant
-        self._process_creation_relations()
+            # create relation sync in a separate step
+            # because we need to know the
+            # creation status of both the template and the variant
+            self._process_creation_relations()
+
+        return self._is_new_sync_added

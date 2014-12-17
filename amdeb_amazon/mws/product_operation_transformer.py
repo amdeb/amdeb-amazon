@@ -5,6 +5,10 @@ import logging
 _logger = logging.getLogger(__name__)
 
 from ..shared.model_names import (
+    # common fields
+    MODEL_NAME_FIELD,
+    RECORD_ID_FIELD,
+
     PRODUCT_TEMPLATE_TABLE,
     PRODUCT_VARIANT_COUNT_FIELD,
 
@@ -15,13 +19,10 @@ from ..shared.model_names import (
     PRODUCT_AVAILABLE_QUANTITY_FIELD,
     PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD,
 
-    PRODUCT_OPERATION_TABLE,
-    MODEL_NAME_FIELD,
-    RECORD_ID_FIELD,
+    # product operation fields
     TEMPLATE_ID_FIELD,
     RECORD_OPERATION_FIELD,
     OPERATION_DATA_FIELD,
-    AMAZON_SYNC_TIMESTAMP_FIELD,
 )
 
 from ..shared.db_operation_types import (
@@ -30,47 +31,20 @@ from ..shared.db_operation_types import (
     UNLINK_RECORD,
 )
 
-from ..shared.utility import field_utcnow
 from .product_sync_creation import ProductSyncCreation
 
 
 class ProductOperationTransformer(object):
     """
     Transform product operations into sync operations
-    1. get new operations sorted by id
-    2. set operation sync timestamps
-    3. merge operations
-    4. transform product operation into sync operations
-
-    Methods in this class should not throw exceptions.
-    It sets product operation sync timestamp and
-    reset image trigger. These changes should be saved
-    regardless of sync operation results
+    A product may be unlinked in Odoo -- be careful to check
     """
-    def __init__(self, env):
+    def __init__(self, env, new_operations):
         self._env = env
         self._sync_creation = ProductSyncCreation(env)
-        self._new_operations = None
+        self._new_operations = new_operations
         # this set keeps transformed model_name and record_id
         self._transformed_operations = set()
-
-    def _get_operations(self):
-        """
-        Get the new operations ordered by descending id (creation time)
-        A new operation doesn't have a sync timestamp
-        """
-        operation_table = self._env[PRODUCT_OPERATION_TABLE]
-        search_domain = [
-            (AMAZON_SYNC_TIMESTAMP_FIELD, '=', False),
-        ]
-        self._new_operations = operation_table.search(
-            search_domain,
-            order="id desc")
-
-    def _set_operation_sync_timestamp(self):
-        # set sync timestamp for each operation
-        for operation in self._new_operations:
-            operation[AMAZON_SYNC_TIMESTAMP_FIELD] = field_utcnow()
 
     def _get_sync_active(self, operation):
         model = self._env[operation[MODEL_NAME_FIELD]]
@@ -179,7 +153,7 @@ class ProductOperationTransformer(object):
         if write_values:
             self._sync_creation.insert_update(operation, write_values)
 
-    def _transform_write(self, operation, write_values):
+    def _convert_write(self, operation, write_values):
         """transform a write operation to one or more sync operations
         1. If sync active changes, generate create or deactivate sync. Done
         2. If sync active or creation_success is False, ignore all changes.
@@ -208,17 +182,24 @@ class ProductOperationTransformer(object):
                 _logger.debug("Product write is inactive or is not created "
                               "in Amazon. Ignore it.")
 
-    def _merge_write(self, operation):
-        write_values = cPickle.loads(operation[OPERATION_DATA_FIELD])
-        log_template = "merge write operation for Model: {0} " \
-                       "record id: {1}, template id: {2}, values {3}."
-        _logger.debug(log_template.format(
-            operation[MODEL_NAME_FIELD],
-            operation[RECORD_ID_FIELD],
-            operation[TEMPLATE_ID_FIELD],
-            write_values
-        ))
+    def _merge_write(self, operation, write_values):
+        # merge all writes that are ordered by operation id
+        merged_values = write_values
+        other_writes = [
+            record for record in self._new_operations if
+            record[MODEL_NAME_FIELD] == operation[MODEL_NAME_FIELD] and
+            record[RECORD_ID_FIELD] == operation[RECORD_ID_FIELD] and
+            record.id != operation.id
+        ]
 
+        for other_write in other_writes:
+            other_values = cPickle.loads(other_write[OPERATION_DATA_FIELD])
+            other_values.update(merged_values)
+            merged_values = other_values
+            _logger.debug("merged write values: {}".format(merged_values))
+        return merged_values
+
+    def _transform_write(self, operation):
         # if there is a create operation, ignore write
         creation = self._check_create(operation)
         if creation:
@@ -226,24 +207,19 @@ class ProductOperationTransformer(object):
             _logger.debug("found a create operation, ignore write operation")
             return
 
-        # merge all writes that are ordered by operation id
-        other_writes = [
-            record for record in self._new_operations if
-            record[MODEL_NAME_FIELD] == operation[MODEL_NAME_FIELD] and
-            record[RECORD_ID_FIELD] == operation[RECORD_ID_FIELD]
-        ]
+        write_values = cPickle.loads(operation[OPERATION_DATA_FIELD])
+        log_template = "transform write operation for Model: {0} " \
+                       "record id: {1}, template id: {2}, values {3}."
+        _logger.debug(log_template.format(
+            operation[MODEL_NAME_FIELD],
+            operation[RECORD_ID_FIELD],
+            operation[TEMPLATE_ID_FIELD],
+            write_values
+        ))
+        merged_values = self._merge_write(operation, write_values)
+        self._convert_write(operation, merged_values)
 
-        for other_write in other_writes:
-            other_values = cPickle.loads(other_write[OPERATION_DATA_FIELD])
-            other_values.update(write_values)
-            write_values = other_values
-            _logger.debug("merged write values: {}".format(
-                write_values
-            ))
-
-        self._transform_write(operation, write_values)
-
-    def _merge_operations(self):
+    def transform(self):
         """
         operations are already sorted by ids in descending order
         for each model_name + record_id, there is only one
@@ -268,7 +244,7 @@ class ProductOperationTransformer(object):
                 elif record_operation == UNLINK_RECORD:
                     self._transform_unlink(operation)
                 elif record_operation == WRITE_RECORD:
-                    self._merge_write(operation)
+                    self._transform_write(operation)
                 else:
                     template = "Invalid product operation type {0} " \
                                "for {1}: {2}"
@@ -278,13 +254,3 @@ class ProductOperationTransformer(object):
                         operation[RECORD_ID_FIELD])
                     _logger.error(message)
                     raise ValueError(message)
-
-    def transform(self):
-        """
-        get new product operations
-        set amazon sync timestamp
-        merge/split product operations into sync operations
-        """
-        self._get_operations()
-        self._set_operation_sync_timestamp()
-        self._merge_operations()

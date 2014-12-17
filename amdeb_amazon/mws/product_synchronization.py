@@ -13,6 +13,7 @@ from .product_sync_new import ProductSyncNew
 from .product_sync_pending import ProductSyncPending
 from .product_sync_chore import do_daily_chore
 from .product_sync_completed import ProductSyncCompleted
+from .product_operation_sync import ProductOperationSync
 
 
 class ProductSynchronization(object):
@@ -38,7 +39,11 @@ class ProductSynchronization(object):
         """
         _logger.debug("enter ProductSynchronization synchronize()")
 
-        transformer = ProductOperationTransformer(self._env)
+        operation_sync = ProductOperationSync(self._env)
+        new_operations = operation_sync.get_new_operations()
+        operation_sync.set_operation_sync_timestamp(new_operations)
+
+        transformer = ProductOperationTransformer(self._env, new_operations)
         transformer.transform()
 
         sync_new = ProductSyncNew(self._env, self._mws)

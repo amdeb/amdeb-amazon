@@ -35,15 +35,17 @@ class ProductSyncNew(object):
         self._amazon_sync = self._env[AMAZON_PRODUCT_SYNC_TABLE]
 
     def _get_updates(self):
-        _logger.debug("get product updates")
         search_domain = [
             (SYNC_STATUS_FIELD, '=', SYNC_NEW),
             (SYNC_TYPE_FIELD, '=', SYNC_UPDATE)
         ]
-        return self._amazon_sync.search(search_domain)
+        new_updates = self._amazon_sync.search(search_domain)
+        _logger.debug("Found {} new product updates.".format(
+            len(new_updates)
+        ))
+        return new_updates
 
     def _convert_updates(self, sync_updates):
-        _logger.debug("convert product updates to sync operations")
         sync_values = []
         for update in sync_updates:
             sync_data = cPickle.loads(update.sync_data)
@@ -70,11 +72,11 @@ class ProductSyncNew(object):
         sync_updates.write(sync_result)
 
     def _sync_update(self):
-        _logger.debug("about to sync product updates")
         sync_updates = self._get_updates()
         sync_values = self._convert_updates(sync_updates)
         if sync_values:
             self._call_updates(sync_updates, sync_values)
 
     def synchronize(self):
+        _logger.debug("about to sync new product operations")
         self._sync_update()
