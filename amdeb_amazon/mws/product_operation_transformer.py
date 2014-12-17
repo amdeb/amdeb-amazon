@@ -101,9 +101,11 @@ class ProductOperationTransformer(object):
         Unlink a product if it is created in Amazon, even
         its sync active flag is False because
         keeping it in Amazon will cause many confusing when
-        we download reports, history etc but couldn't fina
-        in locally.
+        we download reports, history etc but couldn't find
+        it locally.
         """
+
+        # Todo: fix error -- record is gone.
         (_, created) = self._get_sync_active(operation)
         if created:
             self._sync_creation.insert_operation_delete(operation)

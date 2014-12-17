@@ -163,7 +163,6 @@ class ProductSyncCompleted(object):
         headers = []
         template_id = completed[RECORD_ID_FIELD]
         template_record = self._product_template.browse(template_id)
-        # ToDo: what if template_record is not found (unlinked) ???
         if template_record[PRODUCT_VARIANT_COUNT_FIELD] > 1:
             headers = self._get_created_variants(template_record)
         return headers

@@ -34,9 +34,9 @@ class ProductSynchronization(object):
         3. get sync results for pending sync operations and update
         end timestamp. This als process completed syncs
         4. process successful creation syncs
-
-        Be aware that records may not exist when sync runs
         """
+        # ToDo: records may not exist when sync runs
+        # MissingValue exception for accessing unlinked record field
         _logger.debug("enter ProductSynchronization synchronize()")
 
         operation_sync = ProductOperationSync(self._env)
