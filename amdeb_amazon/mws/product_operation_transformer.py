@@ -169,7 +169,8 @@ class ProductOperationTransformer(object):
         image_trigger = write_values.pop(
             PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD, None)
         # create image sync regardless the image_trigger value
-        self._sync_creation.insert_image(operation)
+        if image_trigger is not None:
+            self._sync_creation.insert_image(operation)
 
     def _transform_update(self, operation, write_values):
         self._transform_price(operation, write_values)
