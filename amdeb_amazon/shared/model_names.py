@@ -12,10 +12,11 @@ PRODUCT_TEMPLATE_TABLE = 'product.template'
 PRODUCT_VARIANT_COUNT_FIELD = 'product_variant_count'
 PRODUCT_VARIANT_IDS_FIELD = 'product_variant_ids'
 
+PRODUCT_DEFAULT_CODE_FIELD = 'default_code'
+
 PRODUCT_PRODUCT_TABLE = 'product.product'
 PRODUCT_TEMPLATE_ID_FIELD = 'product_tmpl_id'
 AMAZON_SYNC_ACTIVE_FIELD = 'amazon_sync_active'
-AMAZON_CREATION_SUCCESS_FIELD = 'amazon_creation_success'
 PRODUCT_PRICE_FIELD = 'price'
 PRODUCT_AVAILABLE_QUANTITY_FIELD = 'qty_available'
 PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD = 'amazon_image_trigger'

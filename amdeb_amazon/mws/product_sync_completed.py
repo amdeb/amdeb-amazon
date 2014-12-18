@@ -6,19 +6,16 @@ _logger = logging.getLogger(__name__)
 from ..shared.model_names import (
     PRODUCT_TEMPLATE_TABLE,
     PRODUCT_VARIANT_COUNT_FIELD,
-    PRODUCT_VARIANT_IDS_FIELD,
 
     PRODUCT_PRODUCT_TABLE,
     MODEL_NAME_FIELD,
     RECORD_ID_FIELD,
-    TEMPLATE_ID_FIELD,
     AMAZON_PRODUCT_SYNC_TABLE,
     SYNC_STATUS_FIELD,
     SYNC_TYPE_FIELD,
     AMAZON_MESSAGE_CODE_FIELD,
     AMAZON_SUBMISSION_ID_FIELD,
     AMAZON_RESULT_DESCRIPTION_FIELD,
-    AMAZON_CREATION_SUCCESS_FIELD,
     AMAZON_SYNC_ACTIVE_FIELD,
     PRODUCT_PRICE_FIELD,
     PRODUCT_AVAILABLE_QUANTITY_FIELD,
@@ -34,6 +31,7 @@ from ..shared.sync_operation_types import (
 )
 
 from .product_sync_creation import ProductSyncCreation
+from .amazon_product_access import AmazonProductAccess
 
 
 class ProductSyncCompleted(object):
@@ -51,6 +49,7 @@ class ProductSyncCompleted(object):
         self._product_product = env[PRODUCT_PRODUCT_TABLE]
         self._completed_set = None
         self._is_new_sync_added = False
+        self._amazon_product_access = AmazonProductAccess(env)
 
     def _get_completed(self):
         _logger.debug("get completed sync operations")
@@ -89,7 +88,6 @@ class ProductSyncCompleted(object):
             model_name, record_id
         ))
         record = self._env[model_name].browse(record_id)
-        record[AMAZON_CREATION_SUCCESS_FIELD] = True
         sync_active = record[AMAZON_SYNC_ACTIVE_FIELD]
         if sync_active:
             self._add_success_syncs(record, completed)
@@ -102,6 +100,7 @@ class ProductSyncCompleted(object):
             is_sync_create = completed[SYNC_TYPE_FIELD] == SYNC_CREATE
             if is_sync_create and is_success:
                 self._write_creation_success(completed)
+                self._amazon_product_access.write_from_sync(completed)
 
     @staticmethod
     def _write_result(completed, sync_result):
@@ -115,6 +114,7 @@ class ProductSyncCompleted(object):
 
         _logger.debug("write completion result {0} for sync id {1}".format(
             sync_result, completed.id))
+
         completed.write(result)
 
     def _save_completion_results(self, completion_results):
@@ -137,39 +137,18 @@ class ProductSyncCompleted(object):
         _logger.debug(log_template.format(len(completion_results)))
         return completion_results
 
-    def _check_template_created(self, completed):
-        result = False
-        template_id = completed[TEMPLATE_ID_FIELD]
-        template_record = self._product_template.browse(template_id)
-        if template_record:
-            result = template_record[AMAZON_CREATION_SUCCESS_FIELD]
-        return result
-
-    @staticmethod
-    def _get_created_variants(template_record):
-        headers = []
-        variants = template_record[PRODUCT_VARIANT_IDS_FIELD]
-        for variant in variants:
-            if variant[AMAZON_CREATION_SUCCESS_FIELD]:
-                header = {
-                    MODEL_NAME_FIELD: PRODUCT_PRODUCT_TABLE,
-                    RECORD_ID_FIELD: variant.id,
-                    TEMPLATE_ID_FIELD: template_record.id,
-                }
-                headers.append(header)
-        return headers
-
     def _check_variant_created(self, completed):
         headers = []
         template_id = completed[RECORD_ID_FIELD]
         template_record = self._product_template.browse(template_id)
         if template_record[PRODUCT_VARIANT_COUNT_FIELD] > 1:
-            headers = self._get_created_variants(template_record)
+            headers = self._amazon_product_access.get_created_variants(
+                template_id)
         return headers
 
     def _add_relation_sync(self, completed):
         if completed[MODEL_NAME_FIELD] == PRODUCT_PRODUCT_TABLE:
-            if self._check_template_created(completed):
+            if self._amazon_product_access.is_created(completed):
                 self._sync_creation.insert_relation(completed)
             else:
                 log_template = "Product template is not created for {}. " \

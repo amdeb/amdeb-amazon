@@ -22,13 +22,6 @@ class product_product(models.Model):
         default=False,
     )
 
-    amazon_creation_success = fields.Boolean(
-        string="Created in Amazon",
-        readonly=True,
-        # only set to True when it is successfully created in Amazon
-        default=False,
-    )
-
     amazon_bullet_point1 = fields.Char(
         string="Amazon Bullet Point 1"
     )

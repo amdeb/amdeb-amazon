@@ -14,7 +14,6 @@ from ..shared.model_names import (
 
     PRODUCT_PRODUCT_TABLE,
     AMAZON_SYNC_ACTIVE_FIELD,
-    AMAZON_CREATION_SUCCESS_FIELD,
     PRODUCT_PRICE_FIELD,
     PRODUCT_AVAILABLE_QUANTITY_FIELD,
     PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD,
@@ -24,8 +23,6 @@ from ..shared.model_names import (
     OPERATION_TYPE_FIELD,
     OPERATION_DATA_FIELD,
 
-    # to check whether a product is created in Amazon or not
-    AMAZON_PRODUCT_TABLE,
 )
 
 from ..shared.db_operation_types import (
@@ -36,6 +33,7 @@ from ..shared.db_operation_types import (
 
 from .product_sync_creation import ProductSyncCreation
 from .amazon_product_access import AmazonProductAccess
+
 
 class ProductOperationTransformer(object):
     """
@@ -55,14 +53,6 @@ class ProductOperationTransformer(object):
         record = model.browse(operation[RECORD_ID_FIELD])
         sync_active = record[AMAZON_SYNC_ACTIVE_FIELD]
         return sync_active
-
-    def _get_amazon_product(self, operation):
-        model_name = operation[MODEL_NAME_FIELD]
-        record_id = operation[RECORD_ID_FIELD]
-        amazon_product = self._amazon_product_access.get_amazon_product(
-            model_name, record_id
-        )
-        return amazon_product
 
     def _has_multi_variants(self, operation):
         # don't insert create sync if it is the only variant
@@ -115,7 +105,8 @@ class ProductOperationTransformer(object):
         it locally.
         """
         # ToDo: fix unlink variants
-        amazon_product = self._get_amazon_product(operation)
+        amazon_product = self._amazon_product_access.get_amazon_product(
+            operation)
         if amazon_product:
             self._sync_creation.insert_operation_delete(operation)
             amazon_product.unlink()
@@ -176,7 +167,7 @@ class ProductOperationTransformer(object):
         """
         sync_active_value = write_values.get(AMAZON_SYNC_ACTIVE_FIELD, None)
         sync_active = self._get_sync_active(operation)
-        is_created = bool(self._get_amazon_product(operation))
+        is_created = self._amazon_product_access.is_created(operation)
         if sync_active_value is not None:
             if sync_active_value:
                 _logger.debug("Amazon sync active changes to "
