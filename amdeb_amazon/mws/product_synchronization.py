@@ -13,7 +13,7 @@ from .product_sync_new import ProductSyncNew
 from .product_sync_pending import ProductSyncPending
 from .product_sync_chore import do_daily_chore
 from .product_sync_completed import ProductSyncCompleted
-from .product_operation_sync import ProductOperationSync
+from .product_operation_access import ProductOperationAccess
 
 
 class ProductSynchronization(object):
@@ -37,11 +37,11 @@ class ProductSynchronization(object):
         """
         # ToDo: records may not exist when sync runs
         # MissingValue exception for accessing unlinked record field
-        _logger.debug("enter ProductSynchronization synchronize()")
+        _logger.debug("Executing ProductSynchronization synchronize()")
 
-        operation_sync = ProductOperationSync(self._env)
-        new_operations = operation_sync.get_new_operations()
-        operation_sync.set_operation_sync_timestamp(new_operations)
+        operation_access = ProductOperationAccess(self._env)
+        new_operations = operation_access.get_new_operations()
+        operation_access.set_sync_timestamp(new_operations)
 
         transformer = ProductOperationTransformer(self._env, new_operations)
         transformer.transform()

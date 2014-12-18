@@ -16,3 +16,4 @@ def field_utcnow(*args):
         This function may be used to compute default values.
     """
     return datetime.utcnow().strftime(DATETIME_FORMAT)
+

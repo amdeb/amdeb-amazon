@@ -11,7 +11,7 @@ from ..shared.model_names import (
 from ..shared.utility import field_utcnow
 
 
-class ProductOperationSync(object):
+class ProductOperationAccess(object):
     """
     Get new product operations and set operation sync timestamp
     """
@@ -36,7 +36,7 @@ class ProductOperationSync(object):
         ))
         return new_operations
 
-    def set_operation_sync_timestamp(self, operations):
+    def set_sync_timestamp(self, operations):
         # set sync timestamp for each operation
         _logger.debug("set sync timestamp for all new product operations.")
         for operation in operations:

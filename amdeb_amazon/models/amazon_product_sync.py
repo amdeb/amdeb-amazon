@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-import logging
-_logger = logging.getLogger(__name__)
-
 from openerp import models, fields, api
 
 from ..shared.model_names import (
@@ -38,7 +35,6 @@ class AmazonProductSync(models.Model):
 
     @api.model
     def synchronize_cron(self):
-        _logger.info("Amazon Synchronization cron job running")
         env = self.env()
         ProductSynchronization(env).synchronize()
 
