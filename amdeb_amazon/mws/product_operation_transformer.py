@@ -104,7 +104,7 @@ class ProductOperationTransformer(object):
         we download reports, history etc but couldn't find
         it locally.
         """
-        # ToDo: fix unlink variants
+        # ToDo: should fix unlink for templates with multiple variants
         amazon_product = self._amazon_product_access.get_amazon_product(
             operation)
         if amazon_product:
