@@ -5,21 +5,14 @@ import logging
 _logger = logging.getLogger(__name__)
 
 from ..shared.model_names import (
-    # product fields
-    MODEL_NAME_FIELD,
-    RECORD_ID_FIELD,
-    AMAZON_SYNC_ACTIVE_FIELD,
+    MODEL_NAME_FIELD, RECORD_ID_FIELD,
+    TEMPLATE_ID_FIELD, AMAZON_SYNC_ACTIVE_FIELD,
 
-    # product operation fields
-    TEMPLATE_ID_FIELD,
-    OPERATION_TYPE_FIELD,
-    OPERATION_DATA_FIELD,
+    OPERATION_TYPE_FIELD, OPERATION_DATA_FIELD,
 )
 
 from ..shared.db_operation_types import (
-    CREATE_RECORD,
-    WRITE_RECORD,
-    UNLINK_RECORD,
+    CREATE_RECORD, WRITE_RECORD, UNLINK_RECORD,
 )
 
 from .product_unlink_tranformer import ProductUnlinkTransformer
@@ -32,6 +25,7 @@ class ProductOperationTransformer(object):
     """
     Transform product operations into sync operations
     A product may be unlinked in Odoo -- be careful to check
+    for create and write operation before transformation
     """
     def __init__(self, env, new_operations):
         self._env = env
@@ -42,7 +36,7 @@ class ProductOperationTransformer(object):
         self._create_transformer = ProductCreateTransformer(env)
         self._writer_transformer = ProductWriteTransformer(env)
 
-        self._utility = ProductUtility(env)
+        self._product_utility = ProductUtility(env)
 
         # this set keeps transformed model_name and record_id
         self._transformed_operations = set()
@@ -54,6 +48,12 @@ class ProductOperationTransformer(object):
         return sync_active
 
     def _check_create(self, operation):
+        """
+        Check if there is a create operation for the model name
+        and record id.
+        :param operation: product operation
+        :return: the create operation if found, None if not found.
+        """
         found = None
         creations = [
             element for
@@ -80,7 +80,7 @@ class ProductOperationTransformer(object):
             other_values = cPickle.loads(other_write[OPERATION_DATA_FIELD])
             other_values.update(merged_values)
             merged_values = other_values
-            _logger.debug("merged write values: {}".format(merged_values))
+            _logger.debug("Merged write values: {}".format(merged_values))
         return merged_values
 
     def _transform_write(self, operation):
@@ -88,18 +88,19 @@ class ProductOperationTransformer(object):
         creation = self._check_create(operation)
         if creation:
             self._create_transformer.transform(creation)
-            _logger.debug("found a create operation, ignore write operation")
+            log_template = "Found a create operation. Ignore write " \
+                           "operation for Model: {0}, Record id: {1}"
+            _logger.debug(log_template.format(
+                operation[MODEL_NAME_FIELD], operation[RECORD_ID_FIELD]))
             return
 
         write_values = cPickle.loads(operation[OPERATION_DATA_FIELD])
-        log_template = "transform write operation for Model: {0} " \
+        log_template = "Transform write operation for Model: {0} " \
                        "record id: {1}, template id: {2}, values {3}."
         _logger.debug(log_template.format(
-            operation[MODEL_NAME_FIELD],
-            operation[RECORD_ID_FIELD],
-            operation[TEMPLATE_ID_FIELD],
-            write_values
-        ))
+            operation[MODEL_NAME_FIELD], operation[RECORD_ID_FIELD],
+            operation[TEMPLATE_ID_FIELD], write_values))
+
         merged_values = self._merge_write(operation, write_values)
         sync_active = self._get_sync_active(operation)
         self._writer_transformer.transform(
@@ -133,34 +134,33 @@ class ProductOperationTransformer(object):
         operation_type = operation[OPERATION_TYPE_FIELD]
         if operation_type == UNLINK_RECORD:
             self._unlink_transformer.transform(operation)
-        elif not self._utility.is_existed(operation):
-            log_template = "Ignore operation for unlinked " \
+        elif self._product_utility.is_existed(operation):
+            # only transform a create/write operation for an existing product
+            self._transform_create_write(operation)
+        else:
+            log_template = "Ignore operation for unlinked product " \
                            "Model: {0}, Record id: {1}"
             _logger.debug(log_template.format(
-                operation[MODEL_NAME_FIELD],
-                operation[RECORD_ID_FIELD]
-            ))
-        else:
-            # create or write for existing product
-            self._transform_create_write(operation)
+                operation[MODEL_NAME_FIELD], operation[RECORD_ID_FIELD]))
 
     def transform(self):
         """
         operations are already sorted by ids in descending order
         for each model_name + record_id, there is only one
         product operation left after merge:
-        1. add create directly
-        2. unlink is always the last for a model_name + record_id
-        for template unlink -- it will be transformed first !!!
-        3. ignore write if there is a create
-        4. merge all writes into one then break it into different
+        1. unlink is always the last for a model_name + record_id
+        thus it will be transformed before other operations that
+        are skipped !!!
+        2. add create directly, ignore write if there is a create
+        3. merge all writes into one then break it into different
         sync operations such as update, price, inventory and image
         """
-        _logger.debug("Transforming new product operations.")
+        _logger.debug("Enter ProductOperationTransformer transform().")
         for operation in self._new_operations:
             record_key = (operation[MODEL_NAME_FIELD],
                           operation[RECORD_ID_FIELD])
             if record_key in self._transformed_operations:
+                # process each key only once
                 continue
             else:
                 self._transformed_operations.add(record_key)

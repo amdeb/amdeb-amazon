@@ -8,12 +8,12 @@ from ..shared.model_names import (
     AMAZON_SETTINGS_TABLE,
 )
 from .connector import Boto
+from .product_operation_access import ProductOperationAccess
 from .product_operation_transformer import ProductOperationTransformer
 from .product_sync_new import ProductSyncNew
 from .product_sync_pending import ProductSyncPending
 from .product_sync_chore import do_daily_chore
 from .product_sync_completed import ProductSyncCompleted
-from .product_operation_access import ProductOperationAccess
 
 
 class ProductSynchronization(object):
@@ -35,9 +35,7 @@ class ProductSynchronization(object):
         end timestamp. This als process completed syncs
         4. process successful creation syncs
         """
-        # ToDo: records may not exist when sync runs
-        # MissingValue exception for accessing unlinked record field
-        _logger.debug("Executing ProductSynchronization synchronize()")
+        _logger.debug("Enter ProductSynchronization synchronize()")
 
         operation_access = ProductOperationAccess(self._env)
         new_operations = operation_access.get_new_operations()
