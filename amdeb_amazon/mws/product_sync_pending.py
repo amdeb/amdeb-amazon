@@ -4,15 +4,12 @@ import logging
 _logger = logging.getLogger(__name__)
 
 from ..shared.model_names import (
-    AMAZON_PRODUCT_SYNC_TABLE,
-    SYNC_STATUS_FIELD,
     AMAZON_MESSAGE_CODE_FIELD,
     AMAZON_SUBMISSION_ID_FIELD,
     SYNC_CHECK_STATUS_COUNT_FILED,
 )
-from ..shared.sync_status import (
-    SYNC_PENDING,
-)
+
+from .product_sync_access import ProductSyncAccess
 
 
 class ProductSyncPending(object):
@@ -22,17 +19,7 @@ class ProductSyncPending(object):
     def __init__(self, env, mws):
         self._env = env
         self._mws = mws
-        self._amazon_sync_table = self._env[AMAZON_PRODUCT_SYNC_TABLE]
         self._pending_set = None
-
-    def _get_pending(self):
-        _logger.debug("get pending syncs")
-        search_domain = [
-            (SYNC_STATUS_FIELD, '=', SYNC_PENDING),
-        ]
-        self._pending_set = self._amazon_sync_table.search(
-            search_domain,
-            order="id asc")
 
     def _get_submission_ids(self):
         _logger.debug("get submission ids")
@@ -84,7 +71,9 @@ class ProductSyncPending(object):
         2. update submission status
         """
         _logger.debug("about to check pending sync status")
-        self._get_pending()
+        product_sync = ProductSyncAccess(self._env)
+        self._pending_set = product_sync.get_pending()
+
         submission_ids = self._get_submission_ids()
         if submission_ids:
             self._check_status(submission_ids)

@@ -7,18 +7,13 @@ from ..shared.model_names import (
     PRODUCT_TEMPLATE_TABLE,
 
     PRODUCT_PRODUCT_TABLE,
-    AMAZON_PRODUCT_SYNC_TABLE,
     SYNC_STATUS_FIELD,
     AMAZON_MESSAGE_CODE_FIELD,
     AMAZON_SUBMISSION_ID_FIELD,
     AMAZON_RESULT_DESCRIPTION_FIELD,
     SYNC_CHECK_STATUS_COUNT_FILED,
 )
-from ..shared.sync_status import (
-    SYNC_PENDING,
-    SYNC_SUCCESS,
-    AMAZON_PROCESS_DONE_STATUS,
-)
+from ..shared.sync_status import SYNC_SUCCESS
 
 from .product_sync_access import ProductSyncAccess
 from .amazon_product_access import AmazonProductAccess
@@ -34,7 +29,6 @@ class ProductSyncCompleted(object):
     def __init__(self, env, mws):
         self._env = env
         self._mws = mws
-        self._amazon_sync_table = env[AMAZON_PRODUCT_SYNC_TABLE]
         self._sync_creation = ProductSyncAccess(env)
         self._product_template = env[PRODUCT_TEMPLATE_TABLE]
         self._product_product = env[PRODUCT_PRODUCT_TABLE]
@@ -42,14 +36,6 @@ class ProductSyncCompleted(object):
 
         self._amazon_product_access = AmazonProductAccess(env)
         self._creation_success = ProductCreationSuccess(env)
-
-    def _get_completed(self):
-        _logger.debug("get completed sync operations")
-        search_domain = [
-            (SYNC_STATUS_FIELD, '=', SYNC_PENDING),
-            (AMAZON_MESSAGE_CODE_FIELD, '=', AMAZON_PROCESS_DONE_STATUS)
-        ]
-        self._completed_set = self._amazon_sync_table.search(search_domain)
 
     def _get_submission_ids(self):
         submission_ids = set()
@@ -125,7 +111,7 @@ class ProductSyncCompleted(object):
         :return: True if new sync record is added for create sync
         """
         is_new_sync_added = False
-        self._get_completed()
+        self._completed_set = self._sync_creation.get_completed()
         submission_ids = self._get_submission_ids()
         if submission_ids:
             completion_results = self._get_completion_results(submission_ids)

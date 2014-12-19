@@ -1,19 +1,38 @@
 # -*- coding: utf-8 -*-
 
 import cPickle
+from datetime import datetime, timedelta
 import logging
 _logger = logging.getLogger(__name__)
+
+from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT as DATETIME_FORMAT
 
 from ..shared.model_names import (
     PRODUCT_PRODUCT_TABLE, MODEL_NAME_FIELD,
     RECORD_ID_FIELD, TEMPLATE_ID_FIELD, PRODUCT_SKU_FIELD,
 
     AMAZON_PRODUCT_SYNC_TABLE, SYNC_TYPE_FIELD, SYNC_DATA_FIELD,
+    SYNC_CREATION_TIMESTAMP_FIELD, SYNC_STATUS_FIELD,
+    SYNC_CHECK_STATUS_COUNT_FILED, AMAZON_MESSAGE_CODE_FIELD,
+    AMAZON_RESULT_DESCRIPTION_FIELD
+)
+
+from ..shared.sync_status import (
+    SYNC_PENDING, SYNC_ERROR,
+    AMAZON_PROCESS_DONE_STATUS,
 )
 
 from ..shared.sync_operation_types import (
     SYNC_CREATE, SYNC_UPDATE, SYNC_DELETE, SYNC_PRICE,
-    SYNC_INVENTORY, SYNC_IMAGE,SYNC_DEACTIVATE, SYNC_RELATION,
+    SYNC_INVENTORY, SYNC_IMAGE, SYNC_DEACTIVATE, SYNC_RELATION,
+)
+
+_UNLINK_DAYS = 100
+_ARCHIVE_DAYS = 5
+_ARCHIVE_CHECK_COUNT = 100
+_ARCHIVE_CODE = "Timeout"
+_ARCHIVE_MESSAGE = "Pending more than {0} days and {1} checks".format(
+    _ARCHIVE_DAYS, _ARCHIVE_CHECK_COUNT
 )
 
 
@@ -109,3 +128,52 @@ class ProductSyncAccess(object):
         product_sku = amazon_product[PRODUCT_SKU_FIELD]
         sync_value = cPickle.dumps(product_sku, cPickle.HIGHEST_PROTOCOL)
         self._insert(amazon_product, SYNC_DELETE, sync_value)
+
+    def get_completed(self):
+        search_domain = [
+            (SYNC_STATUS_FIELD, '=', SYNC_PENDING),
+            (AMAZON_MESSAGE_CODE_FIELD, '=', AMAZON_PROCESS_DONE_STATUS)
+        ]
+        return self._table.search(search_domain)
+
+    def get_pending(self):
+        search_domain = [(SYNC_STATUS_FIELD, '=', SYNC_PENDING)]
+        return self._table.search(search_domain, order="id asc")
+
+    def archive_old(self):
+        _logger.debug("Enter ProductSyncAccess archive_old()")
+        now = datetime.utcnow()
+        archive_date = now - timedelta(days=_ARCHIVE_DAYS)
+        archive_date_str = archive_date.strftime(DATETIME_FORMAT)
+        archive_records = self._table.search([
+            (SYNC_CREATION_TIMESTAMP_FIELD, '<', archive_date_str),
+            (SYNC_STATUS_FIELD, '=', SYNC_PENDING),
+            (SYNC_CHECK_STATUS_COUNT_FILED, '>=', _ARCHIVE_CHECK_COUNT)
+        ])
+        if archive_records:
+            archive_status = {
+                SYNC_STATUS_FIELD: SYNC_ERROR,
+                AMAZON_MESSAGE_CODE_FIELD: _ARCHIVE_CODE,
+                AMAZON_RESULT_DESCRIPTION_FIELD: _ARCHIVE_MESSAGE
+            }
+            archive_records.write(archive_status)
+        count = len(archive_records)
+        _logger.debug("archived {} old amazon sync records".format(
+            count
+        ))
+
+    def cleanup(self):
+        _logger.debug("Enter ProductSyncAccess cleanup()")
+        now = datetime.utcnow()
+        unlink_date = now - timedelta(days=_UNLINK_DAYS)
+        unlink_date_str = unlink_date.strftime(DATETIME_FORMAT)
+        unlink_records = self._table.search([
+            (SYNC_CREATION_TIMESTAMP_FIELD, '<', unlink_date_str)
+        ])
+        count = len(unlink_records)
+        if unlink_records:
+            unlink_records.unlink()
+
+        _logger.debug("deleted {} old amazon sync records".format(
+            count
+        ))
