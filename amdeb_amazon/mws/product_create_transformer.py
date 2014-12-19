@@ -20,7 +20,7 @@ from .product_sync_access import ProductSyncAccess
 class ProductCreateTransformer(object):
     def __init__(self, env):
         self._env = env
-        self._sync_creation = ProductSyncAccess(env)
+        self._product_sync = ProductSyncAccess(env)
 
     def _has_multi_variants(self, operation):
         result = False
@@ -42,4 +42,4 @@ class ProductCreateTransformer(object):
                 ))
                 return
 
-        self._sync_creation.insert_create(operation)
+        self._product_sync.insert_create(operation)
