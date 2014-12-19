@@ -63,7 +63,7 @@ class ProductSyncCompleted(object):
     @staticmethod
     def _write_exception(completed, ex):
         # keep its pending status, increase check count thus
-        # it will be checked till it exceeds its checking threshold
+        # it will be checked till it exceeds the checking threshold
         result = {
             AMAZON_RESULT_DESCRIPTION_FIELD: ex.message
         }

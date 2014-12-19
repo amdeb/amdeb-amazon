@@ -19,7 +19,6 @@ class ProductSyncPending(object):
     """
     This class processes pending syncs ordered by ascending record ids
     """
-
     def __init__(self, env, mws):
         self._env = env
         self._mws = mws
@@ -45,7 +44,8 @@ class ProductSyncPending(object):
                 submission_ids.append(submission_id)
         return submission_ids
 
-    def _write_status(self, pending, sync_status):
+    @staticmethod
+    def _write_status(pending, sync_status):
         result = {}
         check_count = pending[SYNC_CHECK_STATUS_COUNT_FILED]
         result[SYNC_CHECK_STATUS_COUNT_FILED] = check_count + 1
@@ -62,7 +62,7 @@ class ProductSyncPending(object):
             self._write_status(pending, sync_status)
 
     def _set_exception_status(self, ex):
-         for pending in self._pending_set:
+        for pending in self._pending_set:
             self._write_status(pending, ex.message)
 
     def _check_status(self, submission_ids):
