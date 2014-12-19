@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from openerp import models, fields, api
+from openerp import models, fields
 
 from ..shared.model_names import (
     AMAZON_PRODUCT_TABLE,
@@ -52,4 +52,3 @@ class AmazonProductSync(models.Model):
         index=True,
         readonly=True,
     )
-
