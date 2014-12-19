@@ -56,18 +56,27 @@ class ProductSyncPending(object):
         _logger.debug("updating {} pending sync statuses".format(
             len(submission_statuses)
         ))
-
         for pending in self._pending_set:
             submission_id = pending[AMAZON_SUBMISSION_ID_FIELD]
             sync_status = submission_statuses[submission_id]
             self._write_status(pending, sync_status)
 
+    def _set_exception_status(self, ex):
+         for pending in self._pending_set:
+            self._write_status(pending, ex.message)
+
     def _check_status(self, submission_ids):
         log_template = "Checking sync status for {} submissions."
         _logger.debug(log_template.format(len(submission_ids)))
 
-        submission_statuses = self._mws.check_sync_status(submission_ids)
-        self._update_status(submission_statuses)
+        try:
+            submission_statuses = self._mws.check_sync_status(submission_ids)
+            self._update_status(submission_statuses)
+        except Exception as ex:
+            _logger.warning("mws check sync status exception: {}.".format(
+                ex.message
+            ))
+            self._set_exception_status(ex)
 
     def synchronize(self):
         """

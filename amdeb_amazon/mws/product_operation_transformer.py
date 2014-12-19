@@ -5,24 +5,15 @@ import logging
 _logger = logging.getLogger(__name__)
 
 from ..shared.model_names import (
-    # common fields
+    # product fields
     MODEL_NAME_FIELD,
     RECORD_ID_FIELD,
-
-    PRODUCT_TEMPLATE_TABLE,
-    PRODUCT_VARIANT_COUNT_FIELD,
-
-    PRODUCT_PRODUCT_TABLE,
     AMAZON_SYNC_ACTIVE_FIELD,
-    PRODUCT_PRICE_FIELD,
-    PRODUCT_AVAILABLE_QUANTITY_FIELD,
-    PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD,
 
     # product operation fields
     TEMPLATE_ID_FIELD,
     OPERATION_TYPE_FIELD,
     OPERATION_DATA_FIELD,
-
 )
 
 from ..shared.db_operation_types import (
@@ -31,8 +22,10 @@ from ..shared.db_operation_types import (
     UNLINK_RECORD,
 )
 
-from .product_sync_creation import ProductSyncCreation
-from .amazon_product_access import AmazonProductAccess
+from .product_unlink_tranformer import ProductUnlinkTransformer
+from .product_create_transformer import ProductCreateTransformer
+from .product_write_transformer import ProductWriteTransformer
+from .product_utility import ProductUtility
 
 
 class ProductOperationTransformer(object):
@@ -42,82 +35,23 @@ class ProductOperationTransformer(object):
     """
     def __init__(self, env, new_operations):
         self._env = env
-        self._sync_creation = ProductSyncCreation(env)
         self._new_operations = new_operations
+
+        self._unlink_transformer = ProductUnlinkTransformer(
+            env, new_operations)
+        self._create_transformer = ProductCreateTransformer(env)
+        self._writer_transformer = ProductWriteTransformer(env)
+
+        self._utility = ProductUtility(env)
+
         # this set keeps transformed model_name and record_id
         self._transformed_operations = set()
-        self._amazon_product_access = AmazonProductAccess(env)
 
     def _get_sync_active(self, operation):
         model = self._env[operation[MODEL_NAME_FIELD]]
         record = model.browse(operation[RECORD_ID_FIELD])
         sync_active = record[AMAZON_SYNC_ACTIVE_FIELD]
         return sync_active
-
-    def _has_multi_variants(self, operation):
-        # don't insert create sync if it is the only variant
-        result = False
-        template = self._env[PRODUCT_TEMPLATE_TABLE]
-        record = template.browse(operation[TEMPLATE_ID_FIELD])
-        if record[PRODUCT_VARIANT_COUNT_FIELD] > 1:
-            result = True
-        return result
-
-    def _add_create_sync(self, operation):
-        # ignore variant creation if it is the only variant
-        model_name = operation[MODEL_NAME_FIELD]
-        if model_name == PRODUCT_PRODUCT_TABLE:
-            if not self._has_multi_variants(operation):
-                log_template = "Skip single variant creation " \
-                               "operation. Model: {0}, Record id: {1}"
-                _logger.debug(log_template.format(
-                    operation[MODEL_NAME_FIELD], operation[RECORD_ID_FIELD]
-                ))
-                return
-
-        sync_active = self._get_sync_active(operation)
-        if sync_active:
-            self._sync_creation.insert_create(operation)
-        else:
-            log_template = "Amazon Sync is inactive for create " \
-                           "operation. Model: {0}, Record id: {1}"
-            _logger.debug(log_template.format(
-                operation[MODEL_NAME_FIELD], operation[RECORD_ID_FIELD]
-            ))
-
-    def _skip_variant_unlink(self, operation):
-        # remove all variant operations if this is a template unlink
-        if operation[MODEL_NAME_FIELD] == PRODUCT_TEMPLATE_TABLE:
-            ignored = [
-                (variant[MODEL_NAME_FIELD], variant[RECORD_ID_FIELD]) for
-                variant in self._new_operations if
-                variant[MODEL_NAME_FIELD] == PRODUCT_PRODUCT_TABLE and
-                variant[TEMPLATE_ID_FIELD] == operation[RECORD_ID_FIELD]
-            ]
-            self._transformed_operations.update(ignored)
-
-    def _transform_unlink(self, operation):
-        """
-        Unlink a product if it is created in Amazon, even
-        its sync active flag is False because
-        keeping it in Amazon will cause many confusing when
-        we download reports, history etc but couldn't find
-        it locally.
-        """
-        # ToDo: should fix unlink for templates with multiple variants
-        amazon_product = self._amazon_product_access.get_amazon_product(
-            operation)
-        if amazon_product:
-            self._sync_creation.insert_operation_delete(operation)
-            amazon_product.unlink()
-        else:
-            log_template = "Product is not created in Amazon for unlink " \
-                           "operation for Model: {0}, Record id: {1}"
-            _logger.debug(log_template.format(
-                operation[MODEL_NAME_FIELD], operation[RECORD_ID_FIELD]
-            ))
-
-        self._skip_variant_unlink(operation)
 
     def _check_create(self, operation):
         found = None
@@ -131,60 +65,6 @@ class ProductOperationTransformer(object):
         if creations:
             found = creations[0]
         return found
-
-    def _transform_price(self, operation, write_values):
-        price = write_values.pop(PRODUCT_PRICE_FIELD, None)
-        if price is not None:
-            self._sync_creation.insert_price(operation, price)
-
-    def _transform_inventory(self, operation, write_values):
-        inventory = write_values.pop(PRODUCT_AVAILABLE_QUANTITY_FIELD, None)
-        if inventory is not None:
-            self._sync_creation.insert_inventory(operation, inventory)
-
-    def _transform_image(self, operation, write_values):
-        image_trigger = write_values.pop(
-            PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD, None)
-        # create image sync regardless the image_trigger value
-        if image_trigger is not None:
-            self._sync_creation.insert_image(operation)
-
-    def _transform_update(self, operation, write_values):
-        self._transform_price(operation, write_values)
-        self._transform_inventory(operation, write_values)
-        self._transform_image(operation, write_values)
-        if write_values:
-            self._sync_creation.insert_update(operation, write_values)
-
-    def _convert_write(self, operation, write_values):
-        """transform a write operation to one or more sync operations
-        1. If sync active changes, generate create or deactivate sync. Done
-        2. If sync active or creation_success is False, ignore all changes.
-        Done.
-        3. If price, inventory and image change, generate
-        corresponding syncs. image triggers is set to False.
-        4. If any write values left, generate an update sync
-        """
-        sync_active_value = write_values.get(AMAZON_SYNC_ACTIVE_FIELD, None)
-        sync_active = self._get_sync_active(operation)
-        is_created = self._amazon_product_access.is_created(operation)
-        if sync_active_value is not None:
-            if sync_active_value:
-                _logger.debug("Amazon sync active changes to "
-                              "True, generate a create sync.")
-                self._sync_creation.insert_create(operation)
-            else:
-                # no need to deactivate it if not created
-                if is_created:
-                    _logger.debug("Amazon sync active changes to "
-                                  "False, generate a deactivate sync.")
-                    self._sync_creation.insert_deactivate(operation)
-        else:
-            if sync_active and is_created:
-                self._transform_update(operation, write_values)
-            else:
-                _logger.debug("Product write is inactive or is not created "
-                              "in Amazon. Ignore it.")
 
     def _merge_write(self, operation, write_values):
         # merge all writes that are ordered by operation id
@@ -207,7 +87,7 @@ class ProductOperationTransformer(object):
         # if there is a create operation, ignore write
         creation = self._check_create(operation)
         if creation:
-            self._add_create_sync(creation)
+            self._create_transformer.transform(creation)
             _logger.debug("found a create operation, ignore write operation")
             return
 
@@ -221,7 +101,48 @@ class ProductOperationTransformer(object):
             write_values
         ))
         merged_values = self._merge_write(operation, write_values)
-        self._convert_write(operation, merged_values)
+        sync_active = self._get_sync_active(operation)
+        self._writer_transformer.transform(
+            operation, merged_values, sync_active)
+
+    def _transform_create_write(self, operation):
+        operation_type = operation[OPERATION_TYPE_FIELD]
+        # for existed product create or write operation
+        if operation_type == CREATE_RECORD:
+            if self._get_sync_active(operation):
+                self._create_transformer.transform(operation)
+            else:
+                log_template = "Amazon Sync is inactive for create " \
+                               "operation. Model: {0}, Record id: {1}"
+                _logger.debug(log_template.format(
+                    operation[MODEL_NAME_FIELD],
+                    operation[RECORD_ID_FIELD]
+                ))
+        elif operation_type == WRITE_RECORD:
+            self._transform_write(operation)
+        else:
+            template = "Invalid product operation type {0} " \
+                       "for {1}: {2}"
+            _logger.error(template.format(
+                operation_type,
+                operation[MODEL_NAME_FIELD],
+                operation[RECORD_ID_FIELD]
+            ))
+
+    def _transform_operation(self, operation):
+        operation_type = operation[OPERATION_TYPE_FIELD]
+        if operation_type == UNLINK_RECORD:
+            self._unlink_transformer.transform(operation)
+        elif not self._utility.is_existed(operation):
+            log_template = "Ignore operation for unlinked " \
+                           "Model: {0}, Record id: {1}"
+            _logger.debug(log_template.format(
+                operation[MODEL_NAME_FIELD],
+                operation[RECORD_ID_FIELD]
+            ))
+        else:
+            # create or write for existing product
+            self._transform_create_write(operation)
 
     def transform(self):
         """
@@ -230,11 +151,12 @@ class ProductOperationTransformer(object):
         product operation left after merge:
         1. add create directly
         2. unlink is always the last for a model_name + record_id
-        for template unlink, ignore all variant unlink operations
+        for template unlink -- it will be transformed first !!!
         3. ignore write if there is a create
         4. merge all writes into one then break it into different
         sync operations such as update, price, inventory and image
         """
+        _logger.debug("Transforming new product operations.")
         for operation in self._new_operations:
             record_key = (operation[MODEL_NAME_FIELD],
                           operation[RECORD_ID_FIELD])
@@ -242,19 +164,4 @@ class ProductOperationTransformer(object):
                 continue
             else:
                 self._transformed_operations.add(record_key)
-                operation_type = operation[OPERATION_TYPE_FIELD]
-                if operation_type == CREATE_RECORD:
-                    self._add_create_sync(operation)
-                elif operation_type == UNLINK_RECORD:
-                    self._transform_unlink(operation)
-                elif operation_type == WRITE_RECORD:
-                    self._transform_write(operation)
-                else:
-                    template = "Invalid product operation type {0} " \
-                               "for {1}: {2}"
-                    message = template.format(
-                        operation_type,
-                        operation[MODEL_NAME_FIELD],
-                        operation[RECORD_ID_FIELD])
-                    _logger.error(message)
-                    raise ValueError(message)
+                self._transform_operation(operation)

@@ -9,7 +9,7 @@ from ..shared.model_names import (
     MODEL_NAME_FIELD,
     RECORD_ID_FIELD,
     TEMPLATE_ID_FIELD,
-    OPERATION_DATA_FIELD,
+    PRODUCT_SKU_FIELD,
 
     AMAZON_PRODUCT_SYNC_TABLE,
     SYNC_TYPE_FIELD,
@@ -121,9 +121,10 @@ class ProductSyncCreation(object):
 
         self._insert_sync_record(header, SYNC_RELATION)
 
-    def insert_operation_delete(self, operation):
+    def insert_amazon_delete(self, amazon_product):
         """
         Insert a delete sync for a product operation object
         """
-        sync_data = operation[OPERATION_DATA_FIELD]
-        self._insert_sync_record(operation, SYNC_DELETE, sync_data)
+        product_sku = amazon_product[PRODUCT_SKU_FIELD]
+        sync_value = cPickle.dumps(product_sku, cPickle.HIGHEST_PROTOCOL)
+        self._insert_sync_record(amazon_product, SYNC_DELETE, sync_value)

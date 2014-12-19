@@ -30,6 +30,14 @@ class AmazonProductAccess(object):
     def is_created(self, sync_head):
         return bool(self.get_amazon_product(sync_head))
 
+    def get_variants(self, template_id):
+        search_domain = [
+            (MODEL_NAME_FIELD, '=', PRODUCT_PRODUCT_TABLE),
+            (TEMPLATE_ID_FIELD, '=', template_id)
+        ]
+        variants = self._amazon_product_table.search(search_domain)
+        return variants
+
     def get_created_variants(self, template_id):
         headers = []
         search_domain = [

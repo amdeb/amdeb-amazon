@@ -5,33 +5,24 @@ _logger = logging.getLogger(__name__)
 
 from ..shared.model_names import (
     PRODUCT_TEMPLATE_TABLE,
-    PRODUCT_VARIANT_COUNT_FIELD,
 
     PRODUCT_PRODUCT_TABLE,
-    MODEL_NAME_FIELD,
-    RECORD_ID_FIELD,
     AMAZON_PRODUCT_SYNC_TABLE,
     SYNC_STATUS_FIELD,
-    SYNC_TYPE_FIELD,
     AMAZON_MESSAGE_CODE_FIELD,
     AMAZON_SUBMISSION_ID_FIELD,
     AMAZON_RESULT_DESCRIPTION_FIELD,
-    AMAZON_SYNC_ACTIVE_FIELD,
-    PRODUCT_PRICE_FIELD,
-    PRODUCT_AVAILABLE_QUANTITY_FIELD,
+    SYNC_CHECK_STATUS_COUNT_FILED,
 )
 from ..shared.sync_status import (
     SYNC_PENDING,
     SYNC_SUCCESS,
-    SYNC_ERROR,
     AMAZON_PROCESS_DONE_STATUS,
-)
-from ..shared.sync_operation_types import (
-    SYNC_CREATE,
 )
 
 from .product_sync_creation import ProductSyncCreation
 from .amazon_product_access import AmazonProductAccess
+from .product_creation_success import ProductCreationSuccess
 
 
 class ProductSyncCompleted(object):
@@ -48,8 +39,9 @@ class ProductSyncCompleted(object):
         self._product_template = env[PRODUCT_TEMPLATE_TABLE]
         self._product_product = env[PRODUCT_PRODUCT_TABLE]
         self._completed_set = None
-        self._is_new_sync_added = False
+
         self._amazon_product_access = AmazonProductAccess(env)
+        self._creation_success = ProductCreationSuccess(env)
 
     def _get_completed(self):
         _logger.debug("get completed sync operations")
@@ -68,39 +60,19 @@ class ProductSyncCompleted(object):
         _logger.debug(log_template.format(len(submission_ids)))
         return submission_ids
 
-    def _add_price_sync(self, record, completed):
-        price = record[PRODUCT_PRICE_FIELD]
-        self._sync_creation.insert_price(completed, price)
+    @staticmethod
+    def _write_exception(completed, ex):
+        # keep its pending status, increase check count thus
+        # it will be checked till it exceeds its checking threshold
+        result = {
+            AMAZON_RESULT_DESCRIPTION_FIELD: ex.message
+        }
+        check_count = completed[SYNC_CHECK_STATUS_COUNT_FILED]
+        completed[SYNC_CHECK_STATUS_COUNT_FILED] = check_count + 1
 
-    def _add_inventory_sync(self, record, completed):
-        inventory = record[PRODUCT_AVAILABLE_QUANTITY_FIELD]
-        self._sync_creation.insert_inventory(completed, inventory)
-
-    def _add_success_syncs(self, record, completed):
-        self._add_price_sync(record, completed)
-        self._add_inventory_sync(record, completed)
-        self._sync_creation.insert_image(completed)
-
-    def _write_creation_success(self, completed):
-        model_name = completed[MODEL_NAME_FIELD]
-        record_id = completed[RECORD_ID_FIELD]
-        _logger.debug("write creation success for {0}, {1}".format(
-            model_name, record_id
-        ))
-        record = self._env[model_name].browse(record_id)
-        sync_active = record[AMAZON_SYNC_ACTIVE_FIELD]
-        if sync_active:
-            self._add_success_syncs(record, completed)
-            self._is_new_sync_added = True
-
-    def _process_creation_success(self):
-        for completed in self._completed_set:
-            # for warning and success, set success flag
-            is_success = completed[SYNC_STATUS_FIELD] != SYNC_ERROR
-            is_sync_create = completed[SYNC_TYPE_FIELD] == SYNC_CREATE
-            if is_sync_create and is_success:
-                self._write_creation_success(completed)
-                self._amazon_product_access.write_from_sync(completed)
+        log_template = "Completed exception result {0} for sync id {1}"
+        _logger.debug(log_template.format(result, completed.id))
+        completed.write(result)
 
     @staticmethod
     def _write_result(completed, sync_result):
@@ -113,7 +85,7 @@ class ProductSyncCompleted(object):
             result[SYNC_STATUS_FIELD] = SYNC_SUCCESS
 
         _logger.debug("write completion result {0} for sync id {1}".format(
-            sync_result, completed.id))
+            result, completed.id))
 
         completed.write(result)
 
@@ -122,73 +94,47 @@ class ProductSyncCompleted(object):
             submission_id = completed[AMAZON_SUBMISSION_ID_FIELD]
             # should have results for all
             completion_result = completion_results[submission_id]
-
-            # if success, Amazon gives no result
-            sync_result = completion_result.get(completed.id, None)
-            self._write_result(completed, sync_result)
+            if isinstance(completion_result, Exception):
+                self._write_exception(completed, completion_result)
+            else:
+                # if success, Amazon gives no result
+                sync_result = completion_result.get(completed.id, None)
+                self._write_result(completed, sync_result)
 
     def _get_completion_results(self, submission_ids):
         completion_results = {}
         for submission_id in submission_ids:
-            completion_result = self._mws.get_sync_result(submission_id)
-            completion_results[submission_id] = completion_result
+            try:
+                completion_result = self._mws.get_sync_result(submission_id)
+                completion_results[submission_id] = completion_result
+            except Exception as ex:
+                log_template = "mws sync result for exception {0} for" \
+                               " submission id {1}"
+                _logger.debug(log_template.format(
+                    ex.message, submission_id
+                ))
+                completion_results[submission_id] = ex
 
         log_template = "get {} results for completed sync operations."
         _logger.debug(log_template.format(len(completion_results)))
         return completion_results
-
-    def _check_variant_created(self, completed):
-        headers = []
-        template_id = completed[RECORD_ID_FIELD]
-        template_record = self._product_template.browse(template_id)
-        if template_record[PRODUCT_VARIANT_COUNT_FIELD] > 1:
-            headers = self._amazon_product_access.get_created_variants(
-                template_id)
-        return headers
-
-    def _add_relation_sync(self, completed):
-        if completed[MODEL_NAME_FIELD] == PRODUCT_PRODUCT_TABLE:
-            if self._amazon_product_access.is_created(completed):
-                self._sync_creation.insert_relation(completed)
-            else:
-                log_template = "Product template is not created for {}. " \
-                               "Don't create relation sync"
-                _logger.debug(log_template.format(
-                    completed[RECORD_ID_FIELD]
-                ))
-        else:
-            headers = self._check_variant_created(completed)
-            for header in headers:
-                self._sync_creation.insert_relation(header)
-
-    def _process_creation_relations(self):
-        # It is possible that a product template or variant
-        # creation is failed and the relation
-        # is not created for a product variant.
-        # The automatic way to fix this is to create
-        # relation syn for both template and variant creation sync
-        for completed in self._completed_set:
-            # for warning and success, set success flag
-            is_success = completed[SYNC_STATUS_FIELD] != SYNC_ERROR
-            is_sync_create = completed[SYNC_TYPE_FIELD] == SYNC_CREATE
-            if is_sync_create and is_success:
-                self._add_relation_sync(completed)
 
     def synchronize(self):
         """
         Process completed sync requests
         :return: True if new sync record is added for create sync
         """
+        is_new_sync_added = False
         self._get_completed()
         submission_ids = self._get_submission_ids()
         if submission_ids:
             completion_results = self._get_completion_results(submission_ids)
             self._save_completion_results(completion_results)
-            self._process_creation_success()
 
             # create relation sync in a separate step
             # because we need to know the
             # creation status of both the template and the variant
-            self._process_creation_relations()
+            is_new_sync_added = self._creation_success.process(
+                self._completed_set)
 
-        return self._is_new_sync_added
+        return is_new_sync_added
