@@ -10,14 +10,14 @@ from ..shared.model_names import (
     PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD,
 )
 
-from .product_sync_creation import ProductSyncCreation
+from .product_sync_access import ProductSyncAccess
 from .amazon_product_access import AmazonProductAccess
 
 
 class ProductWriteTransformer(object):
     def __init__(self, env):
         self._env = env
-        self._sync_creation = ProductSyncCreation(env)
+        self._sync_creation = ProductSyncAccess(env)
         self._amazon_product_access = AmazonProductAccess(env)
 
     def _transform_price(self, operation, write_values):

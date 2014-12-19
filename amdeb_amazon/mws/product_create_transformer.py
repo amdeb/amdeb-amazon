@@ -14,13 +14,13 @@ from ..shared.model_names import (
     TEMPLATE_ID_FIELD,
 )
 
-from .product_sync_creation import ProductSyncCreation
+from .product_sync_access import ProductSyncAccess
 
 
 class ProductCreateTransformer(object):
     def __init__(self, env):
         self._env = env
-        self._sync_creation = ProductSyncCreation(env)
+        self._sync_creation = ProductSyncAccess(env)
 
     def _has_multi_variants(self, operation):
         result = False

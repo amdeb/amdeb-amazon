@@ -20,7 +20,7 @@ from ..shared.sync_status import (
     AMAZON_PROCESS_DONE_STATUS,
 )
 
-from .product_sync_creation import ProductSyncCreation
+from .product_sync_access import ProductSyncAccess
 from .amazon_product_access import AmazonProductAccess
 from .product_creation_success import ProductCreationSuccess
 
@@ -35,7 +35,7 @@ class ProductSyncCompleted(object):
         self._env = env
         self._mws = mws
         self._amazon_sync_table = env[AMAZON_PRODUCT_SYNC_TABLE]
-        self._sync_creation = ProductSyncCreation(env)
+        self._sync_creation = ProductSyncAccess(env)
         self._product_template = env[PRODUCT_TEMPLATE_TABLE]
         self._product_product = env[PRODUCT_PRODUCT_TABLE]
         self._completed_set = None

@@ -13,11 +13,15 @@ from ..shared.model_names import (
 
 
 class AmazonProductAccess(object):
+    """
+    This class provides methods accessing Amazon Product Table
+    that stores created product head and SKU.
+    """
     def __init__(self, env):
         self._env = env
         self._amazon_product_table = env[AMAZON_PRODUCT_TABLE]
 
-    def get_amazon_product(self, sync_head):
+    def search(self, sync_head):
         model_name = sync_head[MODEL_NAME_FIELD]
         record_id = sync_head[RECORD_ID_FIELD]
         search_domain = [
@@ -28,7 +32,7 @@ class AmazonProductAccess(object):
         return amazon_product
 
     def is_created(self, sync_head):
-        return bool(self.get_amazon_product(sync_head))
+        return bool(self.search(sync_head))
 
     def get_variants(self, template_id):
         search_domain = [

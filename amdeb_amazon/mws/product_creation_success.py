@@ -17,7 +17,7 @@ from ..shared.model_names import (
 from ..shared.sync_status import SYNC_ERROR
 from ..shared.sync_operation_types import SYNC_CREATE
 
-from .product_sync_creation import ProductSyncCreation
+from .product_sync_access import ProductSyncAccess
 from .amazon_product_access import AmazonProductAccess
 from .product_utility import ProductUtility
 
@@ -25,7 +25,7 @@ from .product_utility import ProductUtility
 class ProductCreationSuccess(object):
     def __init__(self, env):
         self._env = env
-        self._sync_creation = ProductSyncCreation(env)
+        self._sync_creation = ProductSyncAccess(env)
         self._amazon_product_access = AmazonProductAccess(env)
         self._product_utility = ProductUtility(env)
         self._is_new_sync_added = False
