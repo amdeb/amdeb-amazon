@@ -18,7 +18,7 @@ from ..shared.model_names import (
 )
 
 from ..shared.sync_status import (
-    SYNC_PENDING, SYNC_ERROR,
+    SYNC_NEW, SYNC_PENDING, SYNC_ERROR,
     AMAZON_PROCESS_DONE_STATUS,
 )
 
@@ -129,16 +129,25 @@ class ProductSyncAccess(object):
         sync_value = cPickle.dumps(product_sku, cPickle.HIGHEST_PROTOCOL)
         self._insert(amazon_product, SYNC_DELETE, sync_value)
 
+    def get_updates(self):
+        search_domain = [
+            (SYNC_STATUS_FIELD, '=', SYNC_NEW),
+            (SYNC_TYPE_FIELD, '=', SYNC_UPDATE)
+        ]
+        return self._table.search(search_domain)
+
+    def get_pending(self):
+        # get pending in the ascending id order to
+        # process the newest sync first.
+        search_domain = [(SYNC_STATUS_FIELD, '=', SYNC_PENDING)]
+        return self._table.search(search_domain, order="id asc")
+
     def get_completed(self):
         search_domain = [
             (SYNC_STATUS_FIELD, '=', SYNC_PENDING),
             (AMAZON_MESSAGE_CODE_FIELD, '=', AMAZON_PROCESS_DONE_STATUS)
         ]
         return self._table.search(search_domain)
-
-    def get_pending(self):
-        search_domain = [(SYNC_STATUS_FIELD, '=', SYNC_PENDING)]
-        return self._table.search(search_domain, order="id asc")
 
     def archive_old(self):
         _logger.debug("Enter ProductSyncAccess archive_old()")
