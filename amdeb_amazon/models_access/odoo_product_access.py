@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from amdeb_amazon.shared.model_names import(
+from ..shared.model_names import(
     PRODUCT_TEMPLATE_TABLE,
     PRODUCT_VARIANT_COUNT_FIELD,
     MODEL_NAME_FIELD,

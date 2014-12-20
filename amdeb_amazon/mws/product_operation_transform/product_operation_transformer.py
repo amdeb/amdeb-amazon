@@ -21,7 +21,6 @@ from . import ProductCreateTransformer
 from . import ProductWriteTransformer
 
 
-
 class ProductOperationTransformer(object):
     """
     Transform product operations into sync operations

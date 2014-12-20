@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-from amdeb_amazon.shared.model_names import (
+from ..shared.model_names import (
     AMAZON_PRODUCT_TABLE,
     MODEL_NAME_FIELD,
     RECORD_ID_FIELD,
