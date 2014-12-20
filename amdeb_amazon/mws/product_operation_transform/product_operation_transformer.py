@@ -5,8 +5,7 @@ import logging
 _logger = logging.getLogger(__name__)
 
 from ...shared.model_names import (
-    MODEL_NAME_FIELD, RECORD_ID_FIELD,
-    TEMPLATE_ID_FIELD, AMAZON_SYNC_ACTIVE_FIELD,
+    MODEL_NAME_FIELD, RECORD_ID_FIELD, TEMPLATE_ID_FIELD,
 
     OPERATION_TYPE_FIELD, OPERATION_DATA_FIELD,
 )
@@ -28,7 +27,6 @@ class ProductOperationTransformer(object):
     for create and write operation before transformation
     """
     def __init__(self, env, new_operations):
-        self._env = env
         self._new_operations = new_operations
 
         self._unlink_transformer = ProductUnlinkTransformer(
@@ -40,12 +38,6 @@ class ProductOperationTransformer(object):
 
         # this set keeps transformed model_name and record_id
         self._transformed_operations = set()
-
-    def _get_sync_active(self, operation):
-        model = self._env[operation[MODEL_NAME_FIELD]]
-        record = model.browse(operation[RECORD_ID_FIELD])
-        sync_active = record[AMAZON_SYNC_ACTIVE_FIELD]
-        return sync_active
 
     def _check_create(self, operation):
         """
@@ -102,7 +94,7 @@ class ProductOperationTransformer(object):
             operation[TEMPLATE_ID_FIELD], write_values))
 
         merged_values = self._merge_write(operation, write_values)
-        sync_active = self._get_sync_active(operation)
+        sync_active = self._odoo_product.get_sync_active(operation)
         self._writer_transformer.transform(
             operation, merged_values, sync_active)
 
@@ -110,7 +102,7 @@ class ProductOperationTransformer(object):
         operation_type = operation[OPERATION_TYPE_FIELD]
         # for existed product create or write operation
         if operation_type == CREATE_RECORD:
-            if self._get_sync_active(operation):
+            if self._odoo_product.get_sync_active(operation):
                 self._create_transformer.transform(operation)
             else:
                 log_template = "Amazon Sync is inactive for create " \

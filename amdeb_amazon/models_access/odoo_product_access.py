@@ -5,6 +5,7 @@ from ..shared.model_names import(
     PRODUCT_VARIANT_COUNT_FIELD,
     MODEL_NAME_FIELD,
     RECORD_ID_FIELD,
+    AMAZON_SYNC_ACTIVE_FIELD,
 )
 
 
@@ -29,3 +30,9 @@ class OdooProductAccess(object):
         if record[PRODUCT_VARIANT_COUNT_FIELD] > 1:
             result = True
         return result
+
+    def get_sync_active(self, header):
+        model = self._env[header[MODEL_NAME_FIELD]]
+        record = model.browse(header[RECORD_ID_FIELD])
+        sync_active = record[AMAZON_SYNC_ACTIVE_FIELD]
+        return sync_active
