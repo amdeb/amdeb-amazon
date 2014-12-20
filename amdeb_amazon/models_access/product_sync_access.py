@@ -3,13 +3,12 @@
 import cPickle
 from datetime import datetime, timedelta
 import logging
-_logger = logging.getLogger(__name__)
 
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT as DATETIME_FORMAT
 
 from ..shared.model_names import (
-    PRODUCT_PRODUCT_TABLE, MODEL_NAME_FIELD,
-    RECORD_ID_FIELD, TEMPLATE_ID_FIELD, PRODUCT_SKU_FIELD,
+    MODEL_NAME_FIELD, RECORD_ID_FIELD,
+    TEMPLATE_ID_FIELD, PRODUCT_SKU_FIELD,
 
     AMAZON_PRODUCT_SYNC_TABLE, SYNC_TYPE_FIELD, SYNC_DATA_FIELD,
     SYNC_CREATION_TIMESTAMP_FIELD, SYNC_STATUS_FIELD,
@@ -34,6 +33,8 @@ _ARCHIVE_CODE = "Timeout"
 _ARCHIVE_MESSAGE = "Pending more than {0} days and {1} checks".format(
     _ARCHIVE_DAYS, _ARCHIVE_CHECK_COUNT
 )
+
+_logger = logging.getLogger(__name__)
 
 
 class ProductSyncAccess(object):
@@ -101,10 +102,9 @@ class ProductSyncAccess(object):
         self._insert(header, SYNC_DEACTIVATE)
 
     def insert_relation(self, header):
-        # the header here should be only for variant
-        if header[MODEL_NAME_FIELD] != PRODUCT_PRODUCT_TABLE:
-            raise ValueError("Invalid model name value for insert_relation.")
-
+        """
+        Create sync relation for a product variant
+        """
         self._insert(header, SYNC_RELATION)
 
     def insert_delete(self, amazon_product):
@@ -129,7 +129,7 @@ class ProductSyncAccess(object):
         search_domain = [(SYNC_STATUS_FIELD, '=', SYNC_PENDING)]
         return self._table.search(search_domain, order="id asc")
 
-    def get_completed(self):
+    def get_done(self):
         search_domain = [
             (SYNC_STATUS_FIELD, '=', SYNC_PENDING),
             (AMAZON_MESSAGE_CODE_FIELD, '=', AMAZON_PROCESS_DONE_STATUS)

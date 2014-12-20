@@ -1,14 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import logging
-_logger = logging.getLogger(__name__)
 
 from ...shared.model_names import (
     PRODUCT_PRODUCT_TABLE, MODEL_NAME_FIELD, RECORD_ID_FIELD,
 )
-
 from ...models_access import ProductSyncAccess
 from ...models_access import OdooProductAccess
+
+_logger = logging.getLogger(__name__)
 
 
 class ProductCreateTransformer(object):

@@ -2,11 +2,11 @@
 
 from datetime import date
 import logging
-_logger = logging.getLogger(__name__)
 
 from ...models_access import ProductSyncAccess
 
 _last_chore_date = None
+_logger = logging.getLogger(__name__)
 
 
 def do_daily_chore(env):

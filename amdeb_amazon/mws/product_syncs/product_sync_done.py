@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-_logger = logging.getLogger(__name__)
 
 from ...shared.model_names import (
     SYNC_STATUS_FIELD, AMAZON_MESSAGE_CODE_FIELD,
@@ -9,14 +8,12 @@ from ...shared.model_names import (
     SYNC_CHECK_STATUS_COUNT_FILED,
 )
 from ...shared.sync_status import SYNC_SUCCESS
-
 from ...models_access import ProductSyncAccess
-from ...models_access import AmazonProductAccess
 
-from . import ProductCreationSuccess
+_logger = logging.getLogger(__name__)
 
 
-class ProductSyncCompleted(object):
+class ProductSyncDone(object):
     """
     This class processes completed sync operations
     Instead of processing immediately after status checking,
@@ -24,37 +21,34 @@ class ProductSyncCompleted(object):
     """
     def __init__(self, env, mws):
         self._mws = mws
-        self._sync_creation = ProductSyncAccess(env)
-        self._completed_set = None
-
-        self._amazon_product_access = AmazonProductAccess(env)
-        self._creation_success = ProductCreationSuccess(env)
+        self._product_sync = ProductSyncAccess(env)
+        self._done_set = None
 
     def _get_submission_ids(self):
         submission_ids = set()
-        for pending in self._completed_set:
-            submission_id = pending[AMAZON_SUBMISSION_ID_FIELD]
+        for done in self._done_set:
+            submission_id = done[AMAZON_SUBMISSION_ID_FIELD]
             submission_ids.add(submission_id)
         log_template = "get {} submission ids for completed sync operations."
         _logger.debug(log_template.format(len(submission_ids)))
         return submission_ids
 
     @staticmethod
-    def _write_exception(completed, ex):
+    def _write_exception(done, ex):
         # keep its pending status, increase check count thus
         # it will be checked till it exceeds the checking threshold
         result = {
             AMAZON_RESULT_DESCRIPTION_FIELD: ex.message
         }
-        check_count = completed[SYNC_CHECK_STATUS_COUNT_FILED]
-        completed[SYNC_CHECK_STATUS_COUNT_FILED] = check_count + 1
+        check_count = done[SYNC_CHECK_STATUS_COUNT_FILED]
+        done[SYNC_CHECK_STATUS_COUNT_FILED] = check_count + 1
 
-        log_template = "Completed exception result {0} for sync id {1}"
-        _logger.debug(log_template.format(result, completed.id))
-        completed.write(result)
+        log_template = "Completed exception {0} for sync id {1}"
+        _logger.debug(log_template.format(result, done.id))
+        done.write(result)
 
     @staticmethod
-    def _write_result(completed, sync_result):
+    def _write_result(done, sync_result):
         result = {}
         if sync_result:
             result[SYNC_STATUS_FIELD] = sync_result[0]
@@ -64,23 +58,23 @@ class ProductSyncCompleted(object):
             result[SYNC_STATUS_FIELD] = SYNC_SUCCESS
 
         _logger.debug("write completion result {0} for sync id {1}".format(
-            result, completed.id))
+            result, done.id))
 
-        completed.write(result)
+        done.write(result)
 
-    def _save_completion_results(self, completion_results):
-        for completed in self._completed_set:
-            submission_id = completed[AMAZON_SUBMISSION_ID_FIELD]
+    def _save_done_results(self, completion_results):
+        for done in self._done_set:
+            submission_id = done[AMAZON_SUBMISSION_ID_FIELD]
             # should have results for all
             completion_result = completion_results[submission_id]
             if isinstance(completion_result, Exception):
-                self._write_exception(completed, completion_result)
+                self._write_exception(done, completion_result)
             else:
                 # if success, Amazon gives no result
-                sync_result = completion_result.get(completed.id, None)
-                self._write_result(completed, sync_result)
+                sync_result = completion_result.get(done.id, None)
+                self._write_result(done, sync_result)
 
-    def _get_completion_results(self, submission_ids):
+    def _get_results(self, submission_ids):
         completion_results = {}
         for submission_id in submission_ids:
             try:
@@ -89,9 +83,7 @@ class ProductSyncCompleted(object):
             except Exception as ex:
                 log_template = "mws sync result for exception {0} for" \
                                " submission id {1}"
-                _logger.debug(log_template.format(
-                    ex.message, submission_id
-                ))
+                _logger.debug(log_template.format(ex.message, submission_id))
                 completion_results[submission_id] = ex
 
         log_template = "get {} results for completed sync operations."
@@ -101,19 +93,11 @@ class ProductSyncCompleted(object):
     def synchronize(self):
         """
         Process completed sync requests
-        :return: True if new sync record is added for create sync
         """
-        is_new_sync_added = False
-        self._completed_set = self._sync_creation.get_completed()
+        self._done_set = self._product_sync.get_done()
         submission_ids = self._get_submission_ids()
         if submission_ids:
-            completion_results = self._get_completion_results(submission_ids)
-            self._save_completion_results(completion_results)
+            completion_results = self._get_results(submission_ids)
+            self._save_done_results(completion_results)
 
-            # create relation sync in a separate step
-            # because we need to know the
-            # creation status of both the template and the variant
-            is_new_sync_added = self._creation_success.process(
-                self._completed_set)
-
-        return is_new_sync_added
+        return self._done_set

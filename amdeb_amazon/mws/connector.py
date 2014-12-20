@@ -3,11 +3,11 @@
 import jinja2
 from lxml import etree
 import logging
-_logger = logging.getLogger(__name__)
 
 from boto.mws import connection
 
 MarketPlaceID = 'ATVPDKIKX0DER'
+_logger = logging.getLogger(__name__)
 
 
 class Boto(object):

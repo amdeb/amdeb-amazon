@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-_logger = logging.getLogger(__name__)
-
 from ...shared.model_names import (
     AMAZON_MESSAGE_CODE_FIELD, AMAZON_SUBMISSION_ID_FIELD,
     SYNC_CHECK_STATUS_COUNT_FILED,
@@ -10,19 +8,22 @@ from ...shared.model_names import (
 
 from ...models_access import ProductSyncAccess
 
+_logger = logging.getLogger(__name__)
+
 
 class ProductSyncPending(object):
     """
     This class processes pending syncs ordered by ascending record ids
     """
     def __init__(self, env, mws):
-        self._env = env
+        self._product_sync = ProductSyncAccess(env)
         self._mws = mws
         self._pending_set = None
 
     def _get_submission_ids(self):
         _logger.debug("get submission ids")
-        # we use list to keep the order
+        # we use list to keep the order because we want to query
+        # old submissions first
         submission_ids = []
         for pending in self._pending_set:
             submission_id = pending[AMAZON_SUBMISSION_ID_FIELD]
@@ -70,8 +71,7 @@ class ProductSyncPending(object):
         2. update submission status
         """
         _logger.debug("about to check pending sync status")
-        product_sync = ProductSyncAccess(self._env)
-        self._pending_set = product_sync.get_pending()
+        self._pending_set = self._product_sync.get_pending()
 
         submission_ids = self._get_submission_ids()
         if submission_ids:

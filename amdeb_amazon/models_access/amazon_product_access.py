@@ -2,9 +2,7 @@
 
 from ..shared.model_names import (
     AMAZON_PRODUCT_TABLE, MODEL_NAME_FIELD, RECORD_ID_FIELD,
-    TEMPLATE_ID_FIELD, PRODUCT_SKU_FIELD,
-
-    PRODUCT_PRODUCT_TABLE, PRODUCT_DEFAULT_CODE_FIELD,
+    TEMPLATE_ID_FIELD, PRODUCT_SKU_FIELD, PRODUCT_PRODUCT_TABLE,
 )
 
 from . import OdooProductAccess
@@ -40,31 +38,14 @@ class AmazonProductAccess(object):
         variants = self._table.search(search_domain)
         return variants
 
-    def get_created_variants(self, template_id):
-        headers = []
-        search_domain = [
-            (MODEL_NAME_FIELD, '=', PRODUCT_PRODUCT_TABLE),
-            (TEMPLATE_ID_FIELD, '=', template_id)
-        ]
-
-        variants = self._table.search(search_domain)
-        for variant in variants:
-            record_id = variant[RECORD_ID_FIELD]
-            header = {
-                MODEL_NAME_FIELD: PRODUCT_PRODUCT_TABLE,
-                RECORD_ID_FIELD: record_id,
-                TEMPLATE_ID_FIELD: template_id,
+    def insert_completed(self, sync_head):
+        # insert a new record if it doesn't exist
+        if not self.is_created(sync_head):
+            product_sku = self._odoo_product.get_sku(sync_head)
+            values = {
+                MODEL_NAME_FIELD: sync_head[MODEL_NAME_FIELD],
+                RECORD_ID_FIELD: sync_head[RECORD_ID_FIELD],
+                TEMPLATE_ID_FIELD: sync_head[TEMPLATE_ID_FIELD],
+                PRODUCT_SKU_FIELD: product_sku,
             }
-            headers.append(header)
-        return headers
-
-    def write_from_sync(self, sync_head):
-        product = self._odoo_product.browse(sync_head)
-        product_sku = product[PRODUCT_DEFAULT_CODE_FIELD]
-        values = {
-            MODEL_NAME_FIELD: sync_head[MODEL_NAME_FIELD],
-            RECORD_ID_FIELD: sync_head[RECORD_ID_FIELD],
-            TEMPLATE_ID_FIELD: sync_head[TEMPLATE_ID_FIELD],
-            PRODUCT_SKU_FIELD: product_sku,
-        }
-        self._table.create(values)
+            self._table.create(values)

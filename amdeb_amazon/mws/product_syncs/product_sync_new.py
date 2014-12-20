@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-_logger = logging.getLogger(__name__)
 
 from ...shared.model_names import (
     SYNC_STATUS_FIELD, AMAZON_MESSAGE_CODE_FIELD,
@@ -12,6 +11,8 @@ from ...models_access import ProductSyncAccess
 from ...shared.utility import field_utcnow
 
 from ..product_sync_transform import UpdateTransformer
+
+_logger = logging.getLogger(__name__)
 
 
 class ProductSyncNew(object):

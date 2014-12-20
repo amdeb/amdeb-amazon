@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import logging
-_logger = logging.getLogger(__name__)
 
 from ..shared.model_names import (
-    IR_VALUES_TABLE,
-    AMAZON_SETTINGS_TABLE,
+    IR_VALUES_TABLE, AMAZON_SETTINGS_TABLE,
 )
 from .connector import Boto
 from ..models_access import ProductOperationAccess
@@ -13,7 +11,10 @@ from .product_operation_transform import ProductOperationTransformer
 from .product_syncs import ProductSyncNew
 from .product_syncs import ProductSyncPending
 from .product_syncs import do_daily_chore
-from .product_syncs import ProductSyncCompleted
+from .product_syncs import ProductSyncDone
+from .product_syncs import ProductCreationSuccess
+
+_logger = logging.getLogger(__name__)
 
 
 class ProductSynchronization(object):
@@ -50,8 +51,14 @@ class ProductSynchronization(object):
         sync_pending = ProductSyncPending(self._env, self._mws)
         sync_pending.synchronize()
 
-        sync_completed = ProductSyncCompleted(self._env, self._mws)
-        if sync_completed.synchronize():
-            sync_new.synchronize()
+        sync_done = ProductSyncDone(self._env, self._mws)
+        done_set = sync_done.synchronize()
+
+        # create relation sync in a separate step because we need
+        # to know the creation status of both the template and the variant
+        if done_set:
+            creation_success = ProductCreationSuccess(self._env)
+            if creation_success.process(done_set):
+                sync_new.synchronize()
 
         do_daily_chore(self._env)

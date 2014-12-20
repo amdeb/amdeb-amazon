@@ -1,64 +1,48 @@
 # -*- coding: utf-8 -*-
 
 import logging
-_logger = logging.getLogger(__name__)
 
 from ...shared.model_names import (
-    PRODUCT_PRODUCT_TABLE, MODEL_NAME_FIELD, RECORD_ID_FIELD,
-    SYNC_STATUS_FIELD, SYNC_TYPE_FIELD, AMAZON_SYNC_ACTIVE_FIELD,
+    PRODUCT_PRODUCT_TABLE, PRODUCT_TEMPLATE_TABLE,
+    MODEL_NAME_FIELD, RECORD_ID_FIELD,
+    SYNC_STATUS_FIELD, SYNC_TYPE_FIELD, TEMPLATE_ID_FIELD,
     PRODUCT_PRICE_FIELD, PRODUCT_AVAILABLE_QUANTITY_FIELD,
-    PRODUCT_VARIANT_COUNT_FIELD,
 )
-from ...shared.sync_status import SYNC_ERROR
+from ...shared.sync_status import SYNC_WARNING, SYNC_SUCCESS
 from ...shared.sync_operation_types import SYNC_CREATE
 
 from ...models_access import ProductSyncAccess
 from ...models_access import AmazonProductAccess
 from ...models_access import OdooProductAccess
 
+_logger = logging.getLogger(__name__)
+
 
 class ProductCreationSuccess(object):
     def __init__(self, env):
-        self._env = env
-        self._sync_creation = ProductSyncAccess(env)
-        self._amazon_product_access = AmazonProductAccess(env)
+        self._product_sync = ProductSyncAccess(env)
+        self._amazon_product = AmazonProductAccess(env)
         self._odoo_product = OdooProductAccess(env)
         self._is_new_sync_added = False
 
     def _add_price_sync(self, record, completed):
         price = record[PRODUCT_PRICE_FIELD]
-        self._sync_creation.insert_price(completed, price)
+        self._product_sync.insert_price(completed, price)
 
     def _add_inventory_sync(self, record, completed):
         inventory = record[PRODUCT_AVAILABLE_QUANTITY_FIELD]
-        self._sync_creation.insert_inventory(completed, inventory)
+        self._product_sync.insert_inventory(completed, inventory)
 
     def _add_success_syncs(self, record, completed):
         self._add_price_sync(record, completed)
         self._add_inventory_sync(record, completed)
-        self._sync_creation.insert_image(completed)
+        self._product_sync.insert_image(completed)
 
     def _write_creation_success(self, completed):
-        model_name = completed[MODEL_NAME_FIELD]
-        record_id = completed[RECORD_ID_FIELD]
-        _logger.debug("write creation success for {0}, {1}".format(
-            model_name, record_id
-        ))
-        record = self._env[model_name].browse(record_id)
-        sync_active = record[AMAZON_SYNC_ACTIVE_FIELD]
-        if sync_active:
+        if self._odoo_product.is_sync_active(completed):
+            record = self._odoo_product.browse(completed)
             self._add_success_syncs(record, completed)
             self._is_new_sync_added = True
-
-    def _check_variant_created(self, completed):
-        headers = []
-        model_name = completed[MODEL_NAME_FIELD]
-        template_id = completed[RECORD_ID_FIELD]
-        template_record = self._env[model_name].browse(template_id)
-        if template_record[PRODUCT_VARIANT_COUNT_FIELD] > 1:
-            headers = self._amazon_product_access.get_created_variants(
-                template_id)
-        return headers
 
     def _add_relation_sync(self, completed):
         # It is possible that a product template or variant
@@ -67,35 +51,45 @@ class ProductCreationSuccess(object):
         # The automatic way to fix this is to create
         # relation syn for both template and variant creation sync
         if completed[MODEL_NAME_FIELD] == PRODUCT_PRODUCT_TABLE:
-            if self._amazon_product_access.is_created(completed):
-                self._sync_creation.insert_relation(completed)
+            template_head = {
+                MODEL_NAME_FIELD: PRODUCT_TEMPLATE_TABLE,
+                RECORD_ID_FIELD: completed[TEMPLATE_ID_FIELD],
+            }
+            if self._amazon_product.is_created(template_head):
+                self._product_sync.insert_relation(completed)
             else:
                 log_template = "Product template is not created for {}. " \
-                               "Don't create relation sync"
+                               "Don't create relation sync."
                 _logger.debug(log_template.format(
                     completed[RECORD_ID_FIELD]
                 ))
         else:
-            headers = self._check_variant_created(completed)
-            for header in headers:
-                self._sync_creation.insert_relation(header)
+            template_id = completed[RECORD_ID_FIELD]
+            created_variants = self._amazon_product.get_variants(template_id)
+            for variant in created_variants:
+                self._product_sync.insert_relation(variant)
 
-    def process(self, completed_set):
-        for completed in completed_set:
+    def process(self, done_set):
+        for done in done_set:
             # for warning and success, set success flag
-            is_success = completed[SYNC_STATUS_FIELD] != SYNC_ERROR
-            is_sync_create = completed[SYNC_TYPE_FIELD] == SYNC_CREATE
+            done_status = done[SYNC_STATUS_FIELD]
+            is_success = (done_status == SYNC_SUCCESS or
+                          done_status == SYNC_WARNING)
+            is_sync_create = done[SYNC_TYPE_FIELD] == SYNC_CREATE
             if is_sync_create and is_success:
+                log_template = "Post process creation success for " \
+                               "product Model: {0}, Record Id: {1}."
+                _logger.debug(log_template.format(
+                    done[MODEL_NAME_FIELD], done[RECORD_ID_FIELD]))
+
                 # make sure that the product is still there
-                if self._odoo_product.is_existed(completed):
-                    self._write_creation_success(completed)
-                    self._amazon_product_access.write_from_sync(completed)
-                    self._add_relation_sync(completed)
+                if self._odoo_product.is_existed(done):
+                    # the order of the following calls matters because
+                    # adding relation checks if a product is created or not
+                    self._amazon_product.insert_completed(done)
+                    self._write_creation_success(done)
+                    self._add_relation_sync(done)
                 else:
-                    log_template = "Skip creation success for unlinked " \
-                                   "Model: {0}, Record Id: {1}."
-                    _logger.debug(log_template.format(
-                        completed[MODEL_NAME_FIELD],
-                        completed[RECORD_ID_FIELD]
-                    ))
+                    _logger.debug("Skip creation success for "
+                                  "unlinked product.")
         return self._is_new_sync_added

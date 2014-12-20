@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-_logger = logging.getLogger(__name__)
 
 from ...shared.model_names import (
     PRODUCT_TEMPLATE_TABLE, MODEL_NAME_FIELD,
@@ -12,6 +11,8 @@ from .operation_types import UNLINK_RECORD
 
 from ...models_access import ProductSyncAccess
 from ...models_access import AmazonProductAccess
+
+_logger = logging.getLogger(__name__)
 
 
 class ProductUnlinkTransformer(object):

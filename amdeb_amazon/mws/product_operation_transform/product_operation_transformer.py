@@ -2,7 +2,6 @@
 
 import cPickle
 import logging
-_logger = logging.getLogger(__name__)
 
 from ...shared.model_names import (
     MODEL_NAME_FIELD, RECORD_ID_FIELD,
@@ -17,6 +16,8 @@ from ...models_access import OdooProductAccess
 from . import ProductUnlinkTransformer
 from . import ProductCreateTransformer
 from . import ProductWriteTransformer
+
+_logger = logging.getLogger(__name__)
 
 
 class ProductOperationTransformer(object):

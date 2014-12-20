@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-_logger = logging.getLogger(__name__)
 
 from ...shared.model_names import (
     AMAZON_SYNC_ACTIVE_FIELD, PRODUCT_PRICE_FIELD,
@@ -11,6 +10,8 @@ from ...shared.model_names import (
 
 from ...models_access import ProductSyncAccess
 from ...models_access import AmazonProductAccess
+
+_logger = logging.getLogger(__name__)
 
 
 class ProductWriteTransformer(object):

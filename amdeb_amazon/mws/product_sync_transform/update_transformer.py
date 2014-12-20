@@ -2,12 +2,13 @@
 
 import cPickle
 import logging
-_logger = logging.getLogger(__name__)
 
 from ...shared.model_names import (
     PRODUCT_DEFAULT_CODE_FIELD, SYNC_DATA_FIELD,
 )
 from ...models_access import OdooProductAccess
+
+_logger = logging.getLogger(__name__)
 
 
 class UpdateTransformer(object):

@@ -1,14 +1,13 @@
 # -*- coding: utf-8 -*-
 
 import logging
-_logger = logging.getLogger(__name__)
-
 from ..shared.model_names import (
     PRODUCT_OPERATION_TABLE,
     AMAZON_SYNC_TIMESTAMP_FIELD,
 )
-
 from ..shared.utility import field_utcnow
+
+_logger = logging.getLogger(__name__)
 
 
 class ProductOperationAccess(object):
