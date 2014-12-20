@@ -9,6 +9,7 @@ from ..shared.model_names import (
 
 from . import OdooProductAccess
 
+
 class AmazonProductAccess(object):
     """
     This class provides methods accessing Amazon Product Table
