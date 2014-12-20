@@ -3,7 +3,7 @@
 import logging
 
 from ...shared.model_names import (
-    PRODUCT_PRODUCT_TABLE, MODEL_NAME_FIELD, RECORD_ID_FIELD,
+    PRODUCT_PRODUCT_TABLE, MODEL_NAME_FIELD,
 )
 from ...models_access import ProductSyncAccess
 from ...models_access import OdooProductAccess

@@ -42,7 +42,8 @@ class ProductSynchronization(object):
         new_operations = operation_access.get_new_operations()
         if new_operations:
             operation_access.set_sync_timestamp(new_operations)
-            transformer = ProductOperationTransformer(self._env, new_operations)
+            transformer = ProductOperationTransformer(
+                self._env, new_operations)
             transformer.transform()
 
             sync_new = ProductSyncNew(self._env, self._mws)
