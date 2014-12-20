@@ -12,25 +12,31 @@ from ...models_access import OdooProductAccess
 
 
 class ProductCreateTransformer(object):
+    """
+    Transform create operation to a create sync.
+    Ignore a create operation if it is from a partial variant
+    """
     def __init__(self, env):
         self._product_sync = ProductSyncAccess(env)
         self._odoo_product = OdooProductAccess(env)
 
-    def transform(self, operation):
-        # ignore variant creation if it is the only variant
+    def _is_partial_variant(self, operation):
         partial_variant = False
-        model_name = operation[MODEL_NAME_FIELD]
-        record_id = operation[RECORD_ID_FIELD]
-        log_template = "Transform create operation for " \
-                       "Model: {0}, Record id: {1}."
-        _logger.debug(log_template.format(
-            model_name, record_id))
-
-        if model_name == PRODUCT_PRODUCT_TABLE:
+        if operation[MODEL_NAME_FIELD] == PRODUCT_PRODUCT_TABLE:
+            record_id = operation[RECORD_ID_FIELD]
             if self._odoo_product.is_partial_variant(record_id):
                 partial_variant = True
 
-        if partial_variant:
+        return partial_variant
+
+    def transform(self, operation):
+        log_template = "Transform create operation for " \
+                       "Model: {0}, Record id: {1}."
+        _logger.debug(log_template.format(
+            operation[MODEL_NAME_FIELD], operation[RECORD_ID_FIELD]))
+
+        # ignore variant creation if it is the only variant
+        if self._is_partial_variant(operation):
             _logger.debug("Skip single variant creation operation.")
         else:
             self._product_sync.insert_create(operation)

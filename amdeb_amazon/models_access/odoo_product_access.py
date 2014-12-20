@@ -27,8 +27,8 @@ class OdooProductAccess(object):
         """
         Find if a variant is part of its template.
         In other words, it is not an independent variant that has attributes.
-        :param record_id: the id of the variant
-        :return:
+        :param record_id: the id of a product variant
+        :return: True if it's a partial variant, else False
         """
         result = False
         template = self._env[PRODUCT_PRODUCT_TABLE]
