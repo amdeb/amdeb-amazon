@@ -4,21 +4,22 @@ import cPickle
 import logging
 _logger = logging.getLogger(__name__)
 
-from ..shared.model_names import (
+from ...shared.model_names import (
     MODEL_NAME_FIELD, RECORD_ID_FIELD,
     TEMPLATE_ID_FIELD, AMAZON_SYNC_ACTIVE_FIELD,
 
     OPERATION_TYPE_FIELD, OPERATION_DATA_FIELD,
 )
 
-from ..shared.db_operation_types import (
+from .operation_types import (
     CREATE_RECORD, WRITE_RECORD, UNLINK_RECORD,
 )
 
-from .product_unlink_tranformer import ProductUnlinkTransformer
-from .product_create_transformer import ProductCreateTransformer
-from .product_write_transformer import ProductWriteTransformer
-from .product_utility import ProductUtility
+from ...models_access import OdooProductAccess
+from . import ProductUnlinkTransformer
+from . import ProductCreateTransformer
+from . import ProductWriteTransformer
+
 
 
 class ProductOperationTransformer(object):
@@ -36,7 +37,7 @@ class ProductOperationTransformer(object):
         self._create_transformer = ProductCreateTransformer(env)
         self._writer_transformer = ProductWriteTransformer(env)
 
-        self._product_utility = ProductUtility(env)
+        self._odoo_product = OdooProductAccess(env)
 
         # this set keeps transformed model_name and record_id
         self._transformed_operations = set()
@@ -134,7 +135,7 @@ class ProductOperationTransformer(object):
         operation_type = operation[OPERATION_TYPE_FIELD]
         if operation_type == UNLINK_RECORD:
             self._unlink_transformer.transform(operation)
-        elif self._product_utility.is_existed(operation):
+        elif self._odoo_product.is_existed(operation):
             # only transform a create/write operation for an existing product
             self._transform_create_write(operation)
         else:

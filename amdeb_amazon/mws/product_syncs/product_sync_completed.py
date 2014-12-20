@@ -3,21 +3,17 @@
 import logging
 _logger = logging.getLogger(__name__)
 
-from ..shared.model_names import (
-    PRODUCT_TEMPLATE_TABLE,
-
-    PRODUCT_PRODUCT_TABLE,
-    SYNC_STATUS_FIELD,
-    AMAZON_MESSAGE_CODE_FIELD,
-    AMAZON_SUBMISSION_ID_FIELD,
-    AMAZON_RESULT_DESCRIPTION_FIELD,
+from ...shared.model_names import (
+    SYNC_STATUS_FIELD, AMAZON_MESSAGE_CODE_FIELD,
+    AMAZON_SUBMISSION_ID_FIELD, AMAZON_RESULT_DESCRIPTION_FIELD,
     SYNC_CHECK_STATUS_COUNT_FILED,
 )
-from ..shared.sync_status import SYNC_SUCCESS
+from ...shared.sync_status import SYNC_SUCCESS
 
-from .product_sync_access import ProductSyncAccess
-from .amazon_product_access import AmazonProductAccess
-from .product_creation_success import ProductCreationSuccess
+from ...models_access import ProductSyncAccess
+from ...models_access import AmazonProductAccess
+
+from . import ProductCreationSuccess
 
 
 class ProductSyncCompleted(object):
@@ -30,8 +26,6 @@ class ProductSyncCompleted(object):
         self._env = env
         self._mws = mws
         self._sync_creation = ProductSyncAccess(env)
-        self._product_template = env[PRODUCT_TEMPLATE_TABLE]
-        self._product_product = env[PRODUCT_PRODUCT_TABLE]
         self._completed_set = None
 
         self._amazon_product_access = AmazonProductAccess(env)

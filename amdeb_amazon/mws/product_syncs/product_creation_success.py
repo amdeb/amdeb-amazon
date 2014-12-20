@@ -3,23 +3,18 @@
 import logging
 _logger = logging.getLogger(__name__)
 
-from ..shared.model_names import (
-    PRODUCT_PRODUCT_TABLE,
-    MODEL_NAME_FIELD,
-    RECORD_ID_FIELD,
-    SYNC_STATUS_FIELD,
-    SYNC_TYPE_FIELD,
-    AMAZON_SYNC_ACTIVE_FIELD,
-    PRODUCT_PRICE_FIELD,
-    PRODUCT_AVAILABLE_QUANTITY_FIELD,
+from ...shared.model_names import (
+    PRODUCT_PRODUCT_TABLE, MODEL_NAME_FIELD, RECORD_ID_FIELD,
+    SYNC_STATUS_FIELD, SYNC_TYPE_FIELD, AMAZON_SYNC_ACTIVE_FIELD,
+    PRODUCT_PRICE_FIELD, PRODUCT_AVAILABLE_QUANTITY_FIELD,
     PRODUCT_VARIANT_COUNT_FIELD,
 )
-from ..shared.sync_status import SYNC_ERROR
-from ..shared.sync_operation_types import SYNC_CREATE
+from ...shared.sync_status import SYNC_ERROR
+from ...shared.sync_operation_types import SYNC_CREATE
 
-from .product_sync_access import ProductSyncAccess
-from .amazon_product_access import AmazonProductAccess
-from .product_utility import ProductUtility
+from ...models_access import ProductSyncAccess
+from ...models_access import AmazonProductAccess
+from ...models_access import OdooProductAccess
 
 
 class ProductCreationSuccess(object):
@@ -27,7 +22,7 @@ class ProductCreationSuccess(object):
         self._env = env
         self._sync_creation = ProductSyncAccess(env)
         self._amazon_product_access = AmazonProductAccess(env)
-        self._product_utility = ProductUtility(env)
+        self._odoo_product = OdooProductAccess(env)
         self._is_new_sync_added = False
 
     def _add_price_sync(self, record, completed):
@@ -92,7 +87,7 @@ class ProductCreationSuccess(object):
             is_sync_create = completed[SYNC_TYPE_FIELD] == SYNC_CREATE
             if is_sync_create and is_success:
                 # make sure that the product is still there
-                if self._product_utility.is_existed(completed):
+                if self._odoo_product.is_existed(completed):
                     self._write_creation_success(completed)
                     self._amazon_product_access.write_from_sync(completed)
                     self._add_relation_sync(completed)

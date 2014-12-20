@@ -3,12 +3,12 @@
 import logging
 _logger = logging.getLogger(__name__)
 
-from ..shared.model_names import (
+from amdeb_amazon.shared.model_names import (
     PRODUCT_OPERATION_TABLE,
     AMAZON_SYNC_TIMESTAMP_FIELD,
 )
 
-from ..shared.utility import field_utcnow
+from amdeb_amazon.shared.utility import field_utcnow
 
 
 class ProductOperationAccess(object):
@@ -16,25 +16,22 @@ class ProductOperationAccess(object):
     Get new product operations and set operation sync timestamp
     """
     def __init__(self, env):
-        self._env = env
+        self._table = self.env[PRODUCT_OPERATION_TABLE]
 
     def get_new_operations(self):
         """
         Get the new operations ordered by descending id (creation time)
         A new operation doesn't have a sync timestamp
         """
-        operation_table = self._env[PRODUCT_OPERATION_TABLE]
         search_domain = [
             (AMAZON_SYNC_TIMESTAMP_FIELD, '=', False),
         ]
-        new_operations = operation_table.search(
-            search_domain,
-            order="id desc")
+        operations = self._table.search(search_domain, order="id desc")
 
         _logger.debug("Found {0} new product operations. Ids: {1}.".format(
-            len(new_operations), new_operations.ids
+            len(operations), operations.ids
         ))
-        return new_operations
+        return operations
 
     def set_sync_timestamp(self, operations):
         # set sync timestamp for each operation

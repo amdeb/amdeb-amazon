@@ -4,19 +4,16 @@ import cPickle
 import logging
 _logger = logging.getLogger(__name__)
 
-from ..shared.model_names import (
-    MODEL_NAME_FIELD,
-    RECORD_ID_FIELD,
-    PRODUCT_DEFAULT_CODE_FIELD,
-    SYNC_STATUS_FIELD,
-    SYNC_DATA_FIELD,
-    AMAZON_MESSAGE_CODE_FIELD,
-    AMAZON_REQUEST_TIMESTAMP_FIELD,
-    AMAZON_SUBMISSION_ID_FIELD,
+from ...shared.model_names import (
+    MODEL_NAME_FIELD, RECORD_ID_FIELD, PRODUCT_DEFAULT_CODE_FIELD,
+    SYNC_STATUS_FIELD, SYNC_DATA_FIELD, AMAZON_MESSAGE_CODE_FIELD,
+    AMAZON_REQUEST_TIMESTAMP_FIELD, AMAZON_SUBMISSION_ID_FIELD,
 )
-from ..shared.sync_status import SYNC_PENDING
-from .product_sync_access import ProductSyncAccess
-from ..shared.utility import field_utcnow
+from ...shared.sync_status import SYNC_PENDING
+
+from ...models_access import ProductSyncAccess
+
+from ...shared.utility import field_utcnow
 
 
 class ProductSyncNew(object):

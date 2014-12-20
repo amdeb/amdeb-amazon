@@ -2,9 +2,7 @@
 
 from openerp import models, fields
 
-from ..shared.model_names import (
-    PRODUCT_PRODUCT_TABLE,
-)
+from ..shared.model_names import PRODUCT_PRODUCT_TABLE
 
 
 class product_product(models.Model):

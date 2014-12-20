@@ -8,12 +8,12 @@ from ..shared.model_names import (
     AMAZON_SETTINGS_TABLE,
 )
 from .connector import Boto
-from .product_operation_access import ProductOperationAccess
-from .product_operation_transformer import ProductOperationTransformer
-from .product_sync_new import ProductSyncNew
-from .product_sync_pending import ProductSyncPending
-from .product_sync_chore import do_daily_chore
-from .product_sync_completed import ProductSyncCompleted
+from ..models_access import ProductOperationAccess
+from .product_operation_transform import ProductOperationTransformer
+from .product_syncs import ProductSyncNew
+from .product_syncs import ProductSyncPending
+from .product_syncs import do_daily_chore
+from .product_syncs import ProductSyncCompleted
 
 
 class ProductSynchronization(object):

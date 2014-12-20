@@ -4,7 +4,7 @@ from datetime import date
 import logging
 _logger = logging.getLogger(__name__)
 
-from .product_sync_access import ProductSyncAccess
+from ...models_access import ProductSyncAccess
 
 _last_chore_date = None
 

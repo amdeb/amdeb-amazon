@@ -8,20 +8,13 @@ from ..shared.model_names import (
     PRODUCT_PRODUCT_TABLE,
 )
 from ..shared.sync_operation_types import (
-    SYNC_CREATE,
-    SYNC_UPDATE,
-    SYNC_DELETE,
-    SYNC_PRICE,
-    SYNC_INVENTORY,
-    SYNC_IMAGE,
+    SYNC_CREATE, SYNC_UPDATE, SYNC_DELETE,
+    SYNC_PRICE, SYNC_INVENTORY, SYNC_IMAGE,
     SYNC_DEACTIVATE,
 )
 from ..shared.sync_status import (
-    SYNC_NEW,
-    SYNC_PENDING,
-    SYNC_SUCCESS,
-    SYNC_WARNING,
-    SYNC_ERROR,
+    SYNC_NEW, SYNC_PENDING, SYNC_SUCCESS,
+    SYNC_WARNING, SYNC_ERROR,
 )
 from ..shared.utility import field_utcnow
 from ..mws import ProductSynchronization

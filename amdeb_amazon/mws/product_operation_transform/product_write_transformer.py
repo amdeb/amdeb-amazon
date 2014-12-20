@@ -3,15 +3,15 @@
 import logging
 _logger = logging.getLogger(__name__)
 
-from ..shared.model_names import (
+from ...shared.model_names import (
     AMAZON_SYNC_ACTIVE_FIELD,
     PRODUCT_PRICE_FIELD,
     PRODUCT_AVAILABLE_QUANTITY_FIELD,
     PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD,
 )
 
-from .product_sync_access import ProductSyncAccess
-from .amazon_product_access import AmazonProductAccess
+from ...models_access import ProductSyncAccess
+from ...models_access import AmazonProductAccess
 
 
 class ProductWriteTransformer(object):

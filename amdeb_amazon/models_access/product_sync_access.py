@@ -7,7 +7,7 @@ _logger = logging.getLogger(__name__)
 
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT as DATETIME_FORMAT
 
-from ..shared.model_names import (
+from amdeb_amazon.shared.model_names import (
     PRODUCT_PRODUCT_TABLE, MODEL_NAME_FIELD,
     RECORD_ID_FIELD, TEMPLATE_ID_FIELD, PRODUCT_SKU_FIELD,
 
@@ -17,12 +17,12 @@ from ..shared.model_names import (
     AMAZON_RESULT_DESCRIPTION_FIELD
 )
 
-from ..shared.sync_status import (
+from amdeb_amazon.shared.sync_status import (
     SYNC_NEW, SYNC_PENDING, SYNC_ERROR,
     AMAZON_PROCESS_DONE_STATUS,
 )
 
-from ..shared.sync_operation_types import (
+from amdeb_amazon.shared.sync_operation_types import (
     SYNC_CREATE, SYNC_UPDATE, SYNC_DELETE, SYNC_PRICE,
     SYNC_INVENTORY, SYNC_IMAGE, SYNC_DEACTIVATE, SYNC_RELATION,
 )

@@ -3,13 +3,12 @@
 import logging
 _logger = logging.getLogger(__name__)
 
-from ..shared.model_names import (
-    AMAZON_MESSAGE_CODE_FIELD,
-    AMAZON_SUBMISSION_ID_FIELD,
+from ...shared.model_names import (
+    AMAZON_MESSAGE_CODE_FIELD, AMAZON_SUBMISSION_ID_FIELD,
     SYNC_CHECK_STATUS_COUNT_FILED,
 )
 
-from .product_sync_access import ProductSyncAccess
+from ...models_access import ProductSyncAccess
 
 
 class ProductSyncPending(object):
