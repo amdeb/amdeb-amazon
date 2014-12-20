@@ -5,8 +5,7 @@ import logging
 _logger = logging.getLogger(__name__)
 
 from ...shared.model_names import (
-    MODEL_NAME_FIELD, RECORD_ID_FIELD, TEMPLATE_ID_FIELD,
-
+    MODEL_NAME_FIELD, RECORD_ID_FIELD,
     OPERATION_TYPE_FIELD, OPERATION_DATA_FIELD,
 )
 
@@ -28,14 +27,11 @@ class ProductOperationTransformer(object):
     """
     def __init__(self, env, new_operations):
         self._new_operations = new_operations
-
         self._unlink_transformer = ProductUnlinkTransformer(
             env, new_operations)
         self._create_transformer = ProductCreateTransformer(env)
         self._writer_transformer = ProductWriteTransformer(env)
-
         self._odoo_product = OdooProductAccess(env)
-
         # this set keeps transformed model_name and record_id
         self._transformed_operations = set()
 
@@ -43,8 +39,6 @@ class ProductOperationTransformer(object):
         """
         Check if there is a create operation for the model name
         and record id.
-        :param operation: product operation
-        :return: the create operation if found, None if not found.
         """
         creation = None
         creations = [
@@ -66,7 +60,6 @@ class ProductOperationTransformer(object):
             record[RECORD_ID_FIELD] == operation[RECORD_ID_FIELD] and
             record.id != operation.id
         ]
-
         for other_write in other_writes:
             other_values = cPickle.loads(other_write[OPERATION_DATA_FIELD])
             other_values.update(merged_values)
@@ -75,18 +68,11 @@ class ProductOperationTransformer(object):
         return merged_values
 
     def _transform_write(self, operation):
-        log_template = "Transform write operation for Model: {0} " \
-                       "record id: {1}, template id: {2}."
-        _logger.debug(log_template.format(
-            operation[MODEL_NAME_FIELD],
-            operation[RECORD_ID_FIELD],
-            operation[TEMPLATE_ID_FIELD]))
-
         # if there is a create operation, ignore write
         creation = self._check_create(operation)
         if creation:
-            self._create_transformer.transform(creation)
             _logger.debug("Found a create operation. Ignore write.")
+            self._create_transformer.transform(creation)
             return
 
         write_values = cPickle.loads(operation[OPERATION_DATA_FIELD])
@@ -101,11 +87,6 @@ class ProductOperationTransformer(object):
     def _transform_create_write(self, operation):
         # create or write operation for existed product
         if operation[OPERATION_TYPE_FIELD] == CREATE_RECORD:
-            log_template = "Transform create operation for " \
-                           "Model: {0}, Record id: {1}"
-            _logger.debug(log_template.format(
-                operation[MODEL_NAME_FIELD], operation[RECORD_ID_FIELD]))
-
             if self._odoo_product.is_sync_active(operation):
                 self._create_transformer.transform(operation)
             else:
@@ -146,4 +127,11 @@ class ProductOperationTransformer(object):
                 continue
             else:
                 self._transformed_operations.add(record_key)
+
+                log_template = "Transform operation for Model: {0}, " \
+                               "Record id: {1}, Operation type: {2}."
+                _logger.debug(log_template.format(
+                    operation[MODEL_NAME_FIELD],
+                    operation[RECORD_ID_FIELD],
+                    operation[OPERATION_TYPE_FIELD]))
                 self._transform_operation(operation)

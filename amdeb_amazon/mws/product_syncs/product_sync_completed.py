@@ -23,7 +23,6 @@ class ProductSyncCompleted(object):
     reading them from table makes the code more reliable
     """
     def __init__(self, env, mws):
-        self._env = env
         self._mws = mws
         self._sync_creation = ProductSyncAccess(env)
         self._completed_set = None

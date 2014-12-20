@@ -50,22 +50,22 @@ class ProductSyncAccess(object):
         """
         Insert a new sync operation record.
         """
+
         values = {
             MODEL_NAME_FIELD: header[MODEL_NAME_FIELD],
             RECORD_ID_FIELD: header[RECORD_ID_FIELD],
             TEMPLATE_ID_FIELD: header[TEMPLATE_ID_FIELD],
             SYNC_TYPE_FIELD: sync_type,
         }
-
         if sync_data:
             values[SYNC_DATA_FIELD] = sync_data
-
-        record = self._table.create(values)
-        log_template = "Create new sync record id {0} for Model: {1}, " \
-                       "record id: {2}, sync type: {3}."
+        log_template = "Create new sync record for Model: {0}, " \
+                       "record id: {1}, sync type: {2}."
         _logger.debug(log_template.format(
-            record.id, values[MODEL_NAME_FIELD],
-            values[RECORD_ID_FIELD], values[SYNC_TYPE_FIELD]))
+            values[MODEL_NAME_FIELD],
+            values[RECORD_ID_FIELD],
+            values[SYNC_TYPE_FIELD]))
+        self._table.create(values)
 
     def insert_create(self, header):
         self._insert(header, SYNC_CREATE)
@@ -78,37 +78,24 @@ class ProductSyncAccess(object):
             log_template = "Price {0} is a negative number for " \
                            "Model: {1}, record id: {2}."
             _logger.warning(log_template.format(
-                price,
-                header[MODEL_NAME_FIELD],
-                header[RECORD_ID_FIELD],
-            ))
+                price, header[MODEL_NAME_FIELD], header[RECORD_ID_FIELD]))
 
     def insert_inventory(self, header, inventory):
         if inventory >= 0:
             sync_value = cPickle.dumps(inventory, cPickle.HIGHEST_PROTOCOL)
             self._insert(header, SYNC_INVENTORY, sync_value)
         else:
-            log_template = "Inventory {0} is a negative number for " \
+            log_template = "Inventory {0} is a negative value for " \
                            "Model: {1}, record id: {2}. "
             _logger.warning(log_template.format(
-                inventory,
-                header[MODEL_NAME_FIELD],
-                header[RECORD_ID_FIELD],
-            ))
+                inventory, header[MODEL_NAME_FIELD], header[RECORD_ID_FIELD]))
 
     def insert_image(self, header):
         self._insert(header, SYNC_IMAGE)
 
     def insert_update(self, header, write_values):
-        if write_values:
-            dumped = cPickle.dumps(write_values, cPickle.HIGHEST_PROTOCOL)
-            self._insert(header, SYNC_UPDATE, dumped)
-        else:
-            log_template = "Sync value is empty or None for " \
-                           "Model: {1}, record id: {2}."
-            _logger.warning(log_template.format(
-                header[MODEL_NAME_FIELD],
-                header[RECORD_ID_FIELD]))
+        dumped = cPickle.dumps(write_values, cPickle.HIGHEST_PROTOCOL)
+        self._insert(header, SYNC_UPDATE, dumped)
 
     def insert_deactivate(self, header):
         self._insert(header, SYNC_DEACTIVATE)

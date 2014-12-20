@@ -30,11 +30,6 @@ class ProductCreateTransformer(object):
         return partial_variant
 
     def transform(self, operation):
-        log_template = "Transform create operation for " \
-                       "Model: {0}, Record id: {1}."
-        _logger.debug(log_template.format(
-            operation[MODEL_NAME_FIELD], operation[RECORD_ID_FIELD]))
-
         # ignore variant creation if it is the only variant
         if self._is_partial_variant(operation):
             _logger.debug("Skip single variant creation operation.")

@@ -38,7 +38,11 @@ class OdooProductAccess(object):
         return result
 
     def is_sync_active(self, header):
-        model = self._env[header[MODEL_NAME_FIELD]]
-        record = model.browse(header[RECORD_ID_FIELD])
+        record = self.browse(header)
         sync_active = record[AMAZON_SYNC_ACTIVE_FIELD]
         return sync_active
+
+    def browse(self, header):
+        model = self._env[header[MODEL_NAME_FIELD]]
+        record = model.browse(header[RECORD_ID_FIELD])
+        return record
