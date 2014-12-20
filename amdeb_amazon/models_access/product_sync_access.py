@@ -154,7 +154,7 @@ class ProductSyncAccess(object):
             }
             archive_records.write(archive_status)
         count = len(archive_records)
-        _logger.debug("archived {} old amazon sync records".format(
+        _logger.debug("Archived {} timeout amazon sync records".format(
             count
         ))
 
@@ -170,6 +170,6 @@ class ProductSyncAccess(object):
         if unlink_records:
             unlink_records.unlink()
 
-        _logger.debug("deleted {} old amazon sync records".format(
+        _logger.debug("Cleaned {} ancient amazon sync records".format(
             count
         ))

@@ -40,13 +40,13 @@ class ProductSynchronization(object):
 
         operation_access = ProductOperationAccess(self._env)
         new_operations = operation_access.get_new_operations()
-        operation_access.set_sync_timestamp(new_operations)
+        if new_operations:
+            operation_access.set_sync_timestamp(new_operations)
+            transformer = ProductOperationTransformer(self._env, new_operations)
+            transformer.transform()
 
-        transformer = ProductOperationTransformer(self._env, new_operations)
-        transformer.transform()
-
-        sync_new = ProductSyncNew(self._env, self._mws)
-        sync_new.synchronize()
+            sync_new = ProductSyncNew(self._env, self._mws)
+            sync_new.synchronize()
 
         sync_pending = ProductSyncPending(self._env, self._mws)
         sync_pending.synchronize()

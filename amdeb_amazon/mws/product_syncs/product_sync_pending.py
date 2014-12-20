@@ -70,9 +70,12 @@ class ProductSyncPending(object):
         1. get pending submissions
         2. update submission status
         """
-        _logger.debug("about to check pending sync status")
+        _logger.debug("Enter ProductSyncPending synchronize()")
         self._pending_set = self._product_sync.get_pending()
+        _logger.debug("Got {} pending syncs.".format(
+            len(self._pending_set)
+        ))
 
-        submission_ids = self._get_submission_ids()
-        if submission_ids:
+        if self._pending_set:
+            submission_ids = self._get_submission_ids()
             self._check_status(submission_ids)

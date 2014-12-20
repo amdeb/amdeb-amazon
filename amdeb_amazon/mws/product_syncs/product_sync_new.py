@@ -48,10 +48,14 @@ class ProductSyncNew(object):
 
     def _sync_update(self):
         sync_updates = self._product_sync.get_updates()
-        update_transformer = UpdateTransformer(self._env)
-        sync_values = update_transformer.transform(sync_updates)
-        if sync_values:
-            self._mws_send(sync_updates, sync_values)
+        _logger.debug("Found {} product update operations.".format(
+            len(sync_updates)
+        ))
+        if sync_updates:
+            update_transformer = UpdateTransformer(self._env)
+            sync_values = update_transformer.transform(sync_updates)
+            if sync_values:
+                self._mws_send(sync_updates, sync_values)
 
     def synchronize(self):
         _logger.debug("Enter ProductSyncNew synchronize().")
