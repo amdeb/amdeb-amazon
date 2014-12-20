@@ -15,7 +15,7 @@ class ProductOperationAccess(object):
     Get new product operations and set operation sync timestamp
     """
     def __init__(self, env):
-        self._table = self.env[PRODUCT_OPERATION_TABLE]
+        self._table = env[PRODUCT_OPERATION_TABLE]
 
     def get_new_operations(self):
         """
