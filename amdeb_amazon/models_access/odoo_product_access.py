@@ -21,18 +21,17 @@ class OdooProductAccess(object):
         table = self._env[model_name]
         return bool(table.browse(record_id).exists())
 
-    def is_partial_variant(self, record_id):
+    def is_partial_variant(self, header):
         """
         Find if a variant is part of its template.
         In other words, it is not an independent variant that has attributes.
-        :param record_id: the id of a product variant
+        :param header: a header that has model name and record id
         :return: True if it's a partial variant, else False
         """
-        result = False
-        template = self._env[PRODUCT_PRODUCT_TABLE]
-        record = template.browse(record_id)
+        result = True
+        record = self.browse(header)
         if record[ATTRIBUTE_VALUE_IDS_FIELD]:
-            result = True
+            result = False
         return result
 
     def browse(self, header):

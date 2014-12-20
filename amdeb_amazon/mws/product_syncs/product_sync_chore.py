@@ -30,3 +30,5 @@ def do_daily_chore(env):
 
         product_sync.cleanup()
         product_sync.archive_old()
+    else:
+        _logger.debug("Not a new day, skip chore.")

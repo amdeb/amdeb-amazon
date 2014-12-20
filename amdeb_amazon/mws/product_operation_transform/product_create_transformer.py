@@ -23,8 +23,7 @@ class ProductCreateTransformer(object):
     def _is_partial_variant(self, operation):
         partial_variant = False
         if operation[MODEL_NAME_FIELD] == PRODUCT_PRODUCT_TABLE:
-            record_id = operation[RECORD_ID_FIELD]
-            if self._odoo_product.is_partial_variant(record_id):
+            if self._odoo_product.is_partial_variant(operation):
                 partial_variant = True
 
         return partial_variant
