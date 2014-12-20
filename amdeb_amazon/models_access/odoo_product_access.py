@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
 from ..shared.model_names import(
-    PRODUCT_PRODUCT_TABLE,
-    ATTRIBUTE_VALUE_IDS_FIELD,
-    MODEL_NAME_FIELD,
-    RECORD_ID_FIELD,
-    AMAZON_SYNC_ACTIVE_FIELD,
+    PRODUCT_PRODUCT_TABLE, MODEL_NAME_FIELD, RECORD_ID_FIELD,
+    ATTRIBUTE_VALUE_IDS_FIELD, AMAZON_SYNC_ACTIVE_FIELD,
+    PRODUCT_DEFAULT_CODE_FIELD,
 )
 
 
@@ -37,12 +35,17 @@ class OdooProductAccess(object):
             result = True
         return result
 
+    def browse(self, header):
+        model = self._env[header[MODEL_NAME_FIELD]]
+        record = model.browse(header[RECORD_ID_FIELD])
+        return record
+
     def is_sync_active(self, header):
         record = self.browse(header)
         sync_active = record[AMAZON_SYNC_ACTIVE_FIELD]
         return sync_active
 
-    def browse(self, header):
-        model = self._env[header[MODEL_NAME_FIELD]]
-        record = model.browse(header[RECORD_ID_FIELD])
-        return record
+    def get_sku(self, header):
+        record = self.browse(header)
+        sku = record[PRODUCT_DEFAULT_CODE_FIELD]
+        return sku
