@@ -17,35 +17,38 @@ from ...models_access import AmazonProductAccess
 class ProductUnlinkTransformer(object):
     """
     Create unlink sync records and delete
-    Amazon product records for created products
+    Amazon product records for unlinked products
     """
     def __init__(self, env, new_operations):
-        self._env = env
         # we need this to find template unlink operation
         self._new_operations = new_operations
-        self._sync_creation = ProductSyncAccess(env)
+        self._product_sync = ProductSyncAccess(env)
         self._amazon_product = AmazonProductAccess(env)
 
     def _check_template_unlink(self, operation):
         found = False
-        template_unlink = [
+        templates = [
             element for element in self._new_operations if
             element[MODEL_NAME_FIELD] == PRODUCT_TEMPLATE_TABLE and
             element[RECORD_ID_FIELD] == operation[TEMPLATE_ID_FIELD] and
             element[OPERATION_TYPE_FIELD] == UNLINK_RECORD
         ]
-        if template_unlink:
+        if templates:
             found = True
         return found
+
+    # use this method to consistently add a sync record
+    # AND delete from amazon product table in one call
+    def _sync_and_delete(self, amazon_product):
+        self._product_sync.insert_delete(amazon_product)
+        amazon_product.unlink()
 
     def _add_template_unlink(self, template):
         template_id = template[RECORD_ID_FIELD]
         amazon_variants = self._amazon_product.get_variants(template_id)
         for variant in amazon_variants:
-            self._sync_creation.insert_delete(variant)
-            variant.unlink()
-        self._sync_creation.insert_delete(template)
-        template.unlink()
+            self._sync_and_delete(variant)
+        self._sync_and_delete(template)
 
     def transform(self, operation):
         """
@@ -72,8 +75,7 @@ class ProductUnlinkTransformer(object):
                         operation[MODEL_NAME_FIELD],
                         operation[RECORD_ID_FIELD]))
                 else:
-                    self._sync_creation.insert_delete(amazon_product)
-                    amazon_product.unlink()
+                    self._sync_and_delete(amazon_product)
         else:
             log_template = "Product is not created in Amazon for unlink " \
                            "operation for Model: {0}, Record id: {1}"

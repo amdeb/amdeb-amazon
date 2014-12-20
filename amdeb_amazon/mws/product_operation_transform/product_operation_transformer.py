@@ -11,7 +11,7 @@ from ...shared.model_names import (
 )
 
 from .operation_types import (
-    CREATE_RECORD, WRITE_RECORD, UNLINK_RECORD,
+    CREATE_RECORD, UNLINK_RECORD,
 )
 
 from ...models_access import OdooProductAccess
@@ -46,17 +46,16 @@ class ProductOperationTransformer(object):
         :param operation: product operation
         :return: the create operation if found, None if not found.
         """
-        found = None
+        creation = None
         creations = [
-            element for
-            element in self._new_operations if
+            element for element in self._new_operations if
             element[MODEL_NAME_FIELD] == operation[MODEL_NAME_FIELD] and
             element[RECORD_ID_FIELD] == operation[RECORD_ID_FIELD] and
             element[OPERATION_TYPE_FIELD] == CREATE_RECORD
         ]
         if creations:
-            found = creations[0]
-        return found
+            creation = creations[0]
+        return creation
 
     def _merge_write(self, operation, write_values):
         # merge all writes that are ordered by operation id
@@ -76,55 +75,46 @@ class ProductOperationTransformer(object):
         return merged_values
 
     def _transform_write(self, operation):
+        log_template = "Transform write operation for Model: {0} " \
+                       "record id: {1}, template id: {2}."
+        _logger.debug(log_template.format(
+            operation[MODEL_NAME_FIELD],
+            operation[RECORD_ID_FIELD],
+            operation[TEMPLATE_ID_FIELD]))
+
         # if there is a create operation, ignore write
         creation = self._check_create(operation)
         if creation:
             self._create_transformer.transform(creation)
-            log_template = "Found a create operation. Ignore write " \
-                           "operation for Model: {0}, Record id: {1}"
-            _logger.debug(log_template.format(
-                operation[MODEL_NAME_FIELD], operation[RECORD_ID_FIELD]))
+            _logger.debug("Found a create operation. Ignore write.")
             return
 
         write_values = cPickle.loads(operation[OPERATION_DATA_FIELD])
-        log_template = "Transform write operation for Model: {0} " \
-                       "record id: {1}, template id: {2}, values {3}."
-        _logger.debug(log_template.format(
-            operation[MODEL_NAME_FIELD], operation[RECORD_ID_FIELD],
-            operation[TEMPLATE_ID_FIELD], write_values))
+        log_template = "Transform write operation initial values: {}."
+        _logger.debug(log_template.format(write_values))
 
         merged_values = self._merge_write(operation, write_values)
-        sync_active = self._odoo_product.get_sync_active(operation)
+        sync_active = self._odoo_product.is_sync_active(operation)
         self._writer_transformer.transform(
             operation, merged_values, sync_active)
 
     def _transform_create_write(self, operation):
-        operation_type = operation[OPERATION_TYPE_FIELD]
-        # for existed product create or write operation
-        if operation_type == CREATE_RECORD:
-            if self._odoo_product.get_sync_active(operation):
+        # create or write operation for existed product
+        if operation[OPERATION_TYPE_FIELD] == CREATE_RECORD:
+            log_template = "Transform create operation for " \
+                           "Model: {0}, Record id: {1}"
+            _logger.debug(log_template.format(
+                operation[MODEL_NAME_FIELD], operation[RECORD_ID_FIELD]))
+
+            if self._odoo_product.is_sync_active(operation):
                 self._create_transformer.transform(operation)
             else:
-                log_template = "Amazon Sync is inactive for create " \
-                               "operation. Model: {0}, Record id: {1}"
-                _logger.debug(log_template.format(
-                    operation[MODEL_NAME_FIELD],
-                    operation[RECORD_ID_FIELD]
-                ))
-        elif operation_type == WRITE_RECORD:
-            self._transform_write(operation)
+                _logger.debug("Skip creation operation for inactive sync.")
         else:
-            template = "Invalid product operation type {0} " \
-                       "for {1}: {2}"
-            _logger.error(template.format(
-                operation_type,
-                operation[MODEL_NAME_FIELD],
-                operation[RECORD_ID_FIELD]
-            ))
+            self._transform_write(operation)
 
     def _transform_operation(self, operation):
-        operation_type = operation[OPERATION_TYPE_FIELD]
-        if operation_type == UNLINK_RECORD:
+        if operation[OPERATION_TYPE_FIELD] == UNLINK_RECORD:
             self._unlink_transformer.transform(operation)
         elif self._odoo_product.is_existed(operation):
             # only transform a create/write operation for an existing product

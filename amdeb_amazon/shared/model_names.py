@@ -20,6 +20,7 @@ AMAZON_SYNC_ACTIVE_FIELD = 'amazon_sync_active'
 PRODUCT_PRICE_FIELD = 'price'
 PRODUCT_AVAILABLE_QUANTITY_FIELD = 'qty_available'
 PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD = 'amazon_image_trigger'
+ATTRIBUTE_VALUE_IDS_FIELD = 'attribute_value_ids'
 
 PRODUCT_OPERATION_TABLE = 'amdeb.product.operation'
 MODEL_NAME_FIELD = 'model_name'
