@@ -45,31 +45,27 @@ class ProductWriteTransformer(object):
     def transform(self, operation, write_values, sync_active):
         """transform a write operation to one or more sync operations
         1. If sync active changes, generate create or deactivate sync. Done
-        2. If sync active or creation_success is False, ignore all changes.
-        Done.
+        2. If sync active is False, ignore all changes.Done.
         3. If price, inventory and image change, generate
-        corresponding syncs. image triggers is set to False.
+        corresponding syncs.
         4. If any write values left, generate an update sync
+        !!!  we don't check is_created thus a mws call fails if
+        the product is not created in Amazon -- the error is a
+        remainder to a user that the product is not created yet
+        and a manual fix is required.
         """
         sync_active_value = write_values.get(AMAZON_SYNC_ACTIVE_FIELD, None)
-        is_created = self._amazon_product.is_created(operation)
         if sync_active_value is not None:
             if sync_active_value:
                 _logger.debug("Amazon sync active changes to "
                               "True, generate a create sync.")
                 self._product_sync.insert_create(operation)
             else:
-                # no need to deactivate it if not created
-                if is_created:
-                    _logger.debug("Amazon sync active changes to "
-                                  "False, generate a deactivate sync.")
-                    self._product_sync.insert_deactivate(operation)
-                else:
-                    _logger.debug("Ignore product deactivation because"
-                                  "the product is not created in Amazon.")
+                _logger.debug("Amazon sync active changes to "
+                              "False, generate a deactivate sync.")
+                self._product_sync.insert_deactivate(operation)
         else:
-            if sync_active and is_created:
+            if sync_active:
                 self._transform_update(operation, write_values)
             else:
-                _logger.debug("Product write is inactive or is not created "
-                              "in Amazon. Ignore it.")
+                _logger.debug("Product write is inactive. Ignore it.")

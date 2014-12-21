@@ -30,6 +30,7 @@ class ProductCreateTransformer(object):
 
     def transform(self, operation):
         # ignore variant creation if it is the only variant
+        # thus the amazon product is_created is False for partial variant
         if self._is_partial_variant(operation):
             _logger.debug("Skip single variant creation operation.")
         else:
