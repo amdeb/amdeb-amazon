@@ -3,9 +3,7 @@
 import cPickle
 import logging
 
-from ...shared.model_names import (
-    PRODUCT_DEFAULT_CODE_FIELD, SYNC_DATA_FIELD,
-)
+from ...shared.model_names import SYNC_DATA_FIELD
 from ...models_access import OdooProductAccess
 
 _logger = logging.getLogger(__name__)
@@ -18,19 +16,12 @@ class UpdateTransformer(object):
     def __init__(self, env):
         self._odoo_product = OdooProductAccess(env)
 
-    def _get_sku(self, sync_update, sync_data):
-        sku = sync_data[PRODUCT_DEFAULT_CODE_FIELD]
-        if not sku:
-            sku = self._odoo_product.get_sku(sync_update)
-        return sku
-
     def _convert_update(self, sync_update):
         sync_value = {}
         sync_data = cPickle.loads(sync_update[SYNC_DATA_FIELD])
-
         sync_value['ID'] = sync_update.id
-        sync_value['SKU'] = self._get_sku(sync_update, sync_data)
-
+        # SKU can not be changed after creation
+        sync_value['SKU'] = self._odoo_product.get_sku(sync_update)
         sync_value['Title'] = sync_data['name']
 
         return sync_value

@@ -64,7 +64,7 @@ class ProductUnlinkTransformer(object):
 
         We also delete unlinked records in amazon_product table
         """
-        amazon_product = self._amazon_product.search(operation)
+        amazon_product = self._amazon_product.get_by_head(operation)
         if amazon_product:
             if operation[MODEL_NAME_FIELD] == PRODUCT_TEMPLATE_TABLE:
                 self._add_template_unlink(amazon_product)
@@ -78,6 +78,7 @@ class ProductUnlinkTransformer(object):
                 else:
                     self._sync_and_delete(amazon_product)
         else:
+            # this include partial variant unlink
             log_template = "Product is not created in Amazon for unlink " \
                            "operation for Model: {0}, Record id: {1}"
             _logger.debug(log_template.format(

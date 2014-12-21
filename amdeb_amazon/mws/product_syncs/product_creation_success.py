@@ -58,8 +58,8 @@ class ProductCreationSuccess(object):
             if self._amazon_product.is_created(template_head):
                 self._product_sync.insert_relation(completed)
             else:
-                log_template = "Product template is not created for {}. " \
-                               "Don't create relation sync."
+                log_template = "Product template is not created for a " \
+                               "variant {}. Don't create relation sync."
                 _logger.debug(log_template.format(
                     completed[RECORD_ID_FIELD]
                 ))

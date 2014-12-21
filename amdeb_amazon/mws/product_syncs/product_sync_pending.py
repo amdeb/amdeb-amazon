@@ -72,9 +72,7 @@ class ProductSyncPending(object):
         """
         _logger.debug("Enter ProductSyncPending synchronize()")
         self._pending_set = self._product_sync.get_pending()
-        _logger.debug("Got {} pending syncs.".format(
-            len(self._pending_set)
-        ))
+        _logger.debug("Got {} pending syncs.".format(len(self._pending_set)))
 
         if self._pending_set:
             submission_ids = self._get_submission_ids()

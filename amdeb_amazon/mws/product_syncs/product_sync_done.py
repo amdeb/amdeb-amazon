@@ -96,9 +96,7 @@ class ProductSyncDone(object):
         """
         _logger.debug("Enter ProductSyncDone synchronize()")
         self._done_set = self._product_sync.get_done()
-        _logger.debug("Got {} done syncs.".format(
-            len(self._done_set)
-        ))
+        _logger.debug("Got {} done syncs.".format(len(self._done_set)))
 
         if self._done_set:
             submission_ids = self._get_submission_ids()

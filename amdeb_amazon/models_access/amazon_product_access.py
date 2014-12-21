@@ -3,6 +3,7 @@
 from ..shared.model_names import (
     AMAZON_PRODUCT_TABLE, MODEL_NAME_FIELD, RECORD_ID_FIELD,
     TEMPLATE_ID_FIELD, PRODUCT_SKU_FIELD, PRODUCT_PRODUCT_TABLE,
+    PRODUCT_TEMPLATE_TABLE,
 )
 
 from . import OdooProductAccess
@@ -17,7 +18,7 @@ class AmazonProductAccess(object):
         self._table = env[AMAZON_PRODUCT_TABLE]
         self._odoo_product = OdooProductAccess(env)
 
-    def search(self, sync_head):
+    def get_by_head(self, sync_head):
         model_name = sync_head[MODEL_NAME_FIELD]
         record_id = sync_head[RECORD_ID_FIELD]
         search_domain = [
@@ -28,7 +29,15 @@ class AmazonProductAccess(object):
         return amazon_product
 
     def is_created(self, sync_head):
-        return bool(self.search(sync_head))
+        header = sync_head
+        # if it is a partial variant, should check its template
+        if (sync_head[MODEL_NAME_FIELD] == PRODUCT_PRODUCT_TABLE and
+                self._odoo_product.is_partial_variant(sync_head)):
+            header = {
+                MODEL_NAME_FIELD: PRODUCT_TEMPLATE_TABLE,
+                RECORD_ID_FIELD: sync_head[TEMPLATE_ID_FIELD],
+            }
+        return bool(self.get_by_head(header))
 
     def get_variants(self, template_id):
         search_domain = [
