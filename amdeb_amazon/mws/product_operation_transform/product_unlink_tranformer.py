@@ -42,7 +42,7 @@ class ProductUnlinkTransformer(object):
     # AND delete from amazon product table in one call
     def _sync_and_delete(self, amazon_product):
         self._product_sync.insert_delete(amazon_product)
-        amazon_product.unlink()
+        self._amazon_product.unlink_record(amazon_product)
 
     def _add_template_unlink(self, template):
         template_id = template[RECORD_ID_FIELD]

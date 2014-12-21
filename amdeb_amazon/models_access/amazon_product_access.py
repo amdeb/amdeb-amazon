@@ -50,3 +50,7 @@ class AmazonProductAccess(object):
                 PRODUCT_SKU_FIELD: product_sku,
             }
             self._table.create(values)
+
+    @staticmethod
+    def unlink_record(record):
+        record.unlink()

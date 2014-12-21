@@ -32,7 +32,8 @@ class ProductOperationAccess(object):
         ))
         return operations
 
-    def set_sync_timestamp(self, operations):
+    @staticmethod
+    def set_sync_timestamp(operations):
         # set sync timestamp for each operation
         _logger.debug("set sync timestamp for all new product operations.")
         value = {AMAZON_SYNC_TIMESTAMP_FIELD: field_utcnow()}
