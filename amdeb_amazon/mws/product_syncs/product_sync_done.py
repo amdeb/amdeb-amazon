@@ -5,7 +5,6 @@ import logging
 from ...shared.model_names import (
     SYNC_STATUS_FIELD, AMAZON_MESSAGE_CODE_FIELD,
     AMAZON_SUBMISSION_ID_FIELD, AMAZON_RESULT_DESCRIPTION_FIELD,
-    SYNC_CHECK_STATUS_COUNT_FILED,
 )
 from ...shared.sync_status import SYNC_SUCCESS
 from ...models_access import ProductSyncAccess
@@ -33,22 +32,7 @@ class ProductSyncDone(object):
         _logger.debug(log_template.format(len(submission_ids)))
         return submission_ids
 
-    @staticmethod
-    def _write_exception(done, ex):
-        # keep its pending status, increase check count thus
-        # it will be checked till it exceeds the checking threshold
-        result = {
-            AMAZON_RESULT_DESCRIPTION_FIELD: ex.message
-        }
-        check_count = done[SYNC_CHECK_STATUS_COUNT_FILED]
-        done[SYNC_CHECK_STATUS_COUNT_FILED] = check_count + 1
-
-        log_template = "Completed exception {0} for sync id {1}"
-        _logger.debug(log_template.format(result, done.id))
-        done.write(result)
-
-    @staticmethod
-    def _write_result(done, sync_result):
+    def _write_result(self, done, sync_result):
         result = {}
         if sync_result:
             result[SYNC_STATUS_FIELD] = sync_result[0]
@@ -59,8 +43,7 @@ class ProductSyncDone(object):
 
         _logger.debug("write completion result {0} for sync id {1}".format(
             result, done.id))
-
-        done.write(result)
+        self._product_sync.update_record(done, result)
 
     def _save_done_results(self, completion_results):
         for done in self._done_set:
@@ -68,7 +51,7 @@ class ProductSyncDone(object):
             # should have results for all
             completion_result = completion_results[submission_id]
             if isinstance(completion_result, Exception):
-                self._write_exception(done, completion_result)
+                self._product_sync.update_exception(done, completion_result)
             else:
                 # if success, Amazon gives no result
                 sync_result = completion_result.get(done.id, None)

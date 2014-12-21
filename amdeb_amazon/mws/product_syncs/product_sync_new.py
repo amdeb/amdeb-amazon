@@ -8,7 +8,6 @@ from ...shared.model_names import (
 )
 from ...shared.sync_status import SYNC_PENDING
 from ...models_access import ProductSyncAccess
-from ...shared.utility import field_utcnow
 
 from ..product_sync_transform import UpdateTransformer
 
@@ -27,24 +26,28 @@ class ProductSyncNew(object):
         self._mws = mws
         self._product_sync = ProductSyncAccess(env)
 
+    @staticmethod
+    def _convert_results(results):
+        sync_result = {
+            SYNC_STATUS_FIELD: SYNC_PENDING,
+            AMAZON_SUBMISSION_ID_FIELD: results[0],
+            AMAZON_REQUEST_TIMESTAMP_FIELD: results[1],
+            AMAZON_MESSAGE_CODE_FIELD: results[2],
+        }
+        return sync_result
+
     def _mws_send(self, syncs, sync_values):
         _logger.debug("about to call MWS send() for product updates.")
-        sync_result = {SYNC_STATUS_FIELD: SYNC_PENDING}
+        # set to pending thus we keep calling send
+        # even there is an exception threw
         try:
             results = self._mws.send(sync_values)
-            submission_id, submission_time, submission_status = (
-                results[0], results[1], results[2])
-            sync_result[AMAZON_SUBMISSION_ID_FIELD] = submission_id
-            sync_result[AMAZON_REQUEST_TIMESTAMP_FIELD] = submission_time
-            sync_result[AMAZON_MESSAGE_CODE_FIELD] = submission_status
+            sync_result = self._convert_results(results)
+            self._product_sync.update_sync_new_status(syncs, sync_result)
         except Exception as ex:
-            sync_result[AMAZON_REQUEST_TIMESTAMP_FIELD] = field_utcnow()
-            sync_result[AMAZON_MESSAGE_CODE_FIELD] = ex.message
-            _logger.warning("mws update exception message: {}".format(
-                ex.message
-            ))
-        _logger.debug("save mws update result: {}".format(sync_result))
-        syncs.write(sync_result)
+            log_template = "mws send() threw exception: {}"
+            _logger.warning(log_template.format(ex.message))
+            self._product_sync.update_sync_new_exception(syncs, ex)
 
     def _sync_update(self):
         sync_updates = self._product_sync.get_updates()

@@ -13,18 +13,17 @@ from ..shared.model_names import (
     AMAZON_PRODUCT_SYNC_TABLE, SYNC_TYPE_FIELD, SYNC_DATA_FIELD,
     SYNC_CREATION_TIMESTAMP_FIELD, SYNC_STATUS_FIELD,
     SYNC_CHECK_STATUS_COUNT_FILED, AMAZON_MESSAGE_CODE_FIELD,
-    AMAZON_RESULT_DESCRIPTION_FIELD
+    AMAZON_RESULT_DESCRIPTION_FIELD, AMAZON_REQUEST_TIMESTAMP_FIELD,
 )
-
 from ..shared.sync_status import (
     SYNC_NEW, SYNC_PENDING, SYNC_ERROR,
-    AMAZON_PROCESS_DONE_STATUS,
+    AMAZON_PROCESS_DONE_STATUS, AMAZON_MWS_EXCEPTION,
 )
-
 from ..shared.sync_operation_types import (
     SYNC_CREATE, SYNC_UPDATE, SYNC_DELETE, SYNC_PRICE,
     SYNC_INVENTORY, SYNC_IMAGE, SYNC_DEACTIVATE, SYNC_RELATION,
 )
+from ..shared.utility import field_utcnow
 
 _UNLINK_DAYS = 100
 _ARCHIVE_DAYS = 5
@@ -135,6 +134,38 @@ class ProductSyncAccess(object):
             (AMAZON_MESSAGE_CODE_FIELD, '=', AMAZON_PROCESS_DONE_STATUS)
         ]
         return self._table.search(search_domain)
+
+    @staticmethod
+    def update_sync_new_status(records, sync_status):
+        records.write(sync_status)
+
+    @staticmethod
+    def update_sync_new_exception(records, ex):
+        sync_status = {
+            SYNC_STATUS_FIELD: SYNC_ERROR,
+            AMAZON_REQUEST_TIMESTAMP_FIELD: field_utcnow(),
+            AMAZON_MESSAGE_CODE_FIELD: AMAZON_MWS_EXCEPTION,
+            AMAZON_RESULT_DESCRIPTION_FIELD: ex.message
+        }
+        records.write(sync_status)
+
+    @staticmethod
+    def update_record(record, sync_status):
+        values = dict(sync_status)
+        check_count = record[SYNC_CHECK_STATUS_COUNT_FILED]
+        values[SYNC_CHECK_STATUS_COUNT_FILED] = check_count + 1
+        record.write(values)
+
+    def update_message_code(self, record, message_code):
+        sync_status = {AMAZON_MESSAGE_CODE_FIELD: message_code}
+        self.update_record(record, sync_status)
+
+    def update_exception(self, record, ex):
+        sync_status = {
+            AMAZON_MESSAGE_CODE_FIELD: AMAZON_MWS_EXCEPTION,
+            AMAZON_RESULT_DESCRIPTION_FIELD: ex.message,
+        }
+        self.update_record(record, sync_status)
 
     def archive_old(self):
         _logger.debug("Enter ProductSyncAccess archive_old()")

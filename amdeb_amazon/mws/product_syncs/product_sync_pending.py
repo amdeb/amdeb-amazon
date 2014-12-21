@@ -1,11 +1,8 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from ...shared.model_names import (
-    AMAZON_MESSAGE_CODE_FIELD, AMAZON_SUBMISSION_ID_FIELD,
-    SYNC_CHECK_STATUS_COUNT_FILED,
-)
 
+from ...shared.model_names import AMAZON_SUBMISSION_ID_FIELD
 from ...models_access import ProductSyncAccess
 
 _logger = logging.getLogger(__name__)
@@ -31,26 +28,18 @@ class ProductSyncPending(object):
                 submission_ids.append(submission_id)
         return submission_ids
 
-    @staticmethod
-    def _write_status(pending, sync_status):
-        result = {}
-        check_count = pending[SYNC_CHECK_STATUS_COUNT_FILED]
-        result[SYNC_CHECK_STATUS_COUNT_FILED] = check_count + 1
-        result[AMAZON_MESSAGE_CODE_FIELD] = sync_status
-        pending.write(result)
-
     def _update_status(self, submission_statuses):
         _logger.debug("updating {} pending sync statuses".format(
             len(submission_statuses)
         ))
         for pending in self._pending_set:
             submission_id = pending[AMAZON_SUBMISSION_ID_FIELD]
-            sync_status = submission_statuses[submission_id]
-            self._write_status(pending, sync_status)
+            message_code = submission_statuses[submission_id]
+            self._product_sync.update_message_code(pending, message_code)
 
     def _set_exception_status(self, ex):
         for pending in self._pending_set:
-            self._write_status(pending, ex.message)
+            self._product_sync.update_exception(pending, ex)
 
     def _check_status(self, submission_ids):
         log_template = "Checking sync status for {} submissions."
