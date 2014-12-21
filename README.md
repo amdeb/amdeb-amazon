@@ -33,3 +33,7 @@ Following are several manual synchronization examples:
 
 Authorized Odoo users should be able to check the synchronization logs and 
 should be notified when there is any error. 
+
+A product SKU is used as the identifier in Amazon MWS. We use 
+the `default_code` attribute to store the product SKU. Don't change this
+attribute after a product is synchronized to Amazon.  
