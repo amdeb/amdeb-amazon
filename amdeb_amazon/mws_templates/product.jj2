@@ -10,19 +10,27 @@
         <OperationType>PartialUpdate</OperationType>
         <Product>
             <SKU>{{ message['SKU'] }}</SKU>
+
             {% if message['StandardProductID_Type'] %}
             <StandardProductID>
                 <Type>{{message['StandardProductID_Type']}}</Type>
                 <Value>{{message['StandardProductID_Value']}}</Value>
             </StandardProductID>
             {% endif %}
+
             <ProductTaxCode>A_GEN_TAX</ProductTaxCode>
+
+            {{ macros.add_tag('LaunchDate') }}
+            {{ macros.add_tag('ReleaseDate') }}
+
             <Condition>
                 <ConditionType>New</ConditionType>
             </Condition>
+
             <DescriptionData>
                 {% include "product_description.jj2" %}
             </DescriptionData>
+
             <ProductData>
                 {% include "shoes_handbag.jj2" %}
             </ProductData>
