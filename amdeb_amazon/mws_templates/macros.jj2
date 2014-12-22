@@ -1,0 +1,5 @@
+{% macro add_tag(tag_name) %}
+    {% if message[tag_name] %}
+        <{{tag_name}}>{{message[tag_name]}}</{{tag_name}}>
+    {% endif %}
+{% endmacro %}

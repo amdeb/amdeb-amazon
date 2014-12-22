@@ -16,7 +16,7 @@ class Boto(object):
             'openerp.addons.amdeb_amazon', "mws_templates")
         env = jinja2.Environment(loader=loader, autoescape=True,
                                  trim_blocks=True, lstrip_blocks=True)
-        self.template = env.get_template('product_feed_template.xml')
+        self.template = env.get_template('product.jj2')
         self.merchant_id = settings['merchant_id']
 
         self.conn = connection.MWSConnection(
@@ -28,7 +28,7 @@ class Boto(object):
         """
         send MWS request and return feed id, feed time and feed status
         """
-        _logger.debug("Boto send data: {}", values)
+        _logger.debug("Boto send data: {}".format(values))
         namespace = dict(MerchantId=self.merchant_id, FeedMessages=values)
         feed_content = self.template.render(namespace).encode('utf-8')
 
