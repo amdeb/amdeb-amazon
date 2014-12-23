@@ -6,6 +6,6 @@
         <MerchantIdentifier>{{ MerchantId }}</MerchantIdentifier>
     </Header>
 
-    {% block product %}{% endblock %}
+    {% block product_feed %}{% endblock %}
 
 </AmazonEnvelope>

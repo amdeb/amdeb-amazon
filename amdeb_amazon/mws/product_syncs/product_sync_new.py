@@ -10,6 +10,7 @@ from ...shared.sync_status import SYNC_PENDING
 from ...models_access import ProductSyncAccess
 
 from ..product_sync_transform import UpdateTransformer
+from ..product_sync_transform import PriceTransformer
 
 _logger = logging.getLogger(__name__)
 
@@ -36,12 +37,12 @@ class ProductSyncNew(object):
         }
         return sync_result
 
-    def _mws_send(self, syncs, sync_values):
+    def _mws_send(self, mws_send, syncs, sync_values):
         _logger.debug("about to call MWS send() for product updates.")
         # set to pending thus we keep calling send
         # even there is an exception threw
         try:
-            results = self._mws.send(sync_values)
+            results = mws_send(sync_values)
             sync_result = self._convert_results(results)
             self._product_sync.update_sync_new_status(syncs, sync_result)
         except Exception as ex:
@@ -50,15 +51,22 @@ class ProductSyncNew(object):
             self._product_sync.update_sync_new_exception(syncs, ex)
 
     def _sync_update(self):
-        sync_updates = self._product_sync.get_updates()
-        _logger.debug("Found {} product update operations.".format(
-            len(sync_updates)
-        ))
+        sync_updates = self._product_sync.get_new_updates()
+        _logger.debug("Found {} update syncs.".format(len(sync_updates)))
         if sync_updates:
             update_transformer = UpdateTransformer(self._env)
-            sync_values = update_transformer.transform(sync_updates)
-            if sync_values:
-                self._mws_send(sync_updates, sync_values)
+            update_values = update_transformer.transform(sync_updates)
+            self._mws_send(
+                self._mws.send_product, sync_updates, update_values)
+
+    def _sync_price(self):
+        sync_prices = self._product_sync.get_new_prices()
+        _logger.debug("Found {} prices syncs.".format(len(sync_prices)))
+        if sync_prices:
+            price_transformer = PriceTransformer(sync_prices)
+            price_values = price_transformer.transform(sync_prices)
+            self._mws_send(
+                self._mws.send_price, sync_prices, price_values)
 
     def synchronize(self):
         _logger.debug("Enter ProductSyncNew synchronize().")

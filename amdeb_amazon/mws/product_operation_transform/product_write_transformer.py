@@ -22,12 +22,12 @@ class ProductWriteTransformer(object):
     def _transform_price(self, operation, values):
         price = values.pop(PRODUCT_PRICE_FIELD, None)
         if price is not None:
-            self._product_sync.insert_price(operation, price)
+            self._product_sync.insert_price(operation)
 
     def _transform_inventory(self, operation, values):
         inventory = values.pop(PRODUCT_AVAILABLE_QUANTITY_FIELD, None)
         if inventory is not None:
-            self._product_sync.insert_inventory(operation, inventory)
+            self._product_sync.insert_inventory(operation)
 
     def _transform_image(self, operation, values):
         image_trigger = values.pop(PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD, None)

@@ -70,25 +70,11 @@ class ProductSyncAccess(object):
     def insert_create(self, header):
         self._insert(header, SYNC_CREATE)
 
-    def insert_price(self, header, price):
-        if price >= 0:
-            sync_value = cPickle.dumps(price, cPickle.HIGHEST_PROTOCOL)
-            self._insert(header, SYNC_PRICE, sync_value)
-        else:
-            log_template = "Price {0} is a negative number for " \
-                           "Model: {1}, record id: {2}."
-            _logger.warning(log_template.format(
-                price, header[MODEL_NAME_FIELD], header[RECORD_ID_FIELD]))
+    def insert_price(self, header):
+        self._insert(header, SYNC_PRICE)
 
-    def insert_inventory(self, header, inventory):
-        if inventory >= 0:
-            sync_value = cPickle.dumps(inventory, cPickle.HIGHEST_PROTOCOL)
-            self._insert(header, SYNC_INVENTORY, sync_value)
-        else:
-            log_template = "Inventory {0} is a negative value for " \
-                           "Model: {1}, record id: {2}. "
-            _logger.warning(log_template.format(
-                inventory, header[MODEL_NAME_FIELD], header[RECORD_ID_FIELD]))
+    def insert_inventory(self, header):
+        self._insert(header, SYNC_INVENTORY)
 
     def insert_image(self, header):
         self._insert(header, SYNC_IMAGE)
@@ -115,12 +101,18 @@ class ProductSyncAccess(object):
         sync_value = cPickle.dumps(product_sku, cPickle.HIGHEST_PROTOCOL)
         self._insert(amazon_product, SYNC_DELETE, sync_value)
 
-    def get_updates(self):
+    def _get_new_syncs(self, sync_type):
         search_domain = [
             (SYNC_STATUS_FIELD, '=', SYNC_NEW),
-            (SYNC_TYPE_FIELD, '=', SYNC_UPDATE)
+            (SYNC_TYPE_FIELD, '=', sync_type)
         ]
         return self._table.search(search_domain)
+
+    def get_new_updates(self):
+        return self._get_new_syncs(SYNC_UPDATE)
+
+    def get_new_prices(self):
+        return self._get_new_syncs(SYNC_PRICE)
 
     def get_pending(self):
         # get pending in the ascending id order to

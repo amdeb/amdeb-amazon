@@ -10,13 +10,42 @@ MarketPlaceID = 'ATVPDKIKX0DER'
 _logger = logging.getLogger(__name__)
 
 
+def _parse_sync_result(feed_result):
+    # ToDo: depend on boto PR#2660 to return an XML doc
+    completion_result = {}
+    doc = etree.fromstring(feed_result)
+    message = doc.find('Message')
+    report = message.find('ProcessingReport')
+    processed = report.find('ProcessingSummary/MessagesProcessed').text
+    successful = report.find('ProcessingSummary/MessagesSuccessful').text
+    processed_count = int(processed)
+    successful_count = int(successful)
+    if successful_count < processed_count:
+        results = report.findall('Result')
+        for result in results:
+            message_id = int(result.find('MessageID').text)
+            result_code = result.find('ResultCode').text
+            result_message_code = result.find('ResultMessageCode')
+            result_description = result.find('ResultDescription').text
+
+            completion_result[message_id] = (
+                result_code,
+                result_message_code,
+                result_description
+            )
+
+    _logger.debug("Submission results: {}".format(completion_result))
+    return completion_result
+
+
 class Boto(object):
     def __init__(self, settings):
         loader = jinja2.PackageLoader(
             'openerp.addons.amdeb_amazon', "mws_templates")
-        env = jinja2.Environment(loader=loader, autoescape=True,
-                                 trim_blocks=True, lstrip_blocks=True)
-        self.template = env.get_template('product.jj2')
+        self._env = jinja2.Environment(
+            loader=loader, autoescape=True,
+            trim_blocks=True, lstrip_blocks=True)
+
         self.merchant_id = settings['merchant_id']
 
         self.conn = connection.MWSConnection(
@@ -24,13 +53,14 @@ class Boto(object):
             aws_secret_access_key=settings['secret_key'],
             Merchant=self.merchant_id)
 
-    def send(self, values):
+    def _send(self, template_name, values):
         """
         send MWS request and return feed id, feed time and feed status
         """
         _logger.debug("Boto send data: {}".format(values))
         namespace = dict(MerchantId=self.merchant_id, FeedMessages=values)
-        feed_content = self.template.render(namespace).encode('utf-8')
+        template = self._env.get_template(template_name)
+        feed_content = template.render(namespace).encode('utf-8')
 
         response = self.conn.submit_feed(
             FeedType='_POST_PRODUCT_DATA_',
@@ -49,6 +79,12 @@ class Boto(object):
             feed_id, feed_time, feed_status
         ))
         return feed_id, feed_time, feed_status
+
+    def send_product(self, values):
+        self._send('product.jj2', values)
+
+    def send_price(self, values):
+        self._send('price.jj2', values)
 
     def check_sync_status(self, submission_id_list):
         sync_status = {}
@@ -70,34 +106,6 @@ class Boto(object):
             len(sync_status), len(submission_id_list)))
         return sync_status
 
-    def _parse_sync_result(self, feed_result):
-
-        # ToDo: depend on boto PR#2660 to return an XML doc
-        completion_result = {}
-        doc = etree.fromstring(feed_result)
-        message = doc.find('Message')
-        report = message.find('ProcessingReport')
-        processed = report.find('ProcessingSummary/MessagesProcessed').text
-        successful = report.find('ProcessingSummary/MessagesSuccessful').text
-        processed_count = int(processed)
-        successful_count = int(successful)
-        if successful_count < processed_count:
-            results = report.findall('Result')
-            for result in results:
-                message_id = int(result.find('MessageID').text)
-                result_code = result.find('ResultCode').text
-                result_message_code = result.find('ResultMessageCode')
-                result_description = result.find('ResultDescription').text
-
-                completion_result[message_id] = (
-                    result_code,
-                    result_message_code,
-                    result_description
-                )
-
-        _logger.debug("Submission results: {}".format(completion_result))
-        return completion_result
-
     def get_sync_result(self, submission_id):
         """
         get feed submission processing result
@@ -110,4 +118,4 @@ class Boto(object):
         """
         feed_result = self.conn.get_feed_submission_result(
             FeedSubmissionId=submission_id)
-        return self._parse_sync_result(feed_result)
+        return _parse_sync_result(feed_result)

@@ -1,6 +1,6 @@
 {% extends "amazon_envelope.jj2" %}
 
-{% block product %}
+{% block product_feed %}
     <MessageType>Product</MessageType>
     <PurgeAndReplace>false</PurgeAndReplace>
 

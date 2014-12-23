@@ -1,0 +1,24 @@
+{% extends "amazon_envelope.jj2" %}
+
+{% block product_feed %}
+    <MessageType>Price</MessageType>
+    <PurgeAndReplace>false</PurgeAndReplace>
+
+    {% for message in FeedMessages %}
+    {% import 'product_macro.jj2' as macros with context %}
+
+    <Message>
+        <MessageID>{{ message['ID'] }}</MessageID>
+        <Price>
+            <SKU>{{ message['SKU'] }}</SKU>
+            <StandardPrice currency='USD'>{{ message['StandardPrice'] }}</StandardPrice>
+            <Sale>
+                <StartDate>{{ message['StartDate'] }}</StartDate>
+                <EndDate>{{ message['EndDate'] }}</EndDate>
+                <SalePrice currency='USD'>{{ message['SalePrice'] }}</SalePrice>
+            </Sale>
+        </Price>
+    </Message>
+
+    {% endfor %}
+{% endblock product %}

@@ -6,7 +6,6 @@ from ...shared.model_names import (
     PRODUCT_PRODUCT_TABLE, PRODUCT_TEMPLATE_TABLE,
     MODEL_NAME_FIELD, RECORD_ID_FIELD,
     SYNC_STATUS_FIELD, SYNC_TYPE_FIELD, TEMPLATE_ID_FIELD,
-    PRODUCT_PRICE_FIELD, PRODUCT_AVAILABLE_QUANTITY_FIELD,
 )
 from ...shared.sync_status import SYNC_WARNING, SYNC_SUCCESS
 from ...shared.sync_operation_types import SYNC_CREATE
@@ -25,23 +24,14 @@ class ProductCreationSuccess(object):
         self._odoo_product = OdooProductAccess(env)
         self._is_new_sync_added = False
 
-    def _add_price_sync(self, record, completed):
-        price = record[PRODUCT_PRICE_FIELD]
-        self._product_sync.insert_price(completed, price)
-
-    def _add_inventory_sync(self, record, completed):
-        inventory = record[PRODUCT_AVAILABLE_QUANTITY_FIELD]
-        self._product_sync.insert_inventory(completed, inventory)
-
-    def _add_success_syncs(self, record, completed):
-        self._add_price_sync(record, completed)
-        self._add_inventory_sync(record, completed)
+    def _add_success_syncs(self, completed):
+        self._product_sync.insert_price(completed)
+        self._product_sync.insert_inventory(completed)
         self._product_sync.insert_image(completed)
 
     def _write_creation_success(self, completed):
         if self._odoo_product.is_sync_active(completed):
-            record = self._odoo_product.browse(completed)
-            self._add_success_syncs(record, completed)
+            self._add_success_syncs(completed)
             self._is_new_sync_added = True
 
     def _add_relation_sync(self, completed):
