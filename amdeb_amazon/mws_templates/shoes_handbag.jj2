@@ -1,6 +1,15 @@
+{% import 'product_macro.jj2' as macros with context %}
+
 <Shoes>
     <ClothingType>Handbag</ClothingType>
 
+    <VariationData>
+        {{ macros.add_tag('Parentage') }}
+        {{ macros.add_tag('Size') }}
+        {{ macros.add_tag('Color') }}
+    </VariationData>
+
+    {# the element order matters #}
     <ClassificationData>
     </ClassificationData>
 

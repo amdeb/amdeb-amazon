@@ -1,0 +1,32 @@
+{% macro add_tag(tag_name) %}
+    {% if message[tag_name] %}
+        <{{tag_name}}>{{message[tag_name]}}</{{tag_name}}>
+    {% endif %}
+{% endmacro %}
+
+{% macro add_tags(tags_name) %}
+    {% if message[tags_name] %}
+        {% for tag_value in message[tags_name] %}
+        <{{tags_name}}>{{tag_value}}</{{tags_name}}>
+        {% endfor %}
+    {% endif %}
+{% endmacro %}
+
+{#
+    add a parent using the tag name and children
+    using a list of tuples. If there are more than 2 elements in a tuple,
+    add it as an attribute
+#}
+{% macro add_tuples(tag_name) %}
+    {% if message[tag_name] %}
+    <{{tag_name}}>
+        {% for element in message[tag_name] %}
+        {% if element|length > 2 %}
+        <{{element[0]}} {{element[2]}}="{{element[3]}}"}}>{{element[1]}}</{{element[0]}}>
+        {% else %}
+        <{{tuple[0]}}>{{tuple[1]}}</{{tuple[0]}}>
+        {% endif %}
+        {% endfor %}
+    </{{tag_name}}>
+    {% endif %}
+{% endmacro %}

@@ -5,23 +5,16 @@
     <PurgeAndReplace>false</PurgeAndReplace>
 
     {% for message in FeedMessages %}
+    {% import 'product_macro.jj2' as macros with context %}
     <Message>
         <MessageID>{{ message['ID'] }}</MessageID>
         <OperationType>PartialUpdate</OperationType>
         <Product>
             <SKU>{{ message['SKU'] }}</SKU>
 
-            {% if message['StandardProductID_Type'] %}
-            <StandardProductID>
-                <Type>{{message['StandardProductID_Type']}}</Type>
-                <Value>{{message['StandardProductID_Value']}}</Value>
-            </StandardProductID>
-            {% endif %}
+            {{ macros.add_tuples('StandardProductID') }}
 
             <ProductTaxCode>A_GEN_TAX</ProductTaxCode>
-
-            {{ macros.add_tag('LaunchDate') }}
-            {{ macros.add_tag('ReleaseDate') }}
 
             <Condition>
                 <ConditionType>New</ConditionType>
