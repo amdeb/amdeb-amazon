@@ -1,10 +1,11 @@
 # -*- coding: utf-8 -*-
 
-import cPickle
+# import cPickle
 import logging
 
 from ...shared.model_names import (
-    SYNC_DATA_FIELD, PRODUCT_DEFAULT_CODE_FIELD,
+    # SYNC_DATA_FIELD,
+    PRODUCT_DEFAULT_CODE_FIELD,
     PRODUCT_NAME_FIELD,
 )
 from ...models_access import OdooProductAccess
@@ -20,10 +21,9 @@ class UpdateTransformer(object):
         self._odoo_product = OdooProductAccess(env)
 
     def _convert_update(self, sync_update):
-        sync_value = {}
-        sync_data = cPickle.loads(sync_update[SYNC_DATA_FIELD])
-        sync_value['ID'] = sync_update.id
-        # SKU can not be changed after creation
+        sync_value = {'ID': sync_update.id}
+        # sync_data = cPickle.loads(sync_update[SYNC_DATA_FIELD])
+        # Required fields
         product = self._odoo_product.browse(sync_update)
         sync_value['SKU'] = product[PRODUCT_DEFAULT_CODE_FIELD]
         sync_value['Title'] = product[PRODUCT_NAME_FIELD]
