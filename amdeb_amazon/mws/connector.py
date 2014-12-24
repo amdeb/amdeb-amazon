@@ -81,7 +81,7 @@ class Boto(object):
         return feed_id, feed_time, feed_status
 
     def send_product(self, values):
-        return self._send('POST_PRODUCT_DATA_ ', 'product.jj2', values)
+        return self._send('_POST_PRODUCT_DATA_ ', 'product.jj2', values)
 
     def send_price(self, values):
         return self._send('_POST_PRODUCT_PRICING_DATA_', 'price.jj2', values)
