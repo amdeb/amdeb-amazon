@@ -38,8 +38,9 @@ class PriceTransformer(object):
         start_date_str = start_date.strftime(MWS_DATETIME_FORMAT)
         sync_value['StartDate'] = start_date_str
         if sync_value['StandardPrice'] == sale_price:
-            # set to current time to disable it
-            sync_value['EndDate'] = start_date_str
+            # set to current time +1 second to disable it
+            end_date = start_date + datetime.timedelta(seconds=1)
+            sync_value['EndDate'] = end_date.strftime(MWS_DATETIME_FORMAT)
         else:
             end_date = start_date + datetime.timedelta(days=_SALE_END_DAYS)
             sync_value['EndDate'] = end_date.strftime(MWS_DATETIME_FORMAT)

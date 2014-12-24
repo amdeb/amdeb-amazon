@@ -53,7 +53,7 @@ class Boto(object):
             aws_secret_access_key=settings['secret_key'],
             Merchant=self.merchant_id)
 
-    def _send(self, template_name, values):
+    def _send(self, feed_type, template_name, values):
         """
         send MWS request and return feed id, feed time and feed status
         """
@@ -63,7 +63,7 @@ class Boto(object):
         feed_content = template.render(namespace).encode('utf-8')
 
         response = self.conn.submit_feed(
-            FeedType='_POST_PRODUCT_DATA_',
+            FeedType=feed_type,
             PurgeAndReplace=False,
             MarketplaceIdList=[MarketPlaceID],
             content_type='text/xml',
@@ -74,17 +74,17 @@ class Boto(object):
         feed_time = feed_info.SubmittedDate
         feed_status = feed_info.FeedProcessingStatus
 
-        logger_template = "Boto send result. Id: {0}, Time: {1},status {1}."
+        logger_template = "Boto send result. Id: {0}, Time: {1},status {2}."
         _logger.debug(logger_template.format(
             feed_id, feed_time, feed_status
         ))
         return feed_id, feed_time, feed_status
 
     def send_product(self, values):
-        self._send('product.jj2', values)
+        return self._send('POST_PRODUCT_DATA_ ', 'product.jj2', values)
 
     def send_price(self, values):
-        self._send('price.jj2', values)
+        return self._send('_POST_PRODUCT_PRICING_DATA_', 'price.jj2', values)
 
     def check_sync_status(self, submission_id_list):
         sync_status = {}

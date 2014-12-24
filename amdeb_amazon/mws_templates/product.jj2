@@ -31,4 +31,4 @@
     </Message>
     {% endfor %}
 
-{% endblock product_feed %}
+{% endblock %}
