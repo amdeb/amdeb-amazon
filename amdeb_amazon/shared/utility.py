@@ -6,6 +6,7 @@ from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT as DATETIME_FORMAT
 
 MWS_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
 
+
 def is_sequence(subject):
     """find out if the subject is a sequence"""
     return hasattr(subject, '__iter__')

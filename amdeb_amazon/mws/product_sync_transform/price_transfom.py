@@ -29,6 +29,7 @@ class PriceTransformer(object):
         sync_value['StandardPrice'] = product[PRODUCT_LIST_PRICE_FIELD]
 
         sale_price = product[PRODUCT_PRICE_FIELD]
+        sale_price = sync_value['StandardPrice']
         sync_value['SalePrice'] = sale_price
 
         # we don't know if there is a sale price in Amazon,

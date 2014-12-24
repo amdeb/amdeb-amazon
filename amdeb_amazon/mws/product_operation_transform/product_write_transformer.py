@@ -3,7 +3,7 @@
 import logging
 
 from ...shared.model_names import (
-    AMAZON_SYNC_ACTIVE_FIELD, PRODUCT_PRICE_FIELD,
+    AMAZON_SYNC_ACTIVE_FIELD, PRODUCT_LIST_PRICE_FIELD,
     PRODUCT_AVAILABLE_QUANTITY_FIELD,
     PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD,
 )
@@ -20,7 +20,7 @@ class ProductWriteTransformer(object):
         self._amazon_product = AmazonProductAccess(env)
 
     def _transform_price(self, operation, values):
-        price = values.pop(PRODUCT_PRICE_FIELD, None)
+        price = values.pop(PRODUCT_LIST_PRICE_FIELD, None)
         if price is not None:
             self._product_sync.insert_price(operation)
 

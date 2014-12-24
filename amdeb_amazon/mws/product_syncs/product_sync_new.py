@@ -63,7 +63,7 @@ class ProductSyncNew(object):
         sync_prices = self._product_sync.get_new_prices()
         _logger.debug("Found {} prices syncs.".format(len(sync_prices)))
         if sync_prices:
-            price_transformer = PriceTransformer(sync_prices)
+            price_transformer = PriceTransformer(self._env)
             price_values = price_transformer.transform(sync_prices)
             self._mws_send(
                 self._mws.send_price, sync_prices, price_values)
@@ -71,6 +71,7 @@ class ProductSyncNew(object):
     def synchronize(self):
         _logger.debug("Enter ProductSyncNew synchronize().")
         self._sync_update()
+        self._sync_price()
 
         # all new syncs should exist in product table
         # because this is in the same transaction as the
