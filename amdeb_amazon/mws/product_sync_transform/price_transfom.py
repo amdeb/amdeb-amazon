@@ -1,13 +1,11 @@
 # -*- coding: utf-8 -*-
-import datetime
+
 import logging
 
 from ...models_access import OdooProductAccess
 from ...shared.model_names import (
-    PRODUCT_DEFAULT_CODE_FIELD, PRODUCT_PRICE_FIELD,
-    PRODUCT_LIST_PRICE_FIELD,
+    PRODUCT_DEFAULT_CODE_FIELD, PRODUCT_LST_PRICE_FIELD,
 )
-from ...shared.utility import MWS_DATETIME_FORMAT
 
 _SALE_END_DAYS = 1000
 
@@ -26,24 +24,8 @@ class PriceTransformer(object):
         product = self._odoo_product.browse(sync_price)
         sync_value['SKU'] = product[PRODUCT_DEFAULT_CODE_FIELD]
 
-        sync_value['StandardPrice'] = product[PRODUCT_LIST_PRICE_FIELD]
-
-        sale_price = product[PRODUCT_PRICE_FIELD]
-        sale_price = sync_value['StandardPrice']
-        sync_value['SalePrice'] = sale_price
-
-        # we don't know if there is a sale price in Amazon,
-        # thus enable or disable it here
-        start_date = datetime.datetime.utcnow()
-        start_date_str = start_date.strftime(MWS_DATETIME_FORMAT)
-        sync_value['StartDate'] = start_date_str
-        if sync_value['StandardPrice'] == sale_price:
-            # set to current time +1 second to disable it
-            end_date = start_date + datetime.timedelta(seconds=1)
-            sync_value['EndDate'] = end_date.strftime(MWS_DATETIME_FORMAT)
-        else:
-            end_date = start_date + datetime.timedelta(days=_SALE_END_DAYS)
-            sync_value['EndDate'] = end_date.strftime(MWS_DATETIME_FORMAT)
+        # The 'lst_price' has the extra price for variant
+        sync_value['StandardPrice'] = product[PRODUCT_LST_PRICE_FIELD]
         return sync_value
 
     def transform(self, sync_prices):
