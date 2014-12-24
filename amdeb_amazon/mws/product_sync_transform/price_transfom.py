@@ -14,7 +14,8 @@ _logger = logging.getLogger(__name__)
 
 class PriceTransformer(object):
     """
-    This class transform list price and sales price to Amazon sync message
+    This class transform list price to Amazon sync message
+    May support sales price in the future
     """
     def __init__(self, env):
         self._odoo_product = OdooProductAccess(env)
