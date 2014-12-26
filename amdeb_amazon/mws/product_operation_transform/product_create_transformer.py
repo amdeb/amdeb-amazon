@@ -2,9 +2,6 @@
 
 import logging
 
-from ...shared.model_names import (
-    PRODUCT_PRODUCT_TABLE, MODEL_NAME_FIELD,
-)
 from ...models_access import ProductSyncAccess
 from ...models_access import OdooProductAccess
 
@@ -20,18 +17,10 @@ class ProductCreateTransformer(object):
         self._product_sync = ProductSyncAccess(env)
         self._odoo_product = OdooProductAccess(env)
 
-    def _is_partial_variant(self, operation):
-        partial_variant = False
-        if operation[MODEL_NAME_FIELD] == PRODUCT_PRODUCT_TABLE:
-            if self._odoo_product.is_partial_variant(operation):
-                partial_variant = True
-
-        return partial_variant
-
     def transform(self, operation):
         # ignore variant creation if it is the only variant
         # thus the amazon product is_created is False for partial variant
-        if self._is_partial_variant(operation):
+        if self._odoo_product.is_partial_variant(operation):
             _logger.debug("Skip single variant creation operation.")
         else:
             self._product_sync.insert_create(operation)

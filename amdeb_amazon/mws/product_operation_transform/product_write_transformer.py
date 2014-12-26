@@ -3,6 +3,8 @@
 import logging
 
 from ...shared.model_names import (
+    MODEL_NAME_FIELD, PRODUCT_TEMPLATE_TABLE,
+    RECORD_ID_FIELD,
     AMAZON_SYNC_ACTIVE_FIELD, PRODUCT_LIST_PRICE_FIELD,
     PRODUCT_AVAILABLE_QUANTITY_FIELD,
     PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD,
@@ -10,6 +12,7 @@ from ...shared.model_names import (
 
 from ...models_access import ProductSyncAccess
 from ...models_access import AmazonProductAccess
+from ...models_access import OdooProductAccess
 
 _logger = logging.getLogger(__name__)
 
@@ -18,11 +21,28 @@ class ProductWriteTransformer(object):
     def __init__(self, env):
         self._product_sync = ProductSyncAccess(env)
         self._amazon_product = AmazonProductAccess(env)
+        self._odoo_product = OdooProductAccess(env)
+
+    def _add_sync_price(self, operation):
+        variants = self._amazon_product.get_variants(
+            operation[RECORD_ID_FIELD])
+        if variants:
+            for variant in variants:
+                self._product_sync.insert_price(variant)
+        else:
+            self._product_sync.insert_price(operation)
 
     def _transform_price(self, operation, values):
         price = values.pop(PRODUCT_LIST_PRICE_FIELD, None)
+        # List price is only stored in template, however,
+        # it can be changed in template and variant and
+        # both generate write operations.
         if price is not None:
-            self._product_sync.insert_price(operation)
+            if operation[MODEL_NAME_FIELD] == PRODUCT_TEMPLATE_TABLE:
+                self._add_sync_price(operation)
+            else:
+                _logger.debug('Skip variant {} list_price write.'.format(
+                    operation[RECORD_ID_FIELD]))
 
     def _transform_inventory(self, operation, values):
         inventory = values.pop(PRODUCT_AVAILABLE_QUANTITY_FIELD, None)
