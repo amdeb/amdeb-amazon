@@ -46,12 +46,6 @@ class Boto(object):
             trim_blocks=True, lstrip_blocks=True)
 
         self._merchant_id = settings['merchant_id']
-
-        # ToDo: put in Amazon settings
-        # self.image_url = settings['image_url']
-        self._image_url = "http://s3-us-west-1.amazonaws.com/" \
-                          "tsdbrand/amazonimages/"
-
         self.conn = connection.MWSConnection(
             aws_access_key_id=settings['access_key'],
             aws_secret_access_key=settings['secret_key'],

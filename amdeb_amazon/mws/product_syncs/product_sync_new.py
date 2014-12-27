@@ -48,8 +48,7 @@ class ProductSyncNew(object):
             sync_result = self._convert_results(results)
             self._product_sync.update_sync_new_status(syncs, sync_result)
         except Exception as ex:
-            log_template = "mws send() threw exception: {}"
-            _logger.warning(log_template.format(ex.message))
+            _logger.exception("mws send() threw exception.")
             self._product_sync.update_sync_new_exception(syncs, ex)
 
     def _sync_update(self):

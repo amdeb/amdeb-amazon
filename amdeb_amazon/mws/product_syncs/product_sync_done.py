@@ -51,7 +51,7 @@ class ProductSyncDone(object):
             # should have results for all
             completion_result = completion_results[submission_id]
             if isinstance(completion_result, Exception):
-                self._product_sync.update_exception(done, completion_result)
+                self._product_sync.update_mws_exception(done, completion_result)
             else:
                 # if success, Amazon gives no result
                 sync_result = completion_result.get(done.id, None)

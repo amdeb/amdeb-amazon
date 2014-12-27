@@ -33,6 +33,7 @@ class ProductWriteTransformer(object):
             self._product_sync.insert_price(operation)
 
     def _transform_price(self, operation, values):
+        # we don't handle the extra price change in attribute line
         price = values.pop(PRODUCT_LIST_PRICE_FIELD, None)
         # List price is only stored in template, however,
         # it can be changed in template and variant and

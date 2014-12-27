@@ -17,7 +17,7 @@ from ..shared.model_names import (
 )
 from ..shared.sync_status import (
     SYNC_NEW, SYNC_PENDING, SYNC_ERROR,
-    AMAZON_PROCESS_DONE_STATUS, AMAZON_MWS_EXCEPTION,
+    AMAZON_PROCESS_DONE_STATUS,
 )
 from ..shared.sync_operation_types import (
     SYNC_CREATE, SYNC_UPDATE, SYNC_DELETE, SYNC_PRICE,
@@ -142,7 +142,7 @@ class ProductSyncAccess(object):
         sync_status = {
             SYNC_STATUS_FIELD: SYNC_ERROR,
             AMAZON_REQUEST_TIMESTAMP_FIELD: field_utcnow(),
-            AMAZON_MESSAGE_CODE_FIELD: AMAZON_MWS_EXCEPTION,
+            AMAZON_MESSAGE_CODE_FIELD: type(ex).__name__,
             AMAZON_RESULT_DESCRIPTION_FIELD: ex.message
         }
         records.write(sync_status)
@@ -158,9 +158,9 @@ class ProductSyncAccess(object):
         sync_status = {AMAZON_MESSAGE_CODE_FIELD: message_code}
         self.update_record(record, sync_status)
 
-    def update_exception(self, record, ex):
+    def update_mws_exception(self, record, ex):
         sync_status = {
-            AMAZON_MESSAGE_CODE_FIELD: AMAZON_MWS_EXCEPTION,
+            AMAZON_MESSAGE_CODE_FIELD: type(ex).__name__,
             AMAZON_RESULT_DESCRIPTION_FIELD: ex.message,
         }
         self.update_record(record, sync_status)

@@ -9,9 +9,27 @@ class product_product(models.Model):
     _inherit = [PRODUCT_PRODUCT_TABLE]
 
     # we don't care about the product 'active' field
+    # set default to False to let use fill all data and
+    # start sync
     amazon_sync_active = fields.Boolean(
         string="Amazon Sync Active Flag",
-        default=True,
+        default=False,
+    )
+
+    brand = fields.Char(
+        string="Product Brand"
+    )
+
+    description_text = fields.Text(
+        string="Plain Text Product Description"
+    )
+
+    image_path = fields.Char(
+        string="HTTP Path Prefix of Product Images",
+        help="HTTP path prefix without a trailing / for product images. "
+             "Image names use a pattern that main image is SKU_main.jpg, "
+             "other names are from  SKU_1.jpg to SKU_9.jpg. "
+             "SKU represents the product SKU number.",
     )
 
     amazon_image_trigger = fields.Boolean(

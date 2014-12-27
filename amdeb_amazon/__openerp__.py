@@ -46,9 +46,7 @@ should be notified when there is any error.
         'views/res_config_view.xml',
         'data/cron_job.xml',
     ],
-    'depends': [
-        'amdeb_integrator',
-    ],
+    'depends': ['sale', 'stock', 'amdeb_integrator', ],
     'installable': True,
     'application': True,
 }

@@ -1,10 +1,12 @@
 # -*- coding: utf-8 -*-
 
-import cPickle
 import logging
 
-from ...shared.model_names import SYNC_DATA_FIELD
 from ...models_access import OdooProductAccess
+from ...shared.model_names import (
+    PRODUCT_DEFAULT_CODE_FIELD,
+    PRODUCT_NAME_FIELD,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -18,11 +20,12 @@ class CreateTransformer(object):
 
     def _convert_create(self, sync_create):
         sync_value = {}
-        sync_data = cPickle.loads(sync_create[SYNC_DATA_FIELD])
+
         sync_value['ID'] = sync_create.id
         # SKU can not be changed after creation
-        sync_value['SKU'] = self._odoo_product.get_sku(sync_create)
-        sync_value['Title'] = sync_data['name']
+        product = self._odoo_product.browse(sync_create)
+        sync_value['SKU'] = product[PRODUCT_DEFAULT_CODE_FIELD]
+        sync_value['Title'] = product[PRODUCT_NAME_FIELD]
 
         return sync_value
 

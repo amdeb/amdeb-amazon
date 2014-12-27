@@ -39,7 +39,7 @@ class ProductSyncPending(object):
 
     def _set_exception_status(self, ex):
         for pending in self._pending_set:
-            self._product_sync.update_exception(pending, ex)
+            self._product_sync.update_mws_exception(pending, ex)
 
     def _check_status(self, submission_ids):
         log_template = "Checking sync status for {} submissions."
