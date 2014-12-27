@@ -1,15 +1,15 @@
 {% extends "amazon_envelope.jj2" %}
 
 {% block product_feed %}
-    <MessageType>Price</MessageType>
+    <MessageType>Inventory</MessageType>
     {% for message in FeedMessages %}
     <Message>
         <MessageID>{{ message['ID'] }}</MessageID>
         <OperationType>Update</OperationType>
-        <Price>
+        <Inventory>
             <SKU>{{ message['SKU'] }}</SKU>
-            <StandardPrice currency="USD">{{ message['StandardPrice'] }}</StandardPrice>
-        </Price>
+            <Quantity>{{ message['quantity'] }}</Quantity>
+        </Inventory>
     </Message>
     {% endfor %}
 {% endblock %}

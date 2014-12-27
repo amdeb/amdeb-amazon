@@ -57,10 +57,12 @@ class Boto(object):
         """
         send MWS request and return feed id, feed time and feed status
         """
-        _logger.debug("Boto send data: {}".format(values))
+        _logger.debug("Boto send type: {0}, data: {1}".format(
+            feed_type, values))
         namespace = dict(MerchantId=self.merchant_id, FeedMessages=values)
         template = self._env.get_template(template_name)
         feed_content = template.render(namespace).encode('utf-8')
+        _logger.debug("Boto feed content: {}".format(feed_content))
 
         response = self.conn.submit_feed(
             FeedType=feed_type,
@@ -85,6 +87,10 @@ class Boto(object):
 
     def send_price(self, values):
         return self._send('_POST_PRODUCT_PRICING_DATA_', 'price.jj2', values)
+
+    def send_inventory(self, values):
+        return self._send('_POST_INVENTORY_AVAILABILITY_DATA_',
+                          'inventory.jj2', values)
 
     def check_sync_status(self, submission_id_list):
         sync_status = {}

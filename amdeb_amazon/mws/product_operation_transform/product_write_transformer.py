@@ -6,7 +6,7 @@ from ...shared.model_names import (
     MODEL_NAME_FIELD, PRODUCT_TEMPLATE_TABLE,
     RECORD_ID_FIELD,
     AMAZON_SYNC_ACTIVE_FIELD, PRODUCT_LIST_PRICE_FIELD,
-    PRODUCT_AVAILABLE_QUANTITY_FIELD,
+    PRODUCT_VIRTUAL_AVAILABLE_FIELD,
     PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD,
 )
 
@@ -45,7 +45,7 @@ class ProductWriteTransformer(object):
                     operation[RECORD_ID_FIELD]))
 
     def _transform_inventory(self, operation, values):
-        inventory = values.pop(PRODUCT_AVAILABLE_QUANTITY_FIELD, None)
+        inventory = values.pop(PRODUCT_VIRTUAL_AVAILABLE_FIELD, None)
         if inventory is not None:
             self._product_sync.insert_inventory(operation)
 

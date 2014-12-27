@@ -114,6 +114,9 @@ class ProductSyncAccess(object):
     def get_new_prices(self):
         return self._get_new_syncs(SYNC_PRICE)
 
+    def get_new_inventories(self):
+        return self._get_new_syncs(SYNC_INVENTORY)
+
     def get_pending(self):
         # get pending in the ascending id order to
         # process the newest sync first.

@@ -20,7 +20,8 @@ PRODUCT_LIST_PRICE_FIELD = 'list_price'
 PRODUCT_LST_PRICE_FIELD = 'lst_price'
 PRODUCT_NAME_FIELD = 'name'
 
-PRODUCT_AVAILABLE_QUANTITY_FIELD = 'qty_available'
+
+PRODUCT_VIRTUAL_AVAILABLE_FIELD = 'virtual_available'
 PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD = 'amazon_image_trigger'
 ATTRIBUTE_VALUE_IDS_FIELD = 'attribute_value_ids'
 
