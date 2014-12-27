@@ -12,6 +12,7 @@ from ...models_access import ProductSyncAccess
 from ..product_sync_transform import UpdateTransformer
 from ..product_sync_transform import PriceTransformer
 from ..product_sync_transform import InventoryTransformer
+from ..product_sync_transform import ImageTransformer
 
 _logger = logging.getLogger(__name__)
 
@@ -80,11 +81,20 @@ class ProductSyncNew(object):
             self._mws_send(
                 self._mws.send_inventory, sync_inventories, inventory_values)
 
+    def _sync_image(self):
+        sync_images = self._product_sync.get_new_imagines()
+        _logger.debug("Found {} image syncs.".format(len(sync_images)))
+        if sync_images:
+            image_transformer = ImageTransformer(self._env)
+            image_values = image_transformer.transform(sync_images)
+            self._mws_send(self._mws.send_image, sync_images, image_values)
+
     def synchronize(self):
         _logger.debug("Enter ProductSyncNew synchronize().")
         self._sync_update()
         self._sync_price()
         self._sync_inventory()
+        self._sync_image()
 
         # all new syncs should exist in product table
         # because this is in the same transaction as the

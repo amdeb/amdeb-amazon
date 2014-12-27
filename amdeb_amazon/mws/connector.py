@@ -33,7 +33,6 @@ def _parse_sync_result(feed_result):
                 result_message_code,
                 result_description
             )
-
     _logger.debug("Submission results: {}".format(completion_result))
     return completion_result
 
@@ -46,12 +45,17 @@ class Boto(object):
             loader=loader, autoescape=True,
             trim_blocks=True, lstrip_blocks=True)
 
-        self.merchant_id = settings['merchant_id']
+        self._merchant_id = settings['merchant_id']
+
+        # ToDo: put in Amazon settings
+        # self.image_url = settings['image_url']
+        self._image_url = "http://s3-us-west-1.amazonaws.com/" \
+                          "tsdbrand/amazonimages/"
 
         self.conn = connection.MWSConnection(
             aws_access_key_id=settings['access_key'],
             aws_secret_access_key=settings['secret_key'],
-            Merchant=self.merchant_id)
+            Merchant=self._merchant_id)
 
     def _send(self, feed_type, template_name, values):
         """
@@ -59,7 +63,12 @@ class Boto(object):
         """
         _logger.debug("Boto send type: {0}, data: {1}".format(
             feed_type, values))
-        namespace = dict(MerchantId=self.merchant_id, FeedMessages=values)
+        namespace = {
+            'MerchantId': self._merchant_id,
+            'ImageUrl': self._image_url,
+            'FeedMessages': values,
+        }
+
         template = self._env.get_template(template_name)
         feed_content = template.render(namespace).encode('utf-8')
         _logger.debug("Boto feed content: {}".format(feed_content))
@@ -91,6 +100,10 @@ class Boto(object):
     def send_inventory(self, values):
         return self._send('_POST_INVENTORY_AVAILABILITY_DATA_',
                           'inventory.jj2', values)
+
+    def send_image(self, values):
+        return self._send('_POST_PRODUCT_IMAGE_DATA_',
+                          'image_transformer.jj2', values)
 
     def check_sync_status(self, submission_id_list):
         sync_status = {}
