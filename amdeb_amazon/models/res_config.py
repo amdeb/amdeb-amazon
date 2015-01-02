@@ -45,6 +45,9 @@ class Configuration(models.TransientModel):
     default_image_location = fields.Char(
         string='Product Image Location',
         required=True,
+        help="The product image location without trailing slash. "
+             "Image name uses a pattern of SKU_main.jpg, SKU_1.jpg, "
+             "SKU_2.jpg, ... SKU_8.jpg. The SKU is the product SKU.",
         default_model=AMAZON_SETTINGS_TABLE,
     )
 

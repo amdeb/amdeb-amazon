@@ -29,6 +29,7 @@
                         </group>
 
                         <group string="Integration Settings">
+                            <field name="default_image_location" />
                             <field name="default_synchronization_interval" />
                             <field name="default_active_flag" />
                         </group>
