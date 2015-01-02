@@ -24,15 +24,6 @@ class product_template(models.Model):
         related='product_variant_ids.description_text',
     )
 
-    image_path = fields.Char(
-        string="HTTP Path Prefix of Product Images",
-        help="HTTP path prefix without a trailing / for product images. "
-             "Image names use a pattern that main image is SKU_main.jpg, "
-             "other names are from  SKU_1.jpg to SKU_9.jpg. "
-             "SKU represents the product SKU number.",
-        related='product_variant_ids.image_path',
-    )
-
     amazon_image_trigger = fields.Boolean(
         string="Amazon Image Synchronization Trigger",
         help="Changing this value triggers Amazon image synchronization.",
