@@ -22,6 +22,7 @@ PRODUCT_NAME_FIELD = 'name'
 
 PRODUCT_VIRTUAL_AVAILABLE_FIELD = 'virtual_available'
 PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD = 'amazon_image_trigger'
+PRODUCT_IMAGE_PATH_FIELD = 'image_path'
 ATTRIBUTE_VALUE_IDS_FIELD = 'attribute_value_ids'
 
 PRODUCT_OPERATION_TABLE = 'amdeb.product.operation'
