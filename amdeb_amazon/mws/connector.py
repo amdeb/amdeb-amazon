@@ -41,11 +41,12 @@ class Boto(object):
     def __init__(self, settings):
         loader = jinja2.PackageLoader(
             'openerp.addons.amdeb_amazon', "mws_templates")
-        self._env = jinja2.Environment(
+        self._jj2_env = jinja2.Environment(
             loader=loader, autoescape=True,
             trim_blocks=True, lstrip_blocks=True)
 
         self._merchant_id = settings['merchant_id']
+        self._image_location = settings['image_location']
         self.conn = connection.MWSConnection(
             aws_access_key_id=settings['access_key'],
             aws_secret_access_key=settings['secret_key'],
@@ -63,7 +64,7 @@ class Boto(object):
             'FeedMessages': values,
         }
 
-        template = self._env.get_template(template_name)
+        template = self._jj2_env.get_template(template_name)
         feed_content = template.render(namespace).encode('utf-8')
         _logger.debug("Boto feed content: {}".format(feed_content))
 
@@ -96,6 +97,7 @@ class Boto(object):
                           'inventory.jj2', values)
 
     def send_image(self, values):
+        values['ImageLocation'] = self._image_location
         return self._send('_POST_PRODUCT_IMAGE_DATA_',
                           'image_transformer.jj2', values)
 

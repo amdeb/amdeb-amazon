@@ -22,7 +22,6 @@ class ImageTransformer(object):
         sync_value = {'ID': sync_price.id}
         product = self._odoo_product.browse(sync_price)
         sync_value['SKU'] = product[PRODUCT_DEFAULT_CODE_FIELD]
-        sync_value['ImageLocation'] = product['image_path']
         return sync_value
 
     def transform(self, sync_prices):

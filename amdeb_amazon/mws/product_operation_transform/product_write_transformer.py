@@ -8,7 +8,6 @@ from ...shared.model_names import (
     AMAZON_SYNC_ACTIVE_FIELD, PRODUCT_LIST_PRICE_FIELD,
     PRODUCT_VIRTUAL_AVAILABLE_FIELD,
     PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD,
-    PRODUCT_IMAGE_PATH_FIELD,
 )
 
 from ...models_access import ProductSyncAccess
@@ -53,9 +52,8 @@ class ProductWriteTransformer(object):
 
     def _transform_image(self, operation, values):
         image_trigger = values.pop(PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD, None)
-        image_path = values.pop(PRODUCT_IMAGE_PATH_FIELD, None)
         # create image sync regardless the image_trigger value
-        if image_trigger is not None or image_path is not None:
+        if image_trigger is not None:
             self._product_sync.insert_image(operation)
 
     def _transform_update(self, operation, write_values):

@@ -42,6 +42,12 @@ class Configuration(models.TransientModel):
         default_model=AMAZON_SETTINGS_TABLE,
     )
 
+    default_image_location = fields.Char(
+        string='Product Image Location',
+        required=True,
+        default_model=AMAZON_SETTINGS_TABLE,
+    )
+
     default_active_flag = fields.Boolean(
         string='Active Flag',
         # set to False thus not run before configuration is done
