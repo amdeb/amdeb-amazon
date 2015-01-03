@@ -43,6 +43,8 @@ should be notified when there is any error.
 
         """,
     'data': [
+        'security/security.xml',
+        'security/ir.model.access.csv',
         'views/res_config_view.xml',
         'data/cron_job.xml',
     ],
