@@ -15,3 +15,8 @@ class product_product(models.Model):
         string="Amazon Sync Active Flag",
         default=False,
     )
+
+    amazon_image_trigger = fields.Boolean(
+        string="Amazon Image Synchronization Trigger",
+        help="Changing this value triggers Amazon image synchronization.",
+    )
