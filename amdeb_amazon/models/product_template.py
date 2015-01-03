@@ -11,17 +11,8 @@ class product_template(models.Model):
     # we don't care about the product 'active' field
     amazon_sync_active = fields.Boolean(
         string="Amazon Synchronization Active Flag",
+        help="Enable or disable Amazon product synchronization",
         related='product_variant_ids.amazon_sync_active',
-    )
-
-    brand = fields.Char(
-        string="Product Brand",
-        related='product_variant_ids.brand',
-    )
-
-    description_text = fields.Text(
-        string="Plain Text Product Description",
-        related='product_variant_ids.description_text',
     )
 
     amazon_image_trigger = fields.Boolean(
@@ -30,27 +21,30 @@ class product_template(models.Model):
         related='product_variant_ids.amazon_image_trigger',
     )
 
+    brand = fields.Char(
+        string="Product Brand",
+    )
+
+    description_text = fields.Text(
+        string="Plain Text Product Description",
+    )
+
     amazon_bullet_point1 = fields.Char(
         string="Amazon Bullet Point 1",
-        related='product_variant_ids.amazon_bullet_point1',
     )
 
     amazon_bullet_point2 = fields.Char(
         string="Amazon Bullet Point 2",
-        related='product_variant_ids.amazon_bullet_point2',
     )
 
     amazon_bullet_point3 = fields.Char(
         string="Amazon Bullet Point 3",
-        related='product_variant_ids.amazon_bullet_point3',
     )
 
     amazon_bullet_point4 = fields.Char(
         string="Amazon Bullet Point 4",
-        related='product_variant_ids.amazon_bullet_point4',
     )
 
     amazon_bullet_point5 = fields.Char(
         string="Amazon Bullet Point 5",
-        related='product_variant_ids.amazon_bullet_point5',
     )

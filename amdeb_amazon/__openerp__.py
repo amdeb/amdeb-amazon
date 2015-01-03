@@ -45,8 +45,9 @@ should be notified when there is any error.
     'data': [
         'security/security.xml',
         'security/ir.model.access.csv',
-        'views/res_config_view.xml',
         'data/cron_job.xml',
+        'views/res_config_view.xml',
+        'views/product_view.xml',
     ],
     'depends': ['sale', 'stock', 'amdeb_integrator', ],
     'installable': True,
