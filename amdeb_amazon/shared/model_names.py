@@ -11,6 +11,8 @@ AMAZON_SETTINGS_TABLE = 'amdeb.amazon.config.settings'
 PRODUCT_TEMPLATE_TABLE = 'product.template'
 PRODUCT_VARIANT_COUNT_FIELD = 'product_variant_count'
 PRODUCT_VARIANT_IDS_FIELD = 'product_variant_ids'
+PRODUCT_DESCRIPTION_SALE_FIELD = 'description_sale'
+PRODUCT_AMAZON_DESCRIPTION_FIELD = 'amazon_description'
 
 PRODUCT_PRODUCT_TABLE = 'product.product'
 PRODUCT_TEMPLATE_ID_FIELD = 'product_tmpl_id'
@@ -22,8 +24,8 @@ PRODUCT_NAME_FIELD = 'name'
 
 PRODUCT_VIRTUAL_AVAILABLE_FIELD = 'virtual_available'
 PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD = 'amazon_image_trigger'
-PRODUCT_IMAGE_PATH_FIELD = 'image_path'
 ATTRIBUTE_VALUE_IDS_FIELD = 'attribute_value_ids'
+
 
 PRODUCT_OPERATION_TABLE = 'amdeb.product.operation'
 MODEL_NAME_FIELD = 'model_name'

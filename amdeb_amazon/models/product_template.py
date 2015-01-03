@@ -25,8 +25,10 @@ class product_template(models.Model):
         string="Product Brand",
     )
 
-    description_text = fields.Text(
-        string="Plain Text Product Description",
+    amazon_description = fields.Text(
+        string="Amazon Product Description",
+        help="Product description in Amazon. If empty, sales description "
+             "will be used."
     )
 
     amazon_bullet_point1 = fields.Char(
