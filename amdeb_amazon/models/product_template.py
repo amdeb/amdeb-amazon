@@ -2,11 +2,31 @@
 
 from openerp import models, fields
 
-from ..shared.model_names import PRODUCT_TEMPLATE_TABLE
+from ..models_access.amazon_product_access import AmazonProductAccess
+from ..shared.model_names import (
+    PRODUCT_TEMPLATE_TABLE, MODEL_NAME_FIELD, RECORD_ID_FIELD,
+)
 
 
 class product_template(models.Model):
     _inherit = [PRODUCT_TEMPLATE_TABLE]
+
+    def _is_created_amazon(self):
+        model_id = {
+            MODEL_NAME_FIELD: PRODUCT_TEMPLATE_TABLE,
+            RECORD_ID_FIELD: self.ids[0],
+        }
+
+        amazon_product = AmazonProductAccess(self.env)
+        return amazon_product.is_created(model_id)
+
+    amazon_created = fields.Boolean(
+        string="Is Created in Amazon",
+        help="A readonly flag showing whether this product is created "
+             "in Amazon or not.",
+        compute=_is_created_amazon,
+        readonly=True,
+    )
 
     # we don't care about the product 'active' field
     amazon_sync_active = fields.Boolean(

@@ -3,6 +3,8 @@
 from openerp import api, models, fields
 from openerp.exceptions import ValidationError
 
+from ..models_access.amazon_product_access import AmazonProductAccess
+
 from ..shared.model_names import (
     PRODUCT_PRODUCT_TABLE,
     AMAZON_SYNC_ACTIVE_FIELD,
@@ -11,11 +13,29 @@ from ..shared.model_names import (
     PRODUCT_TEMPLATE_ID_FIELD,
     PRODUCT_DESCRIPTION_SALE_FIELD,
     PRODUCT_AMAZON_DESCRIPTION_FIELD,
+    MODEL_NAME_FIELD, RECORD_ID_FIELD,
 )
 
 
 class product_product(models.Model):
     _inherit = [PRODUCT_PRODUCT_TABLE]
+
+    def _is_created_amazon(self):
+        model_id = {
+            MODEL_NAME_FIELD: PRODUCT_PRODUCT_TABLE,
+            RECORD_ID_FIELD: self.ids[0],
+        }
+
+        amazon_product = AmazonProductAccess(self.env)
+        return amazon_product.is_created(model_id)
+
+    amazon_created = fields.Boolean(
+        string="Is Created in Amazon",
+        help="A readonly flag showing whether this product is created "
+             "in Amazon or not.",
+        compute=_is_created_amazon,
+        readonly=True,
+    )
 
     # we don't care about the product 'active' field
     # set default to False to let use fill all data and
