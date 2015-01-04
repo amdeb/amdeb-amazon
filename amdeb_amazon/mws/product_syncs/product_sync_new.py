@@ -9,10 +9,10 @@ from ...shared.model_names import (
 from ...shared.sync_status import SYNC_PENDING
 from ...models_access import ProductSyncAccess
 
+from ..product_sync_transform import BaseTransformer
 from ..product_sync_transform import UpdateTransformer
 from ..product_sync_transform import PriceTransformer
 from ..product_sync_transform import InventoryTransformer
-from ..product_sync_transform import ImageTransformer
 
 _logger = logging.getLogger(__name__)
 
@@ -24,10 +24,25 @@ class ProductSyncNew(object):
     To match a request with response result, we use
     the sync table record id as the message id
     """
+
     def __init__(self, env, mws):
         self._env = env
         self._mws = mws
         self._product_sync = ProductSyncAccess(env)
+        self._sync_types = [
+            (self._product_sync.get_new_updates,
+             UpdateTransformer,
+             self._mws.send_product),
+            (self._product_sync.get_new_prices,
+             PriceTransformer,
+             self._mws.send_price),
+            (self._product_sync.get_new_inventories,
+             InventoryTransformer,
+             self._mws.send_inventory),
+            (self._product_sync.get_new_imagines,
+             BaseTransformer,
+             self._mws.send_image),
+        ]
 
     @staticmethod
     def _convert_results(results):
@@ -51,50 +66,14 @@ class ProductSyncNew(object):
             _logger.exception("mws send() threw exception.")
             self._product_sync.update_sync_new_exception(syncs, ex)
 
-    def _sync_update(self):
-        sync_updates = self._product_sync.get_new_updates()
-        _logger.debug("Found {} update syncs.".format(len(sync_updates)))
-        if sync_updates:
-            update_transformer = UpdateTransformer(self._env)
-            update_values = update_transformer.transform(sync_updates)
-            self._mws_send(
-                self._mws.send_product, sync_updates, update_values)
-
-    def _sync_price(self):
-        sync_prices = self._product_sync.get_new_prices()
-        _logger.debug("Found {} prices syncs.".format(len(sync_prices)))
-        if sync_prices:
-            price_transformer = PriceTransformer(self._env)
-            price_values = price_transformer.transform(sync_prices)
-            self._mws_send(
-                self._mws.send_price, sync_prices, price_values)
-
-    def _sync_inventory(self):
-        sync_inventories = self._product_sync.get_new_inventories()
-        _logger.debug("Found {} inventory syncs.".format(
-            len(sync_inventories)))
-        if sync_inventories:
-            inventory_transformer = InventoryTransformer(self._env)
-            inventory_values = inventory_transformer.transform(
-                sync_inventories)
-            self._mws_send(
-                self._mws.send_inventory, sync_inventories, inventory_values)
-
-    def _sync_image(self):
-        sync_images = self._product_sync.get_new_imagines()
-        _logger.debug("Found {} image syncs.".format(len(sync_images)))
-        if sync_images:
-            image_transformer = ImageTransformer(self._env)
-            image_values = image_transformer.transform(sync_images)
-            self._mws_send(self._mws.send_image, sync_images, image_values)
-
     def synchronize(self):
         _logger.debug("Enter ProductSyncNew synchronize().")
-        self._sync_update()
-        self._sync_price()
-        self._sync_inventory()
-        self._sync_image()
-
         # all new syncs should exist in product table
         # because this is in the same transaction as the
         # transformer. There is no need to check existence.
+        for sync_type in self._sync_types:
+            sync_ops = sync_type[0]()
+            if sync_ops:
+                transformer = sync_type[1](self._env)
+                valid_syncs, sync_values = transformer.transform(sync_ops)
+                self._mws_send(sync_type[2], valid_syncs, sync_values)
