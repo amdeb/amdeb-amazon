@@ -46,7 +46,7 @@ class product_product(models.Model):
                 has_error = True
                 message += ' ' + PRODUCT_DEFAULT_CODE_FIELD
             if (not template[PRODUCT_DESCRIPTION_SALE_FIELD] and
-                not template[PRODUCT_AMAZON_DESCRIPTION_FIELD]):
+                    not template[PRODUCT_AMAZON_DESCRIPTION_FIELD]):
                 has_error = True
                 message += (' ' + PRODUCT_DESCRIPTION_SALE_FIELD + ' or ' +
                             PRODUCT_AMAZON_DESCRIPTION_FIELD)
