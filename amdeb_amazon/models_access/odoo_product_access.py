@@ -24,16 +24,16 @@ class OdooProductAccess(object):
     def is_partial_variant(self, header):
         """
         Find if a variant is part of its template. If it is
-        a variant AND is part of its template, return False.
-        Otherwise, return False.
-        In other words, it is not an independent variant that has attributes.
+        a variant AND doesn't have attribute value ids, it is a
+        partial variant. Otherwise, return False.
+        A partial variant is not an independent variant that has attributes.
         :param header: a header that has model name and record id
         :return: True if it's a partial variant, else False
         """
         result = False
         if header[MODEL_NAME_FIELD] == PRODUCT_PRODUCT_TABLE:
             record = self.browse(header)
-            if record[ATTRIBUTE_VALUE_IDS_FIELD]:
+            if not record[ATTRIBUTE_VALUE_IDS_FIELD]:
                 result = True
         return result
 

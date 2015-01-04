@@ -7,6 +7,7 @@ from ..models_access.amazon_product_access import AmazonProductAccess
 
 from ..shared.model_names import (
     PRODUCT_PRODUCT_TABLE,
+    PRODUCT_TEMPLATE_TABLE,
     AMAZON_SYNC_ACTIVE_FIELD,
     PRODUCT_DEFAULT_CODE_FIELD,
     PRODUCT_NAME_FIELD,
@@ -14,6 +15,7 @@ from ..shared.model_names import (
     PRODUCT_DESCRIPTION_SALE_FIELD,
     PRODUCT_AMAZON_DESCRIPTION_FIELD,
     MODEL_NAME_FIELD, RECORD_ID_FIELD,
+    ATTRIBUTE_VALUE_IDS_FIELD,
 )
 
 
@@ -21,10 +23,14 @@ class product_product(models.Model):
     _inherit = [PRODUCT_PRODUCT_TABLE]
 
     def _is_created_amazon(self):
-        model_id = {
-            MODEL_NAME_FIELD: PRODUCT_PRODUCT_TABLE,
-            RECORD_ID_FIELD: self.ids[0],
-        }
+        model_id = {}
+        # if it is a partial variant, check its template
+        if self[ATTRIBUTE_VALUE_IDS_FIELD]:
+            model_id[MODEL_NAME_FIELD] = PRODUCT_PRODUCT_TABLE
+            model_id[RECORD_ID_FIELD] = self.id
+        else:
+            model_id[MODEL_NAME_FIELD] = PRODUCT_TEMPLATE_TABLE
+            model_id[RECORD_ID_FIELD] = self[PRODUCT_TEMPLATE_ID_FIELD].id
 
         amazon_product = AmazonProductAccess(self.env)
         return amazon_product.is_created(model_id)

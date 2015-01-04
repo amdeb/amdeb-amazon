@@ -21,6 +21,6 @@ class ProductCreateTransformer(object):
         # ignore variant creation if it is the only variant
         # thus the amazon product is_created is False for partial variant
         if self._odoo_product.is_partial_variant(operation):
-            _logger.debug("Skip single variant creation operation.")
+            _logger.debug("Skip partial variant creation operation.")
         else:
             self._product_sync.insert_create(operation)
