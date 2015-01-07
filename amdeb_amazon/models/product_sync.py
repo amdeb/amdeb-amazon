@@ -24,7 +24,9 @@ class AmazonProductSync(models.Model):
 
     _name = AMAZON_PRODUCT_SYNC_TABLE
     _description = 'Amazon Product Synchronization'
-    _log_access = False
+
+    # we use the create date and update date
+    _log_access = True
 
     @api.model
     def synchronize_cron(self):
@@ -86,14 +88,6 @@ class AmazonProductSync(models.Model):
             (SYNC_ERROR, SYNC_ERROR),
         ],
         default=SYNC_NEW,
-        readonly=True,
-    )
-
-    sync_creation_timestamp = fields.Datetime(
-        string='Synchronization Creation Timestamp',
-        required=True,
-        default=field_utcnow,
-        index=True,
         readonly=True,
     )
 

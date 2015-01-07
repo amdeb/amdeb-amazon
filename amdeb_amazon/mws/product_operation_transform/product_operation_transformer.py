@@ -77,7 +77,7 @@ class ProductOperationTransformer(object):
             return
 
         write_values = cPickle.loads(operation[OPERATION_DATA_FIELD])
-        log_template = "Transform write operation initial values: {}."
+        log_template = "Product write operation initial values: {}."
         _logger.debug(log_template.format(write_values))
 
         merged_values = self._merge_write(operation, write_values)
@@ -102,10 +102,7 @@ class ProductOperationTransformer(object):
             # only transform a create/write operation for an existing product
             self._transform_create_write(operation)
         else:
-            log_template = "Ignore operation for unlinked product " \
-                           "Model: {0}, Record id: {1}"
-            _logger.debug(log_template.format(
-                operation[MODEL_NAME_FIELD], operation[RECORD_ID_FIELD]))
+            _logger.debug("Ignore product operation for unlinked record.")
 
     def transform(self):
         """
@@ -129,7 +126,7 @@ class ProductOperationTransformer(object):
             else:
                 self._transformed_operations.add(record_key)
 
-                log_template = "Transform operation for Model: {0}, " \
+                log_template = "Transform product operation Model: {0}, " \
                                "Record id: {1}, Operation type: {2}."
                 _logger.debug(log_template.format(
                     operation[MODEL_NAME_FIELD],

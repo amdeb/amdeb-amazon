@@ -11,7 +11,7 @@ from ..shared.model_names import (
     TEMPLATE_ID_FIELD, PRODUCT_SKU_FIELD,
 
     AMAZON_PRODUCT_SYNC_TABLE, SYNC_TYPE_FIELD, SYNC_DATA_FIELD,
-    SYNC_CREATION_TIMESTAMP_FIELD, SYNC_STATUS_FIELD,
+    PRODUCT_CREATE_DATE_FIELD, SYNC_STATUS_FIELD,
     SYNC_CHECK_STATUS_COUNT_FILED, AMAZON_MESSAGE_CODE_FIELD,
     AMAZON_RESULT_DESCRIPTION_FIELD, AMAZON_REQUEST_TIMESTAMP_FIELD,
 )
@@ -198,7 +198,7 @@ class ProductSyncAccess(object):
         archive_date = now - timedelta(days=_ARCHIVE_DAYS)
         archive_date_str = archive_date.strftime(DATETIME_FORMAT)
         archive_records = self._table.search([
-            (SYNC_CREATION_TIMESTAMP_FIELD, '<', archive_date_str),
+            (PRODUCT_CREATE_DATE_FIELD, '<', archive_date_str),
             (SYNC_STATUS_FIELD, '=', SYNC_PENDING),
             (SYNC_CHECK_STATUS_COUNT_FILED, '>=', _ARCHIVE_CHECK_COUNT)
         ])
@@ -220,7 +220,7 @@ class ProductSyncAccess(object):
         unlink_date = now - timedelta(days=_UNLINK_DAYS)
         unlink_date_str = unlink_date.strftime(DATETIME_FORMAT)
         unlink_records = self._table.search([
-            (SYNC_CREATION_TIMESTAMP_FIELD, '<', unlink_date_str)
+            (PRODUCT_CREATE_DATE_FIELD, '<', unlink_date_str)
         ])
         count = len(unlink_records)
         if unlink_records:

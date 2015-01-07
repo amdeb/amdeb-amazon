@@ -30,11 +30,12 @@ class ProductSynchronization(object):
         synchronize product operations to Amazon
         This is the entry to all product synchronization functions
         There are several steps:
-        1. convert new product operations to sync operations
-        2. execute sync operations and update end timestamp
-        3. get sync results for pending sync operations and update
-        end timestamp. This als process completed syncs
-        4. process successful creation syncs
+        1. get new operations and set sync timestamp
+        2. convert new product operations to sync operations
+        3. execute sync operations and save submission timestamp
+        4. get sync results for pending sync operations, process
+        completed syncs
+        5. do daily chore on sync table
         """
         _logger.debug("Enter ProductSynchronization synchronize()")
 

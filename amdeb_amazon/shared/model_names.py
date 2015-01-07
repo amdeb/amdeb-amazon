@@ -27,6 +27,8 @@ PRODUCT_LST_PRICE_FIELD = 'lst_price'
 PRODUCT_NAME_FIELD = 'name'
 PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD = 'attribute_value_ids'
 
+PRODUCT_CREATE_DATE_FIELD = 'create_date'
+
 PRODUCT_VIRTUAL_AVAILABLE_FIELD = 'virtual_available'
 PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD = 'amazon_image_trigger'
 
@@ -41,7 +43,7 @@ OPERATION_DATA_FIELD = 'operation_data'
 AMAZON_SYNC_TIMESTAMP_FIELD = 'amazon_sync_timestamp'
 
 AMAZON_PRODUCT_SYNC_TABLE = 'amdeb.amazon.product.sync'
-SYNC_CREATION_TIMESTAMP_FIELD = 'sync_creation_timestamp'
+
 
 SYNC_STATUS_FIELD = 'sync_status'
 SYNC_TYPE_FIELD = 'sync_type'
