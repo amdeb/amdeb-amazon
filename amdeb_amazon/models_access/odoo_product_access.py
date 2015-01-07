@@ -2,7 +2,8 @@
 
 from ..shared.model_names import(
     MODEL_NAME_FIELD, RECORD_ID_FIELD,
-    PRODUCT_PRODUCT_TABLE, PRODUCT_IS_PRODUCT_VARIANT_FIELD,
+    PRODUCT_PRODUCT_TABLE, PRODUCT_TEMPLATE_TABLE,
+    PRODUCT_IS_PRODUCT_VARIANT_FIELD,
     PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD, AMAZON_SYNC_ACTIVE_FIELD,
     PRODUCT_DEFAULT_CODE_FIELD, PRODUCT_VARIANT_COUNT_FIELD,
     PRODUCT_NAME_FIELD, PRODUCT_ATTRIBUTE_ID_FIELD,
@@ -24,6 +25,16 @@ class OdooProductAccess(object):
         table = self._env[model_name]
         return bool(table.browse(record_id).exists())
 
+    @staticmethod
+    def is_product_template(header):
+        flag = header[MODEL_NAME_FIELD] == PRODUCT_TEMPLATE_TABLE
+        return flag
+
+    @staticmethod
+    def is_product_variant(self, header):
+        flag = header[MODEL_NAME_FIELD] == PRODUCT_PRODUCT_TABLE
+        return flag
+
     def is_partial_variant(self, header):
         """
         Find if a variant is part of its template. If it is
@@ -34,7 +45,7 @@ class OdooProductAccess(object):
         :return: True if it's a partial variant, else False
         """
         result = False
-        if header[MODEL_NAME_FIELD] == PRODUCT_PRODUCT_TABLE:
+        if OdooProductAccess.is_product_variant(header):
             record = self.browse(header)
             if not record[PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD]:
                 result = True

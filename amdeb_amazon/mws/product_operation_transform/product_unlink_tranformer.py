@@ -3,7 +3,7 @@
 import logging
 
 from ...shared.model_names import (
-    PRODUCT_TEMPLATE_TABLE, MODEL_NAME_FIELD,
+    MODEL_NAME_FIELD,
     RECORD_ID_FIELD, TEMPLATE_ID_FIELD,
     OPERATION_TYPE_FIELD,
 )
@@ -11,6 +11,7 @@ from .operation_types import UNLINK_RECORD
 
 from ...models_access import ProductSyncAccess
 from ...models_access import AmazonProductAccess
+from ...models_access import OdooProductAccess
 
 _logger = logging.getLogger(__name__)
 
@@ -30,7 +31,7 @@ class ProductUnlinkTransformer(object):
         found = False
         templates = [
             element for element in self._new_operations if
-            element[MODEL_NAME_FIELD] == PRODUCT_TEMPLATE_TABLE and
+            OdooProductAccess.is_product_template(element) and
             element[RECORD_ID_FIELD] == operation[TEMPLATE_ID_FIELD] and
             element[OPERATION_TYPE_FIELD] == UNLINK_RECORD
         ]
@@ -66,7 +67,7 @@ class ProductUnlinkTransformer(object):
         """
         amazon_product = self._amazon_product.get_by_head(operation)
         if amazon_product:
-            if operation[MODEL_NAME_FIELD] == PRODUCT_TEMPLATE_TABLE:
+            if OdooProductAccess.is_product_template(operation):
                 self._add_template_unlink(amazon_product)
             else:
                 if self._check_template_unlink(operation):

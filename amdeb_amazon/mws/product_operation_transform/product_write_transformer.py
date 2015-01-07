@@ -3,7 +3,6 @@
 import logging
 
 from ...shared.model_names import (
-    MODEL_NAME_FIELD, PRODUCT_TEMPLATE_TABLE,
     RECORD_ID_FIELD,
     AMAZON_SYNC_ACTIVE_FIELD, PRODUCT_LIST_PRICE_FIELD,
     PRODUCT_VIRTUAL_AVAILABLE_FIELD,
@@ -13,12 +12,14 @@ from ...shared.model_names import (
 from ...models_access import ProductSyncAccess
 from ...models_access import AmazonProductAccess
 from ...models_access import OdooProductAccess
+from .product_create_transformer import ProductCreateTransformer
 
 _logger = logging.getLogger(__name__)
 
 
 class ProductWriteTransformer(object):
     def __init__(self, env):
+        self._env = env
         self._product_sync = ProductSyncAccess(env)
         self._amazon_product = AmazonProductAccess(env)
         self._odoo_product = OdooProductAccess(env)
@@ -39,7 +40,7 @@ class ProductWriteTransformer(object):
         # it can be changed in template and variant and
         # both generate write operations.
         if price is not None:
-            if operation[MODEL_NAME_FIELD] == PRODUCT_TEMPLATE_TABLE:
+            if OdooProductAccess.is_product_template(operation):
                 self._add_sync_price(operation)
             else:
                 _logger.debug('Skip variant {} list_price write.'.format(
@@ -63,30 +64,40 @@ class ProductWriteTransformer(object):
         if write_values:
             self._product_sync.insert_update(operation, write_values)
 
-    def transform(self, operation, write_values, sync_active):
+    def transform(self, operation, write_values):
         """transform a write operation to one or more sync operations
-        1. If sync active changes, generate create or deactivate sync. Done
-        2. If sync active is False, ignore all changes.Done.
-        3. If price, inventory and image change, generate
+        1. If sync active value changes, generate create or deactivate sync.
+        2. If product sync active is False, ignore all changes.
+        3. If price, inventory or image change, generate
         corresponding syncs.
-        4. If any write values left, generate an update sync
-        !!!  we don't check is_created thus a mws call fails if
-        the product is not created in Amazon -- the error is a
+        4. If there are other write values, generate an update sync
+        only for product template -- there is no need to update a variant
+        field.
+
+        !!!  When a new product creation is being processed in Amazon and
+        there are new updates locally, it is possible that the update sync
+        fails because the product is not created in Amazon yet.
+        we don't check Amazon creation status thus a mws call may fail if
+        the product is not successfully created in Amazon -- the error is a
         remainder to a user that the product is not created yet
         and a manual fix is required.
         """
         sync_active_value = write_values.get(AMAZON_SYNC_ACTIVE_FIELD, None)
         if sync_active_value is not None:
             if sync_active_value:
-                _logger.debug("Amazon sync active changes to "
-                              "True, generate a create sync.")
-                self._product_sync.insert_create(operation)
+                _logger.debug("Amazon sync active flag changes to True,"
+                              "call create transformer for create sync.")
+                create_transformer = ProductCreateTransformer(self._env)
+                create_transformer.transform(operation)
             else:
-                _logger.debug("Amazon sync active changes to "
+                _logger.debug("Amazon sync active flag changes to "
                               "False, generate a deactivate sync.")
                 self._product_sync.insert_deactivate(operation)
         else:
-            if sync_active:
-                self._transform_update(operation, write_values)
+            product_sync_active = self._odoo_product.is_sync_active(operation)
+            if product_sync_active:
+                # we change the local copy in other methods
+                values_copy = write_values.copy()
+                self._transform_update(operation, values_copy)
             else:
-                _logger.debug("Product write is inactive. Ignore it.")
+                _logger.debug("Product sync flag is disabled. Ignore it.")

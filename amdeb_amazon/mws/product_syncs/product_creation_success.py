@@ -3,7 +3,7 @@
 import logging
 
 from ...shared.model_names import (
-    PRODUCT_PRODUCT_TABLE, PRODUCT_TEMPLATE_TABLE,
+    PRODUCT_TEMPLATE_TABLE,
     MODEL_NAME_FIELD, RECORD_ID_FIELD,
     SYNC_STATUS_FIELD, SYNC_TYPE_FIELD, TEMPLATE_ID_FIELD,
 )
@@ -40,7 +40,7 @@ class ProductCreationSuccess(object):
         # is not created for a product variant.
         # The automatic way to fix this is to create
         # relation syn for both template and variant creation sync
-        if completed[MODEL_NAME_FIELD] == PRODUCT_PRODUCT_TABLE:
+        if OdooProductAccess.is_product_variant(completed):
             template_head = {
                 MODEL_NAME_FIELD: PRODUCT_TEMPLATE_TABLE,
                 RECORD_ID_FIELD: completed[TEMPLATE_ID_FIELD],

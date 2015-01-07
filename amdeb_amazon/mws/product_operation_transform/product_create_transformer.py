@@ -4,7 +4,7 @@ import logging
 from ...models_access import ProductSyncAccess
 from ...models_access import OdooProductAccess
 from ...shared.model_names import (
-    PRODUCT_PRODUCT_TABLE, MODEL_NAME_FIELD,
+    MODEL_NAME_FIELD,
     PRODUCT_TEMPLATE_TABLE, TEMPLATE_ID_FIELD,
     RECORD_ID_FIELD,
 )
@@ -27,7 +27,7 @@ class ProductCreateTransformer(object):
         # because a user usually deletes template, not the partial variant.
         # For non-partial variant, insert the create sync for its template
         # Thus we need to check existence of multi-variant template create
-        if operation[MODEL_NAME_FIELD] == PRODUCT_PRODUCT_TABLE:
+        if OdooProductAccess.is_product_variant(operation):
             if self._odoo_product.is_partial_variant(operation):
                 _logger.debug("Skip partial variant creation operation.")
             else:

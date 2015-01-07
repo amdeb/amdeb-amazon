@@ -81,9 +81,7 @@ class ProductOperationTransformer(object):
         _logger.debug(log_template.format(write_values))
 
         merged_values = self._merge_write(operation, write_values)
-        sync_active = self._odoo_product.is_sync_active(operation)
-        self._writer_transformer.transform(
-            operation, merged_values, sync_active)
+        self._writer_transformer.transform(operation, merged_values)
 
     def _transform_create_write(self, operation):
         # create or write operation for existed product
