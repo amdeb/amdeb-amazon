@@ -47,6 +47,7 @@ class ProductCreationSuccess(object):
             }
             if self._amazon_product.is_created(template_head):
                 self._product_sync.insert_relation(completed)
+                self._is_new_sync_added = True
             else:
                 log_template = "Product template is not created for a " \
                                "variant {}. Don't create relation sync."
@@ -58,6 +59,7 @@ class ProductCreationSuccess(object):
             created_variants = self._amazon_product.get_variants(template_id)
             for variant in created_variants:
                 self._product_sync.insert_relation(variant)
+                self._is_new_sync_added = True
 
     def process(self, done_set):
         for done in done_set:

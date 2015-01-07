@@ -23,8 +23,9 @@ class ProductCreateTransformer(object):
         self._odoo_product = OdooProductAccess(env)
 
     def transform(self, operation):
-        # ignore variant creation if it is the only variant
-        # for non-partial variant, insert the create sync for its template
+        # Ignore variant creation if it is the only variant
+        # because a user usually deletes template, not the partial variant.
+        # For non-partial variant, insert the create sync for its template
         # Thus we need to check existence of multi-variant template create
         if operation[MODEL_NAME_FIELD] == PRODUCT_PRODUCT_TABLE:
             if self._odoo_product.is_partial_variant(operation):
@@ -42,7 +43,7 @@ class ProductCreateTransformer(object):
         else:
             template = self._odoo_product.browse(operation)
             if self._odoo_product.has_multi_variants(template):
-                # insert template create if not exist
+                # template create sync is inserted by one of its variants
                 log_template = "Skip creation operation for template {} " \
                                "that has multi-variants."
                 _logger.debug(log_template.format(operation))
