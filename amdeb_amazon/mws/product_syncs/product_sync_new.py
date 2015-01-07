@@ -41,8 +41,7 @@ class ProductSyncNew(object):
         image_sync = (self._product_sync.get_new_imagines,
                       BaseTransformer, self._mws.send_image)
         self._sync_types = [
-            create_sync,
-            update_sync, price_sync,
+            create_sync, update_sync, price_sync,
             inventory_sync, image_sync,
         ]
 

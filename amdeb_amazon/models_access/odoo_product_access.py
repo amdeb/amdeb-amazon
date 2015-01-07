@@ -5,7 +5,8 @@ from ..shared.model_names import(
     PRODUCT_PRODUCT_TABLE, PRODUCT_IS_PRODUCT_VARIANT_FIELD,
     PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD, AMAZON_SYNC_ACTIVE_FIELD,
     PRODUCT_DEFAULT_CODE_FIELD, PRODUCT_VARIANT_COUNT_FIELD,
-    PRODUCT_NAME_FIELD,
+    PRODUCT_NAME_FIELD, PRODUCT_ATTRIBUTE_ID_FIELD,
+    PRODUCT_VARIANT_IDS_FIELD,
 )
 
 
@@ -51,32 +52,48 @@ class OdooProductAccess(object):
                 result = True
         return result
 
-    @staticmethod
-    def generate_sku(record_id):
-        # generate SKU for a product template that has multiple variants
-        return 'Template_' + str(record_id)
-
     def browse(self, header):
         model = self._env[header[MODEL_NAME_FIELD]]
         record = model.browse(header[RECORD_ID_FIELD])
         return record
 
+    @staticmethod
+    def _get_template_sync_active(product):
+        result = False
+        for variant in product[PRODUCT_VARIANT_IDS_FIELD]:
+            if variant[AMAZON_SYNC_ACTIVE_FIELD]:
+                result = True
+                break
+        return result
+
     def is_sync_active(self, header):
-        record = self.browse(header)
-        sync_active = record[AMAZON_SYNC_ACTIVE_FIELD]
+        product = self.browse(header)
+        if self.has_multi_variants(product):
+            # a multi-variant template is active if any
+            # of its variants is active
+            sync_active = self._get_template_sync_active(product)
+        else:
+            # all other cases, use the field directly
+            sync_active = product[AMAZON_SYNC_ACTIVE_FIELD]
         return sync_active
 
     def get_sku(self, header):
-        record = self.browse(header)
-        sku = record[PRODUCT_DEFAULT_CODE_FIELD]
+        # for a template that has multi variants,
+        # we create a customized SKU
+        product = self.browse(header)
+        if self.has_multi_variants(product):
+            sku = 'Template_' + str(header[RECORD_ID_FIELD])
+        else:
+            sku = product[PRODUCT_DEFAULT_CODE_FIELD]
         return sku
 
-    def get_attributes(self, product):
+    @staticmethod
+    def get_attributes(product):
         result = []
         rel_attr_table = product[PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD]
         for attr_value in rel_attr_table:
             value = attr_value[PRODUCT_NAME_FIELD]
-            name = attr_value['attribute_id'][PRODUCT_NAME_FIELD]
+            name = attr_value[PRODUCT_ATTRIBUTE_ID_FIELD][PRODUCT_NAME_FIELD]
             result.append((name, value))
 
         return result

@@ -1,8 +1,5 @@
 # -*- coding: utf-8 -*-
 
-# import cPickle
-import logging
-
 from ...shared.model_names import (
     PRODUCT_NAME_FIELD,
     PRODUCT_DESCRIPTION_SALE_FIELD,
@@ -12,8 +9,6 @@ from ...shared.model_names import (
     PRODUCT_BULLET_POINT_COUNT,
 )
 from .base_transfomer import BaseTransformer
-
-_logger = logging.getLogger(__name__)
 
 
 class UpdateTransformer(BaseTransformer):
@@ -32,22 +27,22 @@ class UpdateTransformer(BaseTransformer):
         return bullet_points
 
     def _convert_sync(self, sync_op):
-        # This method is also shared by create transform
-
+        # This method is also used by create transform
         sync_value = super(UpdateTransformer, self)._convert_sync(sync_op)
 
-        sync_value['Title'] = self._check_string(
-            'Title', self._product[PRODUCT_NAME_FIELD])
+        title = self._product[PRODUCT_NAME_FIELD]
+        self._check_string(sync_value, 'Title', title)
 
         description = self._product[PRODUCT_AMAZON_DESCRIPTION_FIELD]
         if not description:
             description = self._product[PRODUCT_DESCRIPTION_SALE_FIELD]
         self._add_string(sync_value, 'Description', description)
 
-        self._add_string(sync_value, 'Brand',
-                         self._product[PRODUCT_PRODUCT_BRAND_FIELD])
+        brand = self._product[PRODUCT_PRODUCT_BRAND_FIELD]
+        self._add_string(sync_value, 'Brand', brand)
 
         bullet_points = self._convert_bullet_points()
         if bullet_points:
             sync_value['BulletPoint'] = bullet_points
+
         return sync_value

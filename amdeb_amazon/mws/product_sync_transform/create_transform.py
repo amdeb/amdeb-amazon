@@ -12,7 +12,7 @@ class CreateTransformer(UpdateTransformer):
 
     def _convert_variation(self, sync_value):
         has_attr = False
-        attributes = self._odoo_product.get_attributes(self._product)
+        attributes = OdooProductAccess.get_attributes(self._product)
         for attr in attributes:
             if attr[0] == 'Color':
                 sync_value['Color'] = attr[1]
@@ -45,8 +45,6 @@ class CreateTransformer(UpdateTransformer):
                 self._raise_exception('Description')
 
             if OdooProductAccess.has_multi_variants(self._product):
-                sync_value['SKU'] = OdooProductAccess.generate_sku(
-                    self._product.id)
                 sync_value['Parentage'] = 'parent'
 
         return sync_value

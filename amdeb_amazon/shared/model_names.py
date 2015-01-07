@@ -30,6 +30,7 @@ PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD = 'attribute_value_ids'
 PRODUCT_VIRTUAL_AVAILABLE_FIELD = 'virtual_available'
 PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD = 'amazon_image_trigger'
 
+PRODUCT_ATTRIBUTE_ID_FIELD = 'attribute_id'
 
 PRODUCT_OPERATION_TABLE = 'amdeb.product.operation'
 MODEL_NAME_FIELD = 'model_name'
