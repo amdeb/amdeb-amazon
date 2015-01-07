@@ -56,7 +56,7 @@ class ProductSyncNew(object):
         return sync_result
 
     def _mws_send(self, mws_send, syncs, sync_values):
-        _logger.debug("about to call MWS send() for product updates.")
+        _logger.debug("about to call MWS send() for product sync.")
         # set to pending thus we keep calling send
         # even there is an exception threw
         try:

@@ -62,7 +62,10 @@ class ProductWriteTransformer(object):
         self._transform_inventory(operation, write_values)
         self._transform_image(operation, write_values)
         if write_values:
-            self._product_sync.insert_update(operation, write_values)
+            if OdooProductAccess.is_product_template(operation):
+                self._product_sync.insert_update(operation, write_values)
+            else:
+                _logger.debug("Ignore write operation for product variant.")
 
     def transform(self, operation, write_values):
         """transform a write operation to one or more sync operations

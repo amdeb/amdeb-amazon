@@ -57,4 +57,4 @@ class BaseTransformer(object):
                 _logger.debug(log_template.format(sync_op.id, ex.message))
                 self._product_sync.update_sync_new_exception(sync_op, ex)
 
-        return sync_values
+        return valid_ops, sync_values
