@@ -78,4 +78,5 @@ class OdooProductAccess(object):
             value = attr_value[PRODUCT_NAME_FIELD]
             name = attr_value['attribute_id'][PRODUCT_NAME_FIELD]
             result.append((name, value))
+
         return result
