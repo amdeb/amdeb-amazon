@@ -1,9 +1,14 @@
 # -*- coding: utf-8 -*-
 
 import logging
-
 from ...models_access import ProductSyncAccess
 from ...models_access import OdooProductAccess
+from ...shared.model_names import (
+    PRODUCT_PRODUCT_TABLE, MODEL_NAME_FIELD,
+    PRODUCT_TEMPLATE_TABLE, TEMPLATE_ID_FIELD,
+    RECORD_ID_FIELD,
+)
+
 
 _logger = logging.getLogger(__name__)
 
@@ -19,8 +24,27 @@ class ProductCreateTransformer(object):
 
     def transform(self, operation):
         # ignore variant creation if it is the only variant
-        # thus the amazon product is_created is False for partial variant
-        if self._odoo_product.is_partial_variant(operation):
-            _logger.debug("Skip partial variant creation operation.")
+        # for non-partial variant, insert the create sync for its template
+        # Thus we need to check existence of multi-variant template create
+        if operation[MODEL_NAME_FIELD] == PRODUCT_PRODUCT_TABLE:
+            if self._odoo_product.is_partial_variant(operation):
+                _logger.debug("Skip partial variant creation operation.")
+            else:
+                self._product_sync.insert_create(operation)
+                template_header = {
+                    MODEL_NAME_FIELD: PRODUCT_TEMPLATE_TABLE,
+                    RECORD_ID_FIELD: operation[TEMPLATE_ID_FIELD],
+                    TEMPLATE_ID_FIELD: operation[TEMPLATE_ID_FIELD],
+                }
+                # we don't check whether the template is created in Amazon
+                # or not. Usually all variants are created in a batch.
+                self._product_sync.insert_create_if_new(template_header)
         else:
-            self._product_sync.insert_create(operation)
+            template = self._odoo_product.browse(operation)
+            if self._odoo_product.has_multi_variants(template):
+                # insert template create if not exist
+                log_template = "Skip creation operation for template {} " \
+                               "that has multi-variants."
+                _logger.debug(log_template.format(operation))
+            else:
+                self._product_sync.insert_create(operation)

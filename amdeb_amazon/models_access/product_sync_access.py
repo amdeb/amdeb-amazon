@@ -67,6 +67,20 @@ class ProductSyncAccess(object):
             values[SYNC_TYPE_FIELD]))
         self._table.create(values)
 
+    def insert_create_if_new(self, header):
+        search_domain = [
+            (MODEL_NAME_FIELD, '=', header[MODEL_NAME_FIELD]),
+            (RECORD_ID_FIELD, '=', header[RECORD_ID_FIELD]),
+            (SYNC_STATUS_FIELD, '=', SYNC_NEW),
+            (SYNC_TYPE_FIELD, '=', SYNC_CREATE),
+        ]
+        records = self._table.search(search_domain)
+        if records:
+            log_template = "Create sync exists for template {}. Skip it."
+            _logger.debug(log_template.format(header))
+        else:
+            self.insert_create(header)
+
     def insert_create(self, header):
         self._insert(header, SYNC_CREATE)
 
@@ -212,6 +226,5 @@ class ProductSyncAccess(object):
         if unlink_records:
             unlink_records.unlink()
 
-        _logger.debug("Cleaned {} ancient amazon sync records".format(
-            count
-        ))
+        log_template = "Cleaned {} ancient amazon sync records."
+        _logger.debug(log_template.format(count))

@@ -1,7 +1,6 @@
 # -*- coding: utf-8 -*-
 
 import logging
-
 from ...models_access import OdooProductAccess, ProductSyncAccess
 
 _logger = logging.getLogger(__name__)
