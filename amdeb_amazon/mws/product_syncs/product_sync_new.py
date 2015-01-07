@@ -13,6 +13,7 @@ from ..product_sync_transform import BaseTransformer
 from ..product_sync_transform import UpdateTransformer
 from ..product_sync_transform import PriceTransformer
 from ..product_sync_transform import InventoryTransformer
+from ..product_sync_transform import CreateTransformer
 
 _logger = logging.getLogger(__name__)
 
@@ -29,19 +30,20 @@ class ProductSyncNew(object):
         self._env = env
         self._mws = mws
         self._product_sync = ProductSyncAccess(env)
+        create_sync = (self._product_sync.get_new_creates,
+                       CreateTransformer, self._mws.send_product)
+        update_sync = (self._product_sync.get_new_updates,
+                       UpdateTransformer, self._mws.send_product)
+        price_sync = (self._product_sync.get_new_prices,
+                      PriceTransformer, self._mws.send_price)
+        inventory_sync = (self._product_sync.get_new_inventories,
+                          InventoryTransformer, self._mws.send_inventory),
+        image_sync = (self._product_sync.get_new_imagines,
+                      BaseTransformer, self._mws.send_image)
         self._sync_types = [
-            (self._product_sync.get_new_updates,
-             UpdateTransformer,
-             self._mws.send_product),
-            (self._product_sync.get_new_prices,
-             PriceTransformer,
-             self._mws.send_price),
-            (self._product_sync.get_new_inventories,
-             InventoryTransformer,
-             self._mws.send_inventory),
-            (self._product_sync.get_new_imagines,
-             BaseTransformer,
-             self._mws.send_image),
+            create_sync,
+            update_sync, price_sync,
+            inventory_sync, image_sync,
         ]
 
     @staticmethod
@@ -76,4 +78,5 @@ class ProductSyncNew(object):
             if sync_ops:
                 transformer = sync_type[1](self._env)
                 valid_syncs, sync_values = transformer.transform(sync_ops)
-                self._mws_send(sync_type[2], valid_syncs, sync_values)
+                if sync_values:
+                    self._mws_send(sync_type[2], valid_syncs, sync_values)

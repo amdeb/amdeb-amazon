@@ -41,7 +41,7 @@ class product_template(models.Model):
         related='product_variant_ids.amazon_image_trigger',
     )
 
-    brand = fields.Char(
+    product_brand = fields.Char(
         string="Product Brand",
     )
 

@@ -4,11 +4,3 @@
 {{ macros.add_tag('Brand') }}
 {{ macros.add_tag('Description') }}
 {{ macros.add_tags('BulletPoint') }}
-{{ macros.add_tuples('ItemDimensions') }}
-{{ macros.add_tuples('PackageDimensions') }}
-{{ macros.add_tuples('PackageWeight') }}
-{{ macros.add_tuples('ShippingWeight') }}
-
-{{ macros.add_tag('Manufacturer') }}
-
-{{ macros.add_tags('SearchTerms') }}

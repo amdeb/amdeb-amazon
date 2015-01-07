@@ -15,7 +15,7 @@ from ..shared.model_names import (
     PRODUCT_DESCRIPTION_SALE_FIELD,
     PRODUCT_AMAZON_DESCRIPTION_FIELD,
     MODEL_NAME_FIELD, RECORD_ID_FIELD,
-    ATTRIBUTE_VALUE_IDS_FIELD,
+    PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD,
 )
 
 
@@ -25,7 +25,7 @@ class product_product(models.Model):
     def _is_created_amazon(self):
         model_id = {}
         # if it is a partial variant, check its template
-        if self[ATTRIBUTE_VALUE_IDS_FIELD]:
+        if self[PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD]:
             model_id[MODEL_NAME_FIELD] = PRODUCT_PRODUCT_TABLE
             model_id[RECORD_ID_FIELD] = self.id
         else:

@@ -11,7 +11,7 @@
                         <group>
                             <field name="amazon_sync_active" attrs="{'invisible': [('is_product_variant', '=', False), ('product_variant_count','>', 1)]}" />
                             <field name="amazon_image_trigger" attrs="{'invisible': [('is_product_variant', '=', False), ('product_variant_count','>', 1)]}" />
-                            <field name="brand" />
+                            <field name="product_brand" />
                             <field name="amazon_description" />
                             <field name="amazon_created" />
                         </group>

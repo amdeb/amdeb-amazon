@@ -1,9 +1,11 @@
 # -*- coding: utf-8 -*-
 
 from ..shared.model_names import(
-    MODEL_NAME_FIELD, RECORD_ID_FIELD, PRODUCT_PRODUCT_TABLE,
-    ATTRIBUTE_VALUE_IDS_FIELD, AMAZON_SYNC_ACTIVE_FIELD,
-    PRODUCT_DEFAULT_CODE_FIELD,
+    MODEL_NAME_FIELD, RECORD_ID_FIELD,
+    PRODUCT_PRODUCT_TABLE, PRODUCT_IS_PRODUCT_VARIANT_FIELD,
+    PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD, AMAZON_SYNC_ACTIVE_FIELD,
+    PRODUCT_DEFAULT_CODE_FIELD, PRODUCT_VARIANT_COUNT_FIELD,
+    PRODUCT_NAME_FIELD,
 )
 
 
@@ -33,9 +35,26 @@ class OdooProductAccess(object):
         result = False
         if header[MODEL_NAME_FIELD] == PRODUCT_PRODUCT_TABLE:
             record = self.browse(header)
-            if not record[ATTRIBUTE_VALUE_IDS_FIELD]:
+            if not record[PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD]:
                 result = True
         return result
+
+    @staticmethod
+    def is_product_variant(product):
+        return product[PRODUCT_IS_PRODUCT_VARIANT_FIELD]
+
+    @staticmethod
+    def has_multi_variants(product):
+        result = False
+        if OdooProductAccess.is_product_variant(product):
+            if product[PRODUCT_VARIANT_COUNT_FIELD] > 1:
+                result = True
+        return result
+
+    @staticmethod
+    def generate_sku(record_id):
+        # generate SKU for a product template that has multiple variants
+        return 'Template_' + str(record_id)
 
     def browse(self, header):
         model = self._env[header[MODEL_NAME_FIELD]]
@@ -51,3 +70,12 @@ class OdooProductAccess(object):
         record = self.browse(header)
         sku = record[PRODUCT_DEFAULT_CODE_FIELD]
         return sku
+
+    def get_attributes(self, product):
+        result = []
+        rel_attr_table = product[PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD]
+        for attr_value in rel_attr_table:
+            value = attr_value[PRODUCT_NAME_FIELD]
+            name = attr_value['attribute_id'][PRODUCT_NAME_FIELD]
+            result.append((name, value))
+        return result

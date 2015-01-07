@@ -13,6 +13,10 @@ PRODUCT_VARIANT_COUNT_FIELD = 'product_variant_count'
 PRODUCT_VARIANT_IDS_FIELD = 'product_variant_ids'
 PRODUCT_DESCRIPTION_SALE_FIELD = 'description_sale'
 PRODUCT_AMAZON_DESCRIPTION_FIELD = 'amazon_description'
+PRODUCT_PRODUCT_BRAND_FIELD = 'product_brand'
+PRODUCT_BULLET_POINT_PREFIX = 'amazon_bullet_point'
+PRODUCT_BULLET_POINT_COUNT = 5
+PRODUCT_IS_PRODUCT_VARIANT_FIELD = 'is_product_variant'
 
 PRODUCT_PRODUCT_TABLE = 'product.product'
 PRODUCT_TEMPLATE_ID_FIELD = 'product_tmpl_id'
@@ -21,10 +25,10 @@ PRODUCT_DEFAULT_CODE_FIELD = 'default_code'
 PRODUCT_LIST_PRICE_FIELD = 'list_price'
 PRODUCT_LST_PRICE_FIELD = 'lst_price'
 PRODUCT_NAME_FIELD = 'name'
+PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD = 'attribute_value_ids'
 
 PRODUCT_VIRTUAL_AVAILABLE_FIELD = 'virtual_available'
 PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD = 'amazon_image_trigger'
-ATTRIBUTE_VALUE_IDS_FIELD = 'attribute_value_ids'
 
 
 PRODUCT_OPERATION_TABLE = 'amdeb.product.operation'

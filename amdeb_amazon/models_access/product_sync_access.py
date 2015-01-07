@@ -17,7 +17,7 @@ from ..shared.model_names import (
 )
 from ..shared.sync_status import (
     SYNC_NEW, SYNC_PENDING, SYNC_ERROR,
-    AMAZON_PROCESS_DONE_STATUS,
+    AMAZON_PROCESS_DONE_STATUS, SYNC_SUCCESS,
 )
 from ..shared.sync_operation_types import (
     SYNC_CREATE, SYNC_UPDATE, SYNC_DELETE, SYNC_PRICE,
@@ -108,6 +108,9 @@ class ProductSyncAccess(object):
         ]
         return self._table.search(search_domain)
 
+    def get_new_creates(self):
+        return self._get_new_syncs(SYNC_CREATE)
+
     def get_new_updates(self):
         return self._get_new_syncs(SYNC_UPDATE)
 
@@ -144,6 +147,16 @@ class ProductSyncAccess(object):
             AMAZON_REQUEST_TIMESTAMP_FIELD: field_utcnow(),
             AMAZON_MESSAGE_CODE_FIELD: type(ex).__name__,
             AMAZON_RESULT_DESCRIPTION_FIELD: ex.message
+        }
+        records.write(sync_status)
+
+    @staticmethod
+    def update_sync_new_empty_value(records):
+        sync_status = {
+            SYNC_STATUS_FIELD: SYNC_SUCCESS,
+            AMAZON_REQUEST_TIMESTAMP_FIELD: field_utcnow(),
+            AMAZON_MESSAGE_CODE_FIELD: 'Empty Value',
+            AMAZON_RESULT_DESCRIPTION_FIELD: 'Skip sync with empty value.'
         }
         records.write(sync_status)
 
