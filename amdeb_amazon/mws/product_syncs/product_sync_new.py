@@ -77,6 +77,9 @@ class ProductSyncNew(object):
             _logger.debug(log_template.format(sync_type[1].__name__))
             sync_ops = sync_type[0]()
             if sync_ops:
+                log_template = "Got {} new operations."
+                _logger.debug(log_template.format(len(sync_ops)))
+
                 transformer = sync_type[1](self._env)
                 valid_syncs, sync_values = transformer.transform(sync_ops)
                 if sync_values:
