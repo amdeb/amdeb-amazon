@@ -40,7 +40,7 @@ class CreateTransformer(UpdateTransformer):
         # only three creation possibilities:
         # it is a partial variant
         # it is a template: multi-variant or not
-        if OdooProductAccess.is_product_variant(self._product):
+        if OdooProductAccess.product_is_variant(self._product):
             # this is an independent variant
             if self._odoo_product.is_partial_variant(sync_op):
                 _logger.warning("wrong sync creation for partial variant.")

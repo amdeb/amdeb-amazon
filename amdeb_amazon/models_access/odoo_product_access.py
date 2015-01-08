@@ -52,13 +52,13 @@ class OdooProductAccess(object):
         return result
 
     @staticmethod
-    def is_product_variant(product):
+    def product_is_variant(product):
         return product[PRODUCT_IS_PRODUCT_VARIANT_FIELD]
 
     @staticmethod
     def has_multi_variants(product):
         result = False
-        if OdooProductAccess.is_product_variant(product):
+        if OdooProductAccess.product_is_variant(product):
             if product[PRODUCT_VARIANT_COUNT_FIELD] > 1:
                 result = True
         return result
