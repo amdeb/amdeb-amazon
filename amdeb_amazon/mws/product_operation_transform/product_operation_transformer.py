@@ -68,12 +68,17 @@ class ProductOperationTransformer(object):
             _logger.debug("Merged write values: {}".format(merged_values))
         return merged_values
 
+    def _transform_create(self, operation):
+        if self._odoo_product.is_sync_active(operation):
+            self._create_transformer.transform(operation)
+        else:
+            _logger.debug("Skip creation operation for inactive sync.")
+
     def _transform_write(self, operation):
         # if there is a create operation, ignore write
         creation = self._check_create(operation)
         if creation:
-            _logger.debug("Found a create operation. Ignore write.")
-            self._create_transformer.transform(creation)
+            self._transform_create(operation)
             return
 
         write_values = cPickle.loads(operation[OPERATION_DATA_FIELD])
@@ -86,10 +91,7 @@ class ProductOperationTransformer(object):
     def _transform_create_write(self, operation):
         # create or write operation for existed product
         if operation[OPERATION_TYPE_FIELD] == CREATE_RECORD:
-            if self._odoo_product.is_sync_active(operation):
-                self._create_transformer.transform(operation)
-            else:
-                _logger.debug("Skip creation operation for inactive sync.")
+            self._transform_create(operation)
         else:
             self._transform_write(operation)
 
@@ -116,18 +118,22 @@ class ProductOperationTransformer(object):
         """
         _logger.debug("Enter ProductOperationTransformer transform().")
         for operation in self._new_operations:
+            log_template = "Transform product operation." \
+                           "Operation Id: {0}, Model: {1}, " \
+                           "Record id: {2}, Operation type: {3}."
+            _logger.debug(log_template.format(
+                operation.id, operation[MODEL_NAME_FIELD],
+                operation[RECORD_ID_FIELD], operation[OPERATION_TYPE_FIELD]))
+
             record_key = (operation[MODEL_NAME_FIELD],
                           operation[RECORD_ID_FIELD])
             if record_key in self._transformed_operations:
                 # process each key only once
+                log_template = "Skip processed operation {}"
+                _logger.debug(log_template.format(record_key))
                 continue
             else:
+                log_template = "First time operation transformation for {}"
+                _logger.debug(log_template.format(record_key))
                 self._transformed_operations.add(record_key)
-
-                log_template = "Transform product operation Model: {0}, " \
-                               "Record id: {1}, Operation type: {2}."
-                _logger.debug(log_template.format(
-                    operation[MODEL_NAME_FIELD],
-                    operation[RECORD_ID_FIELD],
-                    operation[OPERATION_TYPE_FIELD]))
                 self._transform_operation(operation)

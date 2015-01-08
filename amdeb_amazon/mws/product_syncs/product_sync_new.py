@@ -37,7 +37,7 @@ class ProductSyncNew(object):
         price_sync = (self._product_sync.get_new_prices,
                       PriceTransformer, self._mws.send_price)
         inventory_sync = (self._product_sync.get_new_inventories,
-                          InventoryTransformer, self._mws.send_inventory),
+                          InventoryTransformer, self._mws.send_inventory)
         image_sync = (self._product_sync.get_new_imagines,
                       BaseTransformer, self._mws.send_image)
         self._sync_types = [
@@ -73,9 +73,15 @@ class ProductSyncNew(object):
         # because this is in the same transaction as the
         # transformer. There is no need to check existence.
         for sync_type in self._sync_types:
+            log_template = "Processing Sync with operation transformer {}."
+            _logger.debug(log_template.format(sync_type[1].__name__))
             sync_ops = sync_type[0]()
             if sync_ops:
                 transformer = sync_type[1](self._env)
                 valid_syncs, sync_values = transformer.transform(sync_ops)
                 if sync_values:
                     self._mws_send(sync_type[2], valid_syncs, sync_values)
+                else:
+                    _logger.debug("Empty sync values, skipped.")
+            else:
+                _logger.debug("No new operations for this transformer.")

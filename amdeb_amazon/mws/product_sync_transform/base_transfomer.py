@@ -20,15 +20,21 @@ class BaseTransformer(object):
         template = "Invalid {} value in Sync transformation"
         raise ValueError(template.format(field_name))
 
-    def _check_string(self, sync_value, field_name, field_value):
+    @staticmethod
+    def _check_string(sync_value, field_name, field_value):
+        # add field to sync value, raise an exception if the value is invalid
         if field_value:
             field_value = field_value.strip()
             if field_value:
                 sync_value[field_name] = field_value
-        self._raise_exception(field_name)
+                return
+
+        # otherwise raise an exception for required field
+        BaseTransformer._raise_exception(field_name)
 
     @staticmethod
     def _add_string(sync_value, field_name, field_value):
+        # add valid field value to sync value
         if field_value:
             field_value = field_value.strip()
             if field_value:
@@ -38,7 +44,7 @@ class BaseTransformer(object):
         sync_value = {'ID': sync_op.id}
         self._product = self._odoo_product.browse(sync_op)
         sku = self._odoo_product.get_sku(sync_op)
-        self._check_string(sync_value, 'SKU', sku)
+        BaseTransformer._check_string(sync_value, 'SKU', sku)
         return sync_value
 
     def transform(self, sync_ops):
@@ -53,7 +59,8 @@ class BaseTransformer(object):
                 else:
                     self._product_sync.update_sync_new_empty_value(sync_op)
             except Exception as ex:
-                log_template = "Sync transform error {0} for sync id {1}."
+                log_template = "Sync transform error for sync id {0}  " \
+                               "Exception: {1}."
                 _logger.debug(log_template.format(sync_op.id, ex.message))
                 self._product_sync.update_sync_new_exception(sync_op, ex)
 

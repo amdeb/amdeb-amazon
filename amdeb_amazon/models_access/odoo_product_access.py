@@ -31,7 +31,7 @@ class OdooProductAccess(object):
         return flag
 
     @staticmethod
-    def is_product_variant(self, header):
+    def is_product_variant(header):
         flag = header[MODEL_NAME_FIELD] == PRODUCT_PRODUCT_TABLE
         return flag
 
