@@ -7,7 +7,7 @@
             <field name="inherit_id" ref="product.product_template_form_view"/>
             <field name="arch" type="xml">
                 <page string="Sales" position="after">
-                    <page string="Amazon" groups="amdeb_amazon.group_amdeb_amazon_user">
+                    <page string="Amazon" groups="amdeb_amazon.group_amdeb_amazon_user,base.partner_root">
                         <group>
                             <field name="amazon_sync_active" attrs="{'invisible': [('is_product_variant', '=', False), ('product_variant_count','>', 1)]}" />
                             <field name="amazon_image_trigger" attrs="{'invisible': [('is_product_variant', '=', False), ('product_variant_count','>', 1)]}" />
