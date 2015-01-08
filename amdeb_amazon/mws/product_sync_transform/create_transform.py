@@ -11,16 +11,24 @@ _logger = logging.getLogger(__name__)
 class CreateTransformer(UpdateTransformer):
 
     def _convert_variation(self, sync_value):
-        has_attr = False
+        has_color = False
+        has_size = False
         attributes = OdooProductAccess.get_attributes(self._product)
         for attr in attributes:
             if attr[0] == 'Color':
                 sync_value['Color'] = attr[1]
-                has_attr = True
+                has_color = True
             if attr[0] == 'Size':
                 sync_value['Size'] = attr[1]
-                has_attr = True
-        if not has_attr:
+                has_size = True
+
+        if has_color and has_size:
+            sync_value['VariationTheme'] = 'SizeColor'
+        elif has_color:
+            sync_value['VariationTheme'] = 'Color'
+        elif has_size:
+            sync_value['VariationTheme'] = 'Size'
+        else:
             _logger.warning("No variant attribute found in sync transform.")
             sync_value = None
         return sync_value

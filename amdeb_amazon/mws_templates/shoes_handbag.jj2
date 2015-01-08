@@ -6,5 +6,6 @@
         {{ macros.add_tag('Parentage') }}
         {{ macros.add_tag('Size') }}
         {{ macros.add_tag('Color') }}
+        {{ macros.add_tag('VariationTheme') }}
     </VariationData>
 </Shoes>

@@ -16,7 +16,6 @@ from ..shared.sync_status import (
     SYNC_NEW, SYNC_PENDING, SYNC_SUCCESS,
     SYNC_WARNING, SYNC_ERROR,
 )
-from ..shared.utility import field_utcnow
 from ..mws import ProductSynchronization
 
 
