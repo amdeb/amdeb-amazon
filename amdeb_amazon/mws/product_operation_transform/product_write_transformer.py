@@ -47,6 +47,9 @@ class ProductWriteTransformer(object):
                     operation[RECORD_ID_FIELD]))
 
     def _transform_inventory(self, operation, values):
+        # the inventory is only stored in single-variant template
+        # or non-partial variant, thus the operation has the
+        # right product SKU
         inventory = values.pop(PRODUCT_VIRTUAL_AVAILABLE_FIELD, None)
         if inventory is not None:
             self._product_sync.insert_inventory(operation)
@@ -66,6 +69,34 @@ class ProductWriteTransformer(object):
                 self._product_sync.insert_update(operation, write_values)
             else:
                 _logger.debug("Ignore write operation for product variant.")
+
+    def _transform_deactivate(self, operation):
+        # ignore partial variant and multi-variant template
+        if OdooProductAccess.is_product_variant(operation):
+            if self._odoo_product.is_partial_variant(operation):
+                _logger.debug("Skip partial variant deactivate operation.")
+            else:
+                self._product_sync.insert_deactivate(operation)
+        else:
+            template = self._odoo_product.browse(operation)
+            if self._odoo_product.has_multi_variants(template):
+                # template create sync is inserted by one of its variants
+                log_template = "Skip deactivate operation for template {} " \
+                               "that has multi-variants."
+                _logger.debug(log_template.format(operation))
+            else:
+                self._product_sync.insert_deactivate(operation)
+
+    def _transform_sync_active(self, operation, sync_active_value):
+        if sync_active_value:
+            _logger.debug("Amazon sync active flag changes to True,"
+                          "call create transformer for create sync.")
+            create_transformer = ProductCreateTransformer(self._env)
+            create_transformer.transform(operation)
+        else:
+            _logger.debug("Amazon sync active flag changes to "
+                          "False, generate a deactivate sync.")
+            self._transform_deactivate(operation)
 
     def transform(self, operation, write_values):
         """transform a write operation to one or more sync operations
@@ -87,15 +118,7 @@ class ProductWriteTransformer(object):
         """
         sync_active_value = write_values.get(AMAZON_SYNC_ACTIVE_FIELD, None)
         if sync_active_value is not None:
-            if sync_active_value:
-                _logger.debug("Amazon sync active flag changes to True,"
-                              "call create transformer for create sync.")
-                create_transformer = ProductCreateTransformer(self._env)
-                create_transformer.transform(operation)
-            else:
-                _logger.debug("Amazon sync active flag changes to "
-                              "False, generate a deactivate sync.")
-                self._product_sync.insert_deactivate(operation)
+            self._transform_sync_active(operation, sync_active_value)
         else:
             product_sync_active = self._odoo_product.is_sync_active(operation)
             if product_sync_active:
