@@ -9,7 +9,7 @@
             <ProductImage>
                 <SKU>{{ message['SKU'] }}</SKU>
                 <ImageType>Main</ImageType>
-                <ImageLocation>{{ message['ImageLocation'] }}/{{ message['SKU'] }}_main.jpg</ImageLocation>
+                <ImageLocation>{{ ImageLocation }}/{{ message['SKU'] }}_main.jpg</ImageLocation>
             </ProductImage>
         </Message>
         {% for number in range(1, 9) %}
@@ -19,7 +19,7 @@
             <ProductImage>
                 <SKU>{{ message['SKU'] }}</SKU>
                 <ImageType>PT{{ number }}</ImageType>
-                <ImageLocation>{{ message['ImageLocation'] }}/{{ message['SKU'] }}_{{ number }}.jpg</ImageLocation>
+                <ImageLocation>{{ ImageLocation }}/{{ message['SKU'] }}_{{ number }}.jpg</ImageLocation>
             </ProductImage>
         </Message>
         {% endfor %}

@@ -8,6 +8,8 @@ from ..shared.model_names import(
     PRODUCT_DEFAULT_CODE_FIELD, PRODUCT_VARIANT_COUNT_FIELD,
     PRODUCT_NAME_FIELD, PRODUCT_ATTRIBUTE_ID_FIELD,
     PRODUCT_VARIANT_IDS_FIELD,
+    PRODUCT_BULLET_POINT_PREFIX,
+    PRODUCT_BULLET_POINT_COUNT,
 )
 
 
@@ -108,3 +110,15 @@ class OdooProductAccess(object):
             result.append((name, value))
 
         return result
+
+    @staticmethod
+    def get_bullet_points(product):
+        bullet_points = []
+        for index in range(1, 1 + PRODUCT_BULLET_POINT_COUNT):
+            name = PRODUCT_BULLET_POINT_PREFIX + str(index)
+            bullet = product[name]
+            if bullet:
+                bullet = bullet.strip()
+                if bullet:
+                    bullet_points.append(bullet)
+        return bullet_points

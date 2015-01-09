@@ -48,20 +48,26 @@ class BaseTransformer(object):
         return sync_value
 
     def transform(self, sync_ops):
+        # we change sync_ops record set because its copy
+        # creates a new record set that is saved in table
         sync_values = []
-        valid_ops = []
         for sync_op in sync_ops:
             try:
                 sync_value = self._convert_sync(sync_op)
                 if sync_value:
                     sync_values.append(sync_value)
-                    valid_ops.append(sync_op)
                 else:
+                    log_template = "Sync id {0} has empty value. Skip it "
+                    _logger.debug(log_template.format(sync_op.id))
+
+                    sync_ops = sync_ops - sync_op
                     self._product_sync.update_sync_new_empty_value(sync_op)
             except Exception as ex:
                 log_template = "Sync transform error for sync id {0}  " \
                                "Exception: {1}."
                 _logger.debug(log_template.format(sync_op.id, ex.message))
+
+                sync_ops = sync_ops - sync_op
                 self._product_sync.update_sync_new_exception(sync_op, ex)
 
-        return valid_ops, sync_values
+        return sync_values

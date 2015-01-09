@@ -9,40 +9,41 @@ from ...shared.model_names import (
     PRODUCT_BULLET_POINT_COUNT,
 )
 from .base_transfomer import BaseTransformer
+from ...models_access import OdooProductAccess
 
 
 class UpdateTransformer(BaseTransformer):
     """
     This class transform update values to update message fields
     """
-    def _convert_bullet_points(self):
-        bullet_points = []
+    def _check_bullet_points(self, sync_op, sync_value):
+        # the bullet points are changed together
+        is_changed = False
         for index in range(1, 1 + PRODUCT_BULLET_POINT_COUNT):
             name = PRODUCT_BULLET_POINT_PREFIX + str(index)
-            bullet = self._product[name]
-            if bullet:
-                bullet = bullet.strip()
-                if bullet:
-                    bullet_points.append(bullet)
-        return bullet_points
+            if name in sync_op:
+                is_changed = True
+                break
+
+        if is_changed:
+            bullet_points = OdooProductAccess.get_bullet_points(self._product)
+            if bullet_points:
+                sync_value['BulletPoint'] = bullet_points
 
     def _convert_sync(self, sync_op):
-        # This method is also used by create transform
         sync_value = super(UpdateTransformer, self)._convert_sync(sync_op)
 
         title = self._product[PRODUCT_NAME_FIELD]
         self._check_string(sync_value, 'Title', title)
 
-        description = self._product[PRODUCT_AMAZON_DESCRIPTION_FIELD]
+        description = sync_op.get(PRODUCT_AMAZON_DESCRIPTION_FIELD, None)
         if not description:
-            description = self._product[PRODUCT_DESCRIPTION_SALE_FIELD]
+            description = sync_op.get(PRODUCT_DESCRIPTION_SALE_FIELD, None)
         self._add_string(sync_value, 'Description', description)
 
-        brand = self._product[PRODUCT_PRODUCT_BRAND_FIELD]
+        brand = sync_op.get(PRODUCT_PRODUCT_BRAND_FIELD, None)
         self._add_string(sync_value, 'Brand', brand)
 
-        bullet_points = self._convert_bullet_points()
-        if bullet_points:
-            sync_value['BulletPoint'] = bullet_points
+        self._check_bullet_points(sync_op, sync_value)
 
         return sync_value

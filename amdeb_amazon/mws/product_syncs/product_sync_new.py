@@ -81,9 +81,9 @@ class ProductSyncNew(object):
                 _logger.debug(log_template.format(len(sync_ops)))
 
                 transformer = sync_type[1](self._env)
-                valid_syncs, sync_values = transformer.transform(sync_ops)
+                sync_values = transformer.transform(sync_ops)
                 if sync_values:
-                    self._mws_send(sync_type[2], valid_syncs, sync_values)
+                    self._mws_send(sync_type[2], sync_ops, sync_values)
                 else:
                     _logger.debug("Empty sync values, skipped.")
             else:

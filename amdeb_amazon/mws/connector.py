@@ -60,8 +60,8 @@ class Boto(object):
             feed_type, values))
         namespace = {
             'MerchantId': self._merchant_id,
-            'ImageUrl': self._image_url,
             'FeedMessages': values,
+            'ImageLocation': self._image_location,
         }
 
         template = self._jj2_env.get_template(template_name)
@@ -97,7 +97,6 @@ class Boto(object):
                           'inventory.jj2', values)
 
     def send_image(self, values):
-        values['ImageLocation'] = self._image_location
         return self._send('_POST_PRODUCT_IMAGE_DATA_',
                           'image_transformer.jj2', values)
 
