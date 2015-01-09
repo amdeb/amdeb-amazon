@@ -40,6 +40,7 @@ RECORD_ID_FIELD = 'record_id'
 TEMPLATE_ID_FIELD = 'template_id'
 OPERATION_TYPE_FIELD = 'operation_type'
 WRITE_FIELD_NAMES_FIELD = 'write_field_names'
+FIELD_NAME_DELIMITER = ', '
 AMAZON_SYNC_TIMESTAMP_FIELD = 'amazon_sync_timestamp'
 
 AMAZON_PRODUCT_SYNC_TABLE = 'amdeb.amazon.product.sync'

@@ -11,6 +11,7 @@ from ..shared.model_names import (
     PRODUCT_CREATE_DATE_FIELD, SYNC_STATUS_FIELD,
     SYNC_CHECK_STATUS_COUNT_FILED, AMAZON_MESSAGE_CODE_FIELD,
     AMAZON_RESULT_DESCRIPTION_FIELD, AMAZON_REQUEST_TIMESTAMP_FIELD,
+    FIELD_NAME_DELIMITER,
 )
 from ..shared.sync_status import (
     SYNC_NEW, SYNC_PENDING, SYNC_ERROR,
@@ -55,7 +56,8 @@ class ProductSyncAccess(object):
             SYNC_TYPE_FIELD: sync_type,
         }
         if write_field_names:
-            values[WRITE_FIELD_NAMES_FIELD] = write_field_names
+            values[WRITE_FIELD_NAMES_FIELD] = FIELD_NAME_DELIMITER.join(
+                write_field_names)
         log_template = "Create new sync record for Model: {0}, " \
                        "record id: {1}, sync type: {2}, write fields: {3}."
         _logger.debug(log_template.format(

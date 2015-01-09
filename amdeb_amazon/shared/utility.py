@@ -2,10 +2,9 @@
 
 from datetime import datetime
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT as DATETIME_FORMAT
-from .model_names import WRITE_FIELD_NAMES_FIELD
+from .model_names import WRITE_FIELD_NAMES_FIELD, FIELD_NAME_DELIMITER
 
 MWS_DATETIME_FORMAT = '%Y-%m-%dT%H:%M:%SZ'
-FIELD_NAME_DELIMITER = ', '
 
 
 def is_sequence(subject):
