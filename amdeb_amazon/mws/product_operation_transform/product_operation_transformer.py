@@ -5,13 +5,12 @@ import logging
 from ...shared.model_names import (
     MODEL_NAME_FIELD, RECORD_ID_FIELD, OPERATION_TYPE_FIELD,
 )
-
+from ...shared.utility import get_field_names
 from .operation_types import (
     CREATE_RECORD, UNLINK_RECORD,
 )
 
 from ...models_access import OdooProductAccess
-from ...models_access import ProductOperationAccess
 from . import ProductUnlinkTransformer
 from . import ProductCreateTransformer
 from . import ProductWriteTransformer
@@ -61,10 +60,8 @@ class ProductOperationTransformer(object):
             record.id != operation.id
         ]
         for other_write in other_writes:
-            other_values = ProductOperationAccess.get_operation_data(
-                other_write)
-            other_values.update(merged_values)
-            merged_values = other_values
+            other_values = get_field_names(other_write)
+            merged_values = merged_values.union(other_values)
             _logger.debug("Merged write values: {}".format(merged_values))
         return merged_values
 
@@ -81,7 +78,7 @@ class ProductOperationTransformer(object):
             self._transform_create(operation)
             return
 
-        write_values = ProductOperationAccess.get_operation_data(operation)
+        write_values = get_field_names(operation)
         log_template = "Product write operation initial values: {}."
         _logger.debug(log_template.format(write_values))
 

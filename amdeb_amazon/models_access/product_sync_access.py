@@ -1,16 +1,14 @@
 # -*- coding: utf-8 -*-
 
-import cPickle
 from datetime import datetime, timedelta
 import logging
 
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT as DATETIME_FORMAT
 
 from ..shared.model_names import (
-    MODEL_NAME_FIELD, RECORD_ID_FIELD,
-    TEMPLATE_ID_FIELD, PRODUCT_SKU_FIELD,
+    MODEL_NAME_FIELD, RECORD_ID_FIELD, TEMPLATE_ID_FIELD,
 
-    AMAZON_PRODUCT_SYNC_TABLE, SYNC_TYPE_FIELD, SYNC_DATA_FIELD,
+    AMAZON_PRODUCT_SYNC_TABLE, SYNC_TYPE_FIELD, WRITE_FIELD_NAMES_FIELD,
     PRODUCT_CREATE_DATE_FIELD, SYNC_STATUS_FIELD,
     SYNC_CHECK_STATUS_COUNT_FILED, AMAZON_MESSAGE_CODE_FIELD,
     AMAZON_RESULT_DESCRIPTION_FIELD, AMAZON_REQUEST_TIMESTAMP_FIELD,
@@ -46,7 +44,7 @@ class ProductSyncAccess(object):
     def __init__(self, env):
         self._table = env[AMAZON_PRODUCT_SYNC_TABLE]
 
-    def _insert(self, header, sync_type, sync_data=None):
+    def _insert(self, header, sync_type, write_field_names=None):
         """
         Insert a new sync operation record.
         """
@@ -57,8 +55,8 @@ class ProductSyncAccess(object):
             TEMPLATE_ID_FIELD: header[TEMPLATE_ID_FIELD],
             SYNC_TYPE_FIELD: sync_type,
         }
-        if sync_data:
-            values[SYNC_DATA_FIELD] = sync_data
+        if write_field_names:
+            values[WRITE_FIELD_NAMES_FIELD] = write_field_names
         log_template = "Create new sync record for Model: {0}, " \
                        "record id: {1}, sync type: {2}."
         _logger.debug(log_template.format(
@@ -66,14 +64,6 @@ class ProductSyncAccess(object):
             values[RECORD_ID_FIELD],
             values[SYNC_TYPE_FIELD]))
         self._table.create(values)
-
-    @staticmethod
-    def get_sync_data(sync_record):
-        data = {}
-        dumped = sync_record[SYNC_DATA_FIELD]
-        if dumped:
-            data = cPickle.loads(dumped)
-        return data
 
     def insert_create_if_new(self, header):
         search_domain = [
@@ -101,9 +91,8 @@ class ProductSyncAccess(object):
     def insert_image(self, header):
         self._insert(header, SYNC_IMAGE)
 
-    def insert_update(self, header, write_values):
-        dumped = cPickle.dumps(write_values, cPickle.HIGHEST_PROTOCOL)
-        self._insert(header, SYNC_UPDATE, dumped)
+    def insert_update(self, header, write_field_names):
+        self._insert(header, SYNC_UPDATE, write_field_names)
 
     def insert_deactivate(self, header):
         self._insert(header, SYNC_DEACTIVATE)
@@ -119,9 +108,7 @@ class ProductSyncAccess(object):
         Insert a delete sync for an amazon product object that
         has a SKU field used by Amazon API
         """
-        product_sku = amazon_product[PRODUCT_SKU_FIELD]
-        sync_value = cPickle.dumps(product_sku, cPickle.HIGHEST_PROTOCOL)
-        self._insert(amazon_product, SYNC_DELETE, sync_value)
+        self._insert(amazon_product, SYNC_DELETE)
 
     def _get_new_syncs(self, sync_type):
         search_domain = [

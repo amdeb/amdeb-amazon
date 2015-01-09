@@ -71,8 +71,8 @@ class AmazonProductSync(models.Model):
         readonly=True,
     )
 
-    sync_data = fields.Binary(
-        string='Synchronization Data',
+    write_field_names = fields.Char(
+        string='Write Field Names',
         readonly=True,
     )
 

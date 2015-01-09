@@ -39,15 +39,13 @@ MODEL_NAME_FIELD = 'model_name'
 RECORD_ID_FIELD = 'record_id'
 TEMPLATE_ID_FIELD = 'template_id'
 OPERATION_TYPE_FIELD = 'operation_type'
-OPERATION_DATA_FIELD = 'operation_data'
+WRITE_FIELD_NAMES_FIELD = 'write_field_names'
 AMAZON_SYNC_TIMESTAMP_FIELD = 'amazon_sync_timestamp'
 
 AMAZON_PRODUCT_SYNC_TABLE = 'amdeb.amazon.product.sync'
 
-
 SYNC_STATUS_FIELD = 'sync_status'
 SYNC_TYPE_FIELD = 'sync_type'
-SYNC_DATA_FIELD = 'sync_data'
 AMAZON_REQUEST_TIMESTAMP_FIELD = 'amazon_request_timestamp'
 AMAZON_MESSAGE_CODE_FIELD = 'amazon_message_code'
 AMAZON_SUBMISSION_ID_FIELD = 'amazon_submission_id'

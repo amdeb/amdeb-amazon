@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import logging
-import cPickle
 from ..shared.model_names import (
     PRODUCT_OPERATION_TABLE,
     AMAZON_SYNC_TIMESTAMP_FIELD,
-    OPERATION_DATA_FIELD,
 )
 from ..shared.utility import field_utcnow
 
@@ -33,15 +31,6 @@ class ProductOperationAccess(object):
             len(operations), operations.ids
         ))
         return operations
-
-    @staticmethod
-    def get_operation_data(operation):
-        data = {}
-        dumped = operation[OPERATION_DATA_FIELD]
-        if dumped:
-            data = cPickle.loads(dumped)
-
-        return data
 
     @staticmethod
     def set_sync_timestamp(operations):
