@@ -5,7 +5,7 @@ from ..shared.model_names import (
     PRODUCT_OPERATION_TABLE,
     AMAZON_SYNC_TIMESTAMP_FIELD,
 )
-from ..shared.utility import field_utcnow
+from ..shared.utility import field_utcnow, get_write_field_names_as_set
 
 _logger = logging.getLogger(__name__)
 
@@ -38,3 +38,7 @@ class ProductOperationAccess(object):
         _logger.debug("set sync timestamp for all new product operations.")
         value = {AMAZON_SYNC_TIMESTAMP_FIELD: field_utcnow()}
         operations.write(value)
+
+    @staticmethod
+    def get_write_field_names(operation):
+        return get_write_field_names_as_set(operation)

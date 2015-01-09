@@ -20,7 +20,7 @@ from ..shared.sync_operation_types import (
     SYNC_CREATE, SYNC_UPDATE, SYNC_DELETE, SYNC_PRICE,
     SYNC_INVENTORY, SYNC_IMAGE, SYNC_DEACTIVATE, SYNC_RELATION,
 )
-from ..shared.utility import field_utcnow
+from ..shared.utility import field_utcnow, get_write_field_names_as_set
 
 _UNLINK_DAYS = 100
 _ARCHIVE_DAYS = 5
@@ -57,11 +57,12 @@ class ProductSyncAccess(object):
         if write_field_names:
             values[WRITE_FIELD_NAMES_FIELD] = write_field_names
         log_template = "Create new sync record for Model: {0}, " \
-                       "record id: {1}, sync type: {2}."
+                       "record id: {1}, sync type: {2}, write fields: {3}."
         _logger.debug(log_template.format(
             values[MODEL_NAME_FIELD],
             values[RECORD_ID_FIELD],
-            values[SYNC_TYPE_FIELD]))
+            values[SYNC_TYPE_FIELD],
+            write_field_names))
         self._table.create(values)
 
     def insert_create_if_new(self, header):
@@ -108,6 +109,10 @@ class ProductSyncAccess(object):
         has a SKU field used by Amazon API
         """
         self._insert(amazon_product, SYNC_DELETE)
+
+    @staticmethod
+    def get_write_field_names(sync_op):
+        return get_write_field_names_as_set(sync_op)
 
     def _get_new_syncs(self, sync_type):
         search_domain = [

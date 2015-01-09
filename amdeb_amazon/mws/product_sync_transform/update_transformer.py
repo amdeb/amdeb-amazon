@@ -8,7 +8,6 @@ from ...shared.model_names import (
     PRODUCT_BULLET_POINT_PREFIX,
     PRODUCT_BULLET_POINT_COUNT,
 )
-from ...shared.utility import get_field_names
 from .base_transfomer import BaseTransformer
 from ...models_access import OdooProductAccess
 from ...models_access import ProductSyncAccess
@@ -63,7 +62,7 @@ class UpdateTransformer(BaseTransformer):
 
         # we use the most current product data in sync
         sync_value = super(UpdateTransformer, self)._convert_sync(sync_op)
-        write_field_names = get_field_names(sync_op)
+        write_field_names = ProductSyncAccess.get_write_field_names(sync_op)
         if write_field_names:
             self._convert_title(write_field_names, sync_value)
             self._convert_description(write_field_names, sync_value)

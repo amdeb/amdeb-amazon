@@ -21,7 +21,7 @@ def field_utcnow(*args):
     return datetime.utcnow().strftime(DATETIME_FORMAT)
 
 
-def get_field_names(record):
+def get_write_field_names_as_set(record):
     field_names = record[WRITE_FIELD_NAMES_FIELD]
     if field_names:
         data = set(field_names.split(FIELD_NAME_DELIMITER))
