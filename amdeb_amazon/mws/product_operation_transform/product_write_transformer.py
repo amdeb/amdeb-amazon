@@ -56,8 +56,24 @@ class ProductWriteTransformer(object):
 
     def _transform_image(self, operation, values):
         image_trigger = values.pop(PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD, None)
+        insert_flag = False
         # create image sync regardless the image_trigger value
+        # only for non-partial variant or single-variant template
         if image_trigger is not None:
+            if OdooProductAccess.is_product_variant(operation):
+                if self._odoo_product.is_partial_variant(operation):
+                    _logger.debug("ignore image trigger for partial variant.")
+                else:
+                    insert_flag = True
+            else:
+                template = self._odoo_product.browse(operation)
+                if self._odoo_product.has_multi_variants(template):
+                    _logger.debug("ignore image trigger for "
+                                  "multi-variant template.")
+                else:
+                    insert_flag = True
+
+        if insert_flag:
             self._product_sync.insert_image(operation)
 
     def _transform_update(self, operation, write_values):

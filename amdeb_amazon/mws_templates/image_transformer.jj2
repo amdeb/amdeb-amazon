@@ -14,7 +14,8 @@
         </Message>
         {% for number in range(1, 9) %}
         <Message>
-            <MessageID>{{ number }}</MessageID>
+            {# make sure the numbers are unique in a request #}
+            <MessageID>{{ number * 100000 + message['ID'] }}</MessageID>
             <OperationType>Update</OperationType>
             <ProductImage>
                 <SKU>{{ message['SKU'] }}</SKU>
