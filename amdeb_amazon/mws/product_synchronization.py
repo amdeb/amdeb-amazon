@@ -41,13 +41,12 @@ class ProductSynchronization(object):
 
         operation_access = ProductOperationAccess(self._env)
         new_operations = operation_access.get_new_operations()
+        sync_new = ProductSyncNew(self._env, self._mws)
         if new_operations:
             operation_access.set_sync_timestamp(new_operations)
             transformer = ProductOperationTransformer(
                 self._env, new_operations)
             transformer.transform()
-
-            sync_new = ProductSyncNew(self._env, self._mws)
             sync_new.synchronize()
 
         sync_pending = ProductSyncPending(self._env, self._mws)
@@ -55,7 +54,6 @@ class ProductSynchronization(object):
 
         sync_done = ProductSyncDone(self._env, self._mws)
         done_set = sync_done.synchronize()
-
         # create relation sync in a separate step because we need
         # to know the creation status of both the template and the variant
         if done_set:

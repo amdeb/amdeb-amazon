@@ -9,7 +9,9 @@
         {{ macros.add_tag('VariationTheme') }}
     </VariationData>
 
-    {# this is a required element even it is empty #}
+    {# this is a required element #}
     <ClassificationData>
+        {# MWS shows warning if this tag is missing #}
+        <ModelNumber>{{ message['SKU'] }}</ModelNumber>
     </ClassificationData>
 </Shoes>
