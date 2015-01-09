@@ -28,8 +28,7 @@ class CreateTransformer(BaseTransformer):
         brand = self._product[PRODUCT_PRODUCT_BRAND_FIELD]
         self._add_string(sync_value, 'Brand', brand)
 
-        bullet_points = OdooProductAccess.get_bullet_points(
-            self._odoo_product)
+        bullet_points = OdooProductAccess.get_bullet_points(self._product)
         if bullet_points:
             sync_value['BulletPoint'] = bullet_points
 
