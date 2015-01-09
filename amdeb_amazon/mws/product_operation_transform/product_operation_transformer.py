@@ -1,11 +1,9 @@
 # -*- coding: utf-8 -*-
 
-import cPickle
 import logging
 
 from ...shared.model_names import (
-    MODEL_NAME_FIELD, RECORD_ID_FIELD,
-    OPERATION_TYPE_FIELD, OPERATION_DATA_FIELD,
+    MODEL_NAME_FIELD, RECORD_ID_FIELD, OPERATION_TYPE_FIELD,
 )
 
 from .operation_types import (
@@ -13,6 +11,7 @@ from .operation_types import (
 )
 
 from ...models_access import OdooProductAccess
+from ...models_access import ProductOperationAccess
 from . import ProductUnlinkTransformer
 from . import ProductCreateTransformer
 from . import ProductWriteTransformer
@@ -62,7 +61,8 @@ class ProductOperationTransformer(object):
             record.id != operation.id
         ]
         for other_write in other_writes:
-            other_values = cPickle.loads(other_write[OPERATION_DATA_FIELD])
+            other_values = ProductOperationAccess.get_operation_data(
+                other_write)
             other_values.update(merged_values)
             merged_values = other_values
             _logger.debug("Merged write values: {}".format(merged_values))
@@ -81,7 +81,7 @@ class ProductOperationTransformer(object):
             self._transform_create(operation)
             return
 
-        write_values = cPickle.loads(operation[OPERATION_DATA_FIELD])
+        write_values = ProductOperationAccess.get_operation_data(operation)
         log_template = "Product write operation initial values: {}."
         _logger.debug(log_template.format(write_values))
 

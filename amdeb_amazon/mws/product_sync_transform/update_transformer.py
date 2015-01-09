@@ -10,18 +10,19 @@ from ...shared.model_names import (
 )
 from .base_transfomer import BaseTransformer
 from ...models_access import OdooProductAccess
+from ...models_access import ProductSyncAccess
 
 
 class UpdateTransformer(BaseTransformer):
     """
     This class transform update values to update message fields
     """
-    def _check_bullet_points(self, sync_op, sync_value):
+    def _check_bullet_points(self, sync_data, sync_value):
         # the bullet points are changed together
         is_changed = False
         for index in range(1, 1 + PRODUCT_BULLET_POINT_COUNT):
             name = PRODUCT_BULLET_POINT_PREFIX + str(index)
-            if name in sync_op:
+            if name in sync_data:
                 is_changed = True
                 break
 
@@ -31,19 +32,26 @@ class UpdateTransformer(BaseTransformer):
                 sync_value['BulletPoint'] = bullet_points
 
     def _convert_sync(self, sync_op):
+        # we use the most current product data in sync
         sync_value = super(UpdateTransformer, self)._convert_sync(sync_op)
+        sync_data = ProductSyncAccess.get_sync_data(sync_op)
+        if sync_data:
+            title = self._product[PRODUCT_NAME_FIELD]
+            self._check_string(sync_value, 'Title', title)
 
-        title = self._product[PRODUCT_NAME_FIELD]
-        self._check_string(sync_value, 'Title', title)
+            description = None
+            if PRODUCT_AMAZON_DESCRIPTION_FIELD in sync_data:
+                description = self._product[PRODUCT_AMAZON_DESCRIPTION_FIELD]
+            elif PRODUCT_DESCRIPTION_SALE_FIELD in sync_data:
+                description = self._product[PRODUCT_DESCRIPTION_SALE_FIELD]
+            self._add_string(sync_value, 'Description', description)
 
-        description = sync_op.get(PRODUCT_AMAZON_DESCRIPTION_FIELD, None)
-        if not description:
-            description = sync_op.get(PRODUCT_DESCRIPTION_SALE_FIELD, None)
-        self._add_string(sync_value, 'Description', description)
+            if PRODUCT_PRODUCT_BRAND_FIELD in sync_data:
+                brand = self._product[PRODUCT_PRODUCT_BRAND_FIELD]
+                self._add_string(sync_value, 'Brand', brand)
 
-        brand = sync_op.get(PRODUCT_PRODUCT_BRAND_FIELD, None)
-        self._add_string(sync_value, 'Brand', brand)
-
-        self._check_bullet_points(sync_op, sync_value)
+            self._check_bullet_points(sync_data, sync_value)
+        else:
+            sync_value = None
 
         return sync_value

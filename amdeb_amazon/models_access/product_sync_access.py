@@ -67,6 +67,14 @@ class ProductSyncAccess(object):
             values[SYNC_TYPE_FIELD]))
         self._table.create(values)
 
+    @staticmethod
+    def get_sync_data(sync_record):
+        data = {}
+        dumped = sync_record[SYNC_DATA_FIELD]
+        if dumped:
+            data = cPickle.loads(dumped)
+        return data
+
     def insert_create_if_new(self, header):
         search_domain = [
             (MODEL_NAME_FIELD, '=', header[MODEL_NAME_FIELD]),

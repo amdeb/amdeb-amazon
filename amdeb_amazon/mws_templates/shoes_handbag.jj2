@@ -8,4 +8,8 @@
         {{ macros.add_tag('Color') }}
         {{ macros.add_tag('VariationTheme') }}
     </VariationData>
+
+    {# this is a required element even it is empty #}
+    <ClassificationData>
+    </ClassificationData>
 </Shoes>
