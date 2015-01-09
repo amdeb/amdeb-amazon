@@ -31,6 +31,14 @@ class UpdateTransformer(BaseTransformer):
             if bullet_points:
                 sync_value['BulletPoint'] = bullet_points
 
+    def _convert_description(self, sync_data, sync_value):
+        description = None
+        if PRODUCT_AMAZON_DESCRIPTION_FIELD in sync_data:
+            description = self._product[PRODUCT_AMAZON_DESCRIPTION_FIELD]
+        elif PRODUCT_DESCRIPTION_SALE_FIELD in sync_data:
+            description = self._product[PRODUCT_DESCRIPTION_SALE_FIELD]
+        self._add_string(sync_value, 'Description', description)
+
     def _convert_sync(self, sync_op):
         # we use the most current product data in sync
         sync_value = super(UpdateTransformer, self)._convert_sync(sync_op)
@@ -39,12 +47,7 @@ class UpdateTransformer(BaseTransformer):
             title = self._product[PRODUCT_NAME_FIELD]
             self._check_string(sync_value, 'Title', title)
 
-            description = None
-            if PRODUCT_AMAZON_DESCRIPTION_FIELD in sync_data:
-                description = self._product[PRODUCT_AMAZON_DESCRIPTION_FIELD]
-            elif PRODUCT_DESCRIPTION_SALE_FIELD in sync_data:
-                description = self._product[PRODUCT_DESCRIPTION_SALE_FIELD]
-            self._add_string(sync_value, 'Description', description)
+            self._convert_description(sync_data, sync_value)
 
             if PRODUCT_PRODUCT_BRAND_FIELD in sync_data:
                 brand = self._product[PRODUCT_PRODUCT_BRAND_FIELD]
