@@ -6,7 +6,7 @@ from ...shared.model_names import (
     SYNC_STATUS_FIELD, AMAZON_MESSAGE_CODE_FIELD,
     AMAZON_REQUEST_TIMESTAMP_FIELD, AMAZON_SUBMISSION_ID_FIELD,
 )
-from ...shared.sync_status import SYNC_PENDING
+from ...shared.sync_status import SYNC_STATUS_PENDING
 from ...models_access import ProductSyncAccess
 
 from ..product_sync_transform import BaseTransformer
@@ -48,7 +48,7 @@ class ProductSyncNew(object):
     @staticmethod
     def _convert_results(results):
         sync_result = {
-            SYNC_STATUS_FIELD: SYNC_PENDING,
+            SYNC_STATUS_FIELD: SYNC_STATUS_PENDING,
             AMAZON_SUBMISSION_ID_FIELD: results[0],
             AMAZON_REQUEST_TIMESTAMP_FIELD: results[1],
             AMAZON_MESSAGE_CODE_FIELD: results[2],

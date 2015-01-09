@@ -13,8 +13,8 @@ from ..shared.sync_operation_types import (
     SYNC_DEACTIVATE,
 )
 from ..shared.sync_status import (
-    SYNC_NEW, SYNC_PENDING, SYNC_SUCCESS,
-    SYNC_WARNING, SYNC_ERROR,
+    SYNC_STATUS_NEW, SYNC_STATUS_PENDING, SYNC_STATUS_SUCCESS,
+    SYNC_STATUS_WARNING, SYNC_STATUS_ERROR, SYNC_STATUS_WAITING,
 )
 from ..mws import ProductSynchronization
 
@@ -80,13 +80,14 @@ class AmazonProductSync(models.Model):
         string='Synchronization Status',
         required=True,
         selection=[
-            (SYNC_NEW, SYNC_NEW),
-            (SYNC_PENDING, SYNC_PENDING),
-            (SYNC_SUCCESS, SYNC_SUCCESS),
-            (SYNC_WARNING, SYNC_WARNING),
-            (SYNC_ERROR, SYNC_ERROR),
+            (SYNC_STATUS_NEW, SYNC_STATUS_NEW),
+            (SYNC_STATUS_PENDING, SYNC_STATUS_PENDING),
+            (SYNC_STATUS_SUCCESS, SYNC_STATUS_SUCCESS),
+            (SYNC_STATUS_WARNING, SYNC_STATUS_WARNING),
+            (SYNC_STATUS_ERROR, SYNC_STATUS_ERROR),
+            (SYNC_STATUS_WAITING, SYNC_STATUS_WAITING)
         ],
-        default=SYNC_NEW,
+        default=SYNC_STATUS_NEW,
         readonly=True,
     )
 

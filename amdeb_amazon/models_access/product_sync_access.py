@@ -14,8 +14,8 @@ from ..shared.model_names import (
     FIELD_NAME_DELIMITER,
 )
 from ..shared.sync_status import (
-    SYNC_NEW, SYNC_PENDING, SYNC_ERROR,
-    AMAZON_PROCESS_DONE_STATUS, SYNC_SUCCESS,
+    SYNC_STATUS_NEW, SYNC_STATUS_PENDING, SYNC_STATUS_ERROR,
+    AMAZON_STATUS_PROCESS_DONE, SYNC_STATUS_SUCCESS,
 )
 from ..shared.sync_operation_types import (
     SYNC_CREATE, SYNC_UPDATE, SYNC_DELETE, SYNC_PRICE,
@@ -71,7 +71,7 @@ class ProductSyncAccess(object):
         search_domain = [
             (MODEL_NAME_FIELD, '=', header[MODEL_NAME_FIELD]),
             (RECORD_ID_FIELD, '=', header[RECORD_ID_FIELD]),
-            (SYNC_STATUS_FIELD, '=', SYNC_NEW),
+            (SYNC_STATUS_FIELD, '=', SYNC_STATUS_NEW),
             (SYNC_TYPE_FIELD, '=', SYNC_CREATE),
         ]
         records = self._table.search(search_domain)
@@ -118,7 +118,7 @@ class ProductSyncAccess(object):
 
     def _get_new_syncs(self, sync_type):
         search_domain = [
-            (SYNC_STATUS_FIELD, '=', SYNC_NEW),
+            (SYNC_STATUS_FIELD, '=', SYNC_STATUS_NEW),
             (SYNC_TYPE_FIELD, '=', sync_type)
         ]
         return self._table.search(search_domain)
@@ -141,13 +141,13 @@ class ProductSyncAccess(object):
     def get_pending(self):
         # get pending in the ascending id order to
         # process the newest sync first.
-        search_domain = [(SYNC_STATUS_FIELD, '=', SYNC_PENDING)]
+        search_domain = [(SYNC_STATUS_FIELD, '=', SYNC_STATUS_PENDING)]
         return self._table.search(search_domain, order="id asc")
 
     def get_done(self):
         search_domain = [
-            (SYNC_STATUS_FIELD, '=', SYNC_PENDING),
-            (AMAZON_MESSAGE_CODE_FIELD, '=', AMAZON_PROCESS_DONE_STATUS)
+            (SYNC_STATUS_FIELD, '=', SYNC_STATUS_PENDING),
+            (AMAZON_MESSAGE_CODE_FIELD, '=', AMAZON_STATUS_PROCESS_DONE)
         ]
         return self._table.search(search_domain)
 
@@ -158,7 +158,7 @@ class ProductSyncAccess(object):
     @staticmethod
     def update_sync_new_exception(records, ex):
         sync_status = {
-            SYNC_STATUS_FIELD: SYNC_ERROR,
+            SYNC_STATUS_FIELD: SYNC_STATUS_ERROR,
             AMAZON_REQUEST_TIMESTAMP_FIELD: field_utcnow(),
             AMAZON_MESSAGE_CODE_FIELD: type(ex).__name__,
             AMAZON_RESULT_DESCRIPTION_FIELD: ex.message
@@ -168,7 +168,7 @@ class ProductSyncAccess(object):
     @staticmethod
     def update_sync_new_empty_value(records):
         sync_status = {
-            SYNC_STATUS_FIELD: SYNC_SUCCESS,
+            SYNC_STATUS_FIELD: SYNC_STATUS_SUCCESS,
             AMAZON_REQUEST_TIMESTAMP_FIELD: field_utcnow(),
             AMAZON_MESSAGE_CODE_FIELD: 'Empty Value',
             AMAZON_RESULT_DESCRIPTION_FIELD: 'Skip sync with empty value.'
@@ -200,12 +200,12 @@ class ProductSyncAccess(object):
         archive_date_str = archive_date.strftime(DATETIME_FORMAT)
         archive_records = self._table.search([
             (PRODUCT_CREATE_DATE_FIELD, '<', archive_date_str),
-            (SYNC_STATUS_FIELD, '=', SYNC_PENDING),
+            (SYNC_STATUS_FIELD, '=', SYNC_STATUS_PENDING),
             (SYNC_CHECK_STATUS_COUNT_FILED, '>=', _ARCHIVE_CHECK_COUNT)
         ])
         if archive_records:
             archive_status = {
-                SYNC_STATUS_FIELD: SYNC_ERROR,
+                SYNC_STATUS_FIELD: SYNC_STATUS_ERROR,
                 AMAZON_MESSAGE_CODE_FIELD: _ARCHIVE_CODE,
                 AMAZON_RESULT_DESCRIPTION_FIELD: _ARCHIVE_MESSAGE
             }

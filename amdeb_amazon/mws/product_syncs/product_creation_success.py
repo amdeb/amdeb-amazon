@@ -7,7 +7,7 @@ from ...shared.model_names import (
     MODEL_NAME_FIELD, RECORD_ID_FIELD,
     SYNC_STATUS_FIELD, SYNC_TYPE_FIELD, TEMPLATE_ID_FIELD,
 )
-from ...shared.sync_status import SYNC_WARNING, SYNC_SUCCESS
+from ...shared.sync_status import SYNC_STATUS_WARNING, SYNC_STATUS_SUCCESS
 from ...shared.sync_operation_types import SYNC_CREATE
 
 from ...models_access import ProductSyncAccess
@@ -65,8 +65,8 @@ class ProductCreationSuccess(object):
         for done in done_set:
             # for warning and success, set success flag
             done_status = done[SYNC_STATUS_FIELD]
-            is_success = (done_status == SYNC_SUCCESS or
-                          done_status == SYNC_WARNING)
+            is_success = (done_status == SYNC_STATUS_SUCCESS or
+                          done_status == SYNC_STATUS_WARNING)
             is_sync_create = done[SYNC_TYPE_FIELD] == SYNC_CREATE
             if is_sync_create and is_success:
                 log_template = "Post process creation success for " \

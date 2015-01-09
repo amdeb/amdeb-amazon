@@ -6,7 +6,7 @@ from ...shared.model_names import (
     SYNC_STATUS_FIELD, AMAZON_MESSAGE_CODE_FIELD,
     AMAZON_SUBMISSION_ID_FIELD, AMAZON_RESULT_DESCRIPTION_FIELD,
 )
-from ...shared.sync_status import SYNC_SUCCESS
+from ...shared.sync_status import SYNC_STATUS_SUCCESS
 from ...models_access import ProductSyncAccess
 
 _logger = logging.getLogger(__name__)
@@ -39,7 +39,7 @@ class ProductSyncDone(object):
             result[AMAZON_MESSAGE_CODE_FIELD] = sync_result[1]
             result[AMAZON_RESULT_DESCRIPTION_FIELD] = sync_result[2]
         else:
-            result[SYNC_STATUS_FIELD] = SYNC_SUCCESS
+            result[SYNC_STATUS_FIELD] = SYNC_STATUS_SUCCESS
 
         _logger.debug("write completion result {0} for sync id {1}".format(
             result, done.id))
