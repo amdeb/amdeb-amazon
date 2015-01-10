@@ -39,6 +39,7 @@ class AmazonProductSync(models.Model):
             (PRODUCT_PRODUCT_TABLE, PRODUCT_PRODUCT_TABLE),
             (PRODUCT_TEMPLATE_TABLE, PRODUCT_TEMPLATE_TABLE),
         ],
+        index=True,
         readonly=True,
     )
 
@@ -68,6 +69,7 @@ class AmazonProductSync(models.Model):
             (SYNC_IMAGE, SYNC_IMAGE),
             (SYNC_DEACTIVATE, SYNC_DEACTIVATE),
         ],
+        index=True,
         readonly=True,
     )
 
@@ -88,13 +90,14 @@ class AmazonProductSync(models.Model):
         required=True,
         selection=[
             (SYNC_STATUS_NEW, SYNC_STATUS_NEW),
+            (SYNC_STATUS_WAITING, SYNC_STATUS_WAITING),
             (SYNC_STATUS_PENDING, SYNC_STATUS_PENDING),
             (SYNC_STATUS_SUCCESS, SYNC_STATUS_SUCCESS),
             (SYNC_STATUS_WARNING, SYNC_STATUS_WARNING),
             (SYNC_STATUS_ERROR, SYNC_STATUS_ERROR),
-            (SYNC_STATUS_WAITING, SYNC_STATUS_WAITING)
         ],
         default=SYNC_STATUS_NEW,
+        index=True,
         readonly=True,
     )
 
@@ -109,6 +112,7 @@ class AmazonProductSync(models.Model):
 
     amazon_request_timestamp = fields.Char(
         string='Amazon Request Timestamp',
+        index=True,
         readonly=True,
     )
 
@@ -116,6 +120,7 @@ class AmazonProductSync(models.Model):
     # the message code for a warning or an error
     amazon_message_code = fields.Char(
         string='Amazon Result Message Code',
+        index=True,
         readonly=True,
     )
 

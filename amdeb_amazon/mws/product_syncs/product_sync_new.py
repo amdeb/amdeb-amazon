@@ -26,10 +26,7 @@ class ProductSyncNew(object):
     the sync table record id as the message id
     """
 
-    def __init__(self, env, mws):
-        self._env = env
-        self._mws = mws
-        self._product_sync = ProductSyncAccess(env)
+    def _create_sync_types(self):
         create_sync = (self._product_sync.get_new_creates,
                        CreateTransformer, self._mws.send_product)
         update_sync = (self._product_sync.get_new_updates,
@@ -38,12 +35,20 @@ class ProductSyncNew(object):
                       PriceTransformer, self._mws.send_price)
         inventory_sync = (self._product_sync.get_new_inventories,
                           InventoryTransformer, self._mws.send_inventory)
-        image_sync = (self._product_sync.get_new_imagines,
+        image_sync = (self._product_sync.get_new_images,
                       BaseTransformer, self._mws.send_image)
+
+        # the order matters because delete and create override other syncs
         self._sync_types = [
             create_sync, update_sync, price_sync,
             inventory_sync, image_sync,
         ]
+
+    def __init__(self, env, mws):
+        self._env = env
+        self._mws = mws
+        self._product_sync = ProductSyncAccess(env)
+        self._create_sync_types()
 
     @staticmethod
     def _convert_results(results):
@@ -69,15 +74,15 @@ class ProductSyncNew(object):
 
     def synchronize(self):
         _logger.debug("Enter ProductSyncNew synchronize().")
-        # all new syncs should exist in product table
-        # because this is in the same transaction as the
-        # transformer. There is no need to check existence.
+        # ToDo
+        # Some waiting syncs may change to new
+        # need to check product existence and duplicated/override syncs
         for sync_type in self._sync_types:
-            log_template = "Processing Sync with operation transformer {}."
+            log_template = "Processing Sync with transformer {}."
             _logger.debug(log_template.format(sync_type[1].__name__))
             sync_ops = sync_type[0]()
             if sync_ops:
-                log_template = "Got {} new operations."
+                log_template = "Got {} new sync operations."
                 _logger.debug(log_template.format(len(sync_ops)))
 
                 transformer = sync_type[1](self._env)

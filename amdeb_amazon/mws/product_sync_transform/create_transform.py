@@ -59,7 +59,6 @@ class CreateTransformer(BaseTransformer):
     # create a pseudo-sku for multi-variant template
     def _convert_sync(self, sync_op):
         sync_value = super(CreateTransformer, self)._convert_sync(sync_op)
-
         self._convert_description(sync_value)
 
         # only three creation possibilities:
@@ -67,14 +66,10 @@ class CreateTransformer(BaseTransformer):
         # it is a template: multi-variant or not
         if OdooProductAccess.is_product_variant(self._product):
             # this is an independent variant
-            if OdooProductAccess.is_partial_variant(self._product):
-                _logger.warning("wrong sync creation for partial variant.")
-                sync_value = None
-            else:
-                sync_value['Parentage'] = 'child'
-                sync_value = self._convert_variation(sync_value)
+            sync_value['Parentage'] = 'child'
+            sync_value = self._convert_variation(sync_value)
         else:
-            if not sync_value.get('Description', None):
+            if not 'Description' in sync_value:
                 self._raise_exception('Description')
 
             if OdooProductAccess.is_multi_variant_template(self._product):

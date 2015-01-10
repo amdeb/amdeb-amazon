@@ -47,6 +47,22 @@ class ProductSyncAccess(SyncHeadAccess):
     def __init__(self, env):
         self._table = env[AMAZON_PRODUCT_SYNC_TABLE]
 
+    @staticmethod
+    def _log_values(values):
+        log_template = "Create new sync record for Model: {0}, " \
+                       "record id: {1}, sync type: {2}, " \
+                       "write fields: {3}, product sku: {4}, " \
+                       "waiting flag: {5}, error_flag: {6}."
+        _logger.debug(log_template.format(
+            values[MODEL_NAME_FIELD],
+            values[RECORD_ID_FIELD],
+            values[SYNC_TYPE_FIELD],
+            values.get(WRITE_FIELD_NAMES_FIELD, None),
+            values.get(PRODUCT_SKU_FIELD, None),
+            values.get(SYNC_STATUS_FIELD, None),
+            values.get(AMAZON_MESSAGE_CODE_FIELD, None),
+        ))
+
     def _insert(self, sync_head, sync_type,
                 write_field_names=None,
                 product_sku=None,
@@ -55,7 +71,6 @@ class ProductSyncAccess(SyncHeadAccess):
         """
         Insert a new sync operation record.
         """
-
         values = {
             MODEL_NAME_FIELD: sync_head[MODEL_NAME_FIELD],
             RECORD_ID_FIELD: sync_head[RECORD_ID_FIELD],
@@ -72,21 +87,19 @@ class ProductSyncAccess(SyncHeadAccess):
         if error_flag:
             values[SYNC_STATUS_FIELD] = SYNC_STATUS_ERROR
             values[AMAZON_MESSAGE_CODE_FIELD] = _CREATION_ERROR_CODE
+        ProductSyncAccess._log_values(values)
 
-        log_template = "Create new sync record for Model: {0}, " \
-                       "record id: {1}, sync type: {2}, " \
-                       "write fields: {3}, product sku: {4}, " \
-                       "waiting flag: {5}, error_flag: {6}."
-        _logger.debug(log_template.format(
-            values[MODEL_NAME_FIELD],
-            values[RECORD_ID_FIELD],
-            values[SYNC_TYPE_FIELD],
-            write_field_names, product_sku,
-            waiting_flag, error_flag))
-
+        # there might be an existing sync for the same product and sync type
+        # because there are existing waiting syncs or some waiting
+        # syncs change to New  -- it is rare but exists.
+        # However, check existing sync here for every new sync is
+        # too expensive. Duplicated write syncs are tolerated.
+        # there is no duplicated create/delete syncs.
         self._table.create(values)
 
     def insert_create_if_new(self, sync_head):
+        # this is called when a non-partial variant adds
+        # its template
         is_inserted = False
         search_domain = [
             (MODEL_NAME_FIELD, '=', sync_head[MODEL_NAME_FIELD]),
@@ -107,38 +120,30 @@ class ProductSyncAccess(SyncHeadAccess):
     def insert_create(self, sync_head):
         self._insert(sync_head, SYNC_CREATE)
 
-    def insert_price(self, sync_head,
-                     waiting_flag=None,
-                     error_flag=None):
+    def insert_price(self, sync_head, waiting_flag=None, error_flag=None):
         self._insert(sync_head, SYNC_PRICE,
                      waiting_flag=waiting_flag,
                      error_flag=error_flag)
 
-    def insert_inventory(self, sync_head,
-                         waiting_flag=None,
-                         error_flag=None):
+    def insert_inventory(self, sync_head, waiting_flag=None, error_flag=None):
         self._insert(sync_head, SYNC_INVENTORY,
                      waiting_flag=waiting_flag,
                      error_flag=error_flag)
 
-    def insert_image(self, sync_head,
-                     waiting_flag=None,
-                     error_flag=None):
+    def insert_image(self, sync_head, waiting_flag=None, error_flag=None):
         self._insert(sync_head, SYNC_IMAGE,
                      waiting_flag=waiting_flag,
                      error_flag=error_flag)
 
     def insert_update(self, sync_head, write_field_names,
-                      waiting_flag=None,
-                      error_flag=None):
+                      waiting_flag=None, error_flag=None):
         self._insert(sync_head, SYNC_UPDATE,
                      write_field_names=write_field_names,
                      waiting_flag=waiting_flag,
                      error_flag=error_flag)
 
     def insert_deactivate(self, sync_head,
-                          waiting_flag=None,
-                          error_flag=None):
+                          waiting_flag=None, error_flag=None):
         self._insert(sync_head, SYNC_DEACTIVATE,
                      waiting_flag=waiting_flag,
                      error_flag=error_flag)
@@ -176,7 +181,7 @@ class ProductSyncAccess(SyncHeadAccess):
     def get_new_inventories(self):
         return self._get_new_syncs(SYNC_INVENTORY)
 
-    def get_new_imagines(self):
+    def get_new_images(self):
         return self._get_new_syncs(SYNC_IMAGE)
 
     def get_pending(self):
