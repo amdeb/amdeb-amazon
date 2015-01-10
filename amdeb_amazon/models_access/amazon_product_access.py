@@ -90,35 +90,40 @@ class AmazonProductAccess(SyncHeadAccess):
         variants = self._table.search(search_domain)
         return variants
 
-    def upsert_creation(self, sync_head):
-        amazon_product = self.get_by_head(sync_head)
+    def upsert_creation(self, product_operation):
+        amazon_product = self.get_by_head(product_operation)
         if amazon_product:
-            amazon_product[AMAZON_CREATION_STATUS_FIELD] = (
-                PRODUCT_CREATION_WAITING)
-            log_template = "Set amazon creation waiting status for {}."
-            _logger.debug(log_template.format(sync_head))
+            if AmazonProductAccess.is_created(amazon_product):
+                # once in created status, never change it.
+                _logger.debug("Amazon creation status is created, skip.")
+            else:
+                amazon_product[AMAZON_CREATION_STATUS_FIELD] = (
+                    PRODUCT_CREATION_WAITING)
+                _logger.debug("Change amazon creation to waiting status.")
         else:
-            product_sku = self._odoo_product.get_sku(sync_head)
+            product_sku = self._odoo_product.get_sku(product_operation)
             values = {
-                MODEL_NAME_FIELD: sync_head[MODEL_NAME_FIELD],
-                RECORD_ID_FIELD: sync_head[RECORD_ID_FIELD],
-                TEMPLATE_ID_FIELD: sync_head[TEMPLATE_ID_FIELD],
+                MODEL_NAME_FIELD: product_operation[MODEL_NAME_FIELD],
+                RECORD_ID_FIELD: product_operation[RECORD_ID_FIELD],
+                TEMPLATE_ID_FIELD: product_operation[TEMPLATE_ID_FIELD],
                 PRODUCT_SKU_FIELD: product_sku,
             }
             self._table.create(values)
-            log_template = "Insert a new amazon product record for {}. "
-            _logger.debug(log_template.format(sync_head))
+            _logger.debug("Insert a new amazon product record. ")
 
     def _update_creation_status(self, sync_head, creation_status):
         # insert a new record if it doesn't exist
         amazon_product = self.get_by_head(sync_head)
         if amazon_product:
-            amazon_product[AMAZON_CREATION_STATUS_FIELD] = creation_status
-            log_template = "Set amazon creation status {0} for {1}. "
-            _logger.debug(log_template.format(creation_status, sync_head))
+            # once in created status, never change it.
+            if AmazonProductAccess.is_created(amazon_product):
+                _logger.debug("Amazon creation status is created, skip.")
+            else:
+                amazon_product[AMAZON_CREATION_STATUS_FIELD] = creation_status
+                log_template = "Change amazon creation status to {0}. "
+                _logger.debug(log_template.format(creation_status))
         else:
-            log_template = "Unable to find product creation record for {}. "
-            _logger.debug(log_template.format(sync_head))
+            _logger.debug("Unable to find product creation record, skip.")
 
     def update_created(self, sync_head):
         self._update_creation_status(sync_head, PRODUCT_CREATION_CREATED)

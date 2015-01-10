@@ -71,7 +71,8 @@ class ProductOperationTransformer(object):
         if self._odoo_product.is_sync_active(operation):
             self._create_transformer.transform(operation)
         else:
-            _logger.debug("Skip creation operation for inactive sync.")
+            _logger.debug("Skip creation operation because the product's "
+                          "sync active flag is disabled.")
 
     def _transform_write(self, operation):
         # if there is a create operation, ignore write
@@ -102,7 +103,8 @@ class ProductOperationTransformer(object):
             # only transform a create/write operation for an existing product
             self._transform_create_write(operation)
         else:
-            _logger.debug("Ignore product operation for unlinked record.")
+            _logger.debug("The product is no longer existed, "
+                          "ignore its operations.")
 
     def transform(self):
         """

@@ -20,11 +20,14 @@ class OdooProductAccess(object):
     def __init__(self, env):
         self._env = env
 
+    def browse(self, sync_head):
+        model = self._env[sync_head[MODEL_NAME_FIELD]]
+        record = model.browse(sync_head[RECORD_ID_FIELD])
+        return record
+
     def is_existed(self, sync_head):
-        model_name = sync_head[MODEL_NAME_FIELD]
-        record_id = sync_head[RECORD_ID_FIELD]
-        table = self._env[model_name]
-        return bool(table.browse(record_id).exists())
+        record = self.browse(sync_head)
+        return bool(record.exists())
 
     @staticmethod
     def product_is_variant(product):
@@ -60,11 +63,6 @@ class OdooProductAccess(object):
         if record:
             result = OdooProductAccess.has_multi_variants(record)
         return result
-
-    def browse(self, sync_head):
-        model = self._env[sync_head[MODEL_NAME_FIELD]]
-        record = model.browse(sync_head[RECORD_ID_FIELD])
-        return record
 
     @staticmethod
     def _get_template_sync_active(product):

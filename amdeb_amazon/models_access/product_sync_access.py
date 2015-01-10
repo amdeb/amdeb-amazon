@@ -74,6 +74,7 @@ class ProductSyncAccess(SyncHeadAccess):
         self._table.create(values)
 
     def insert_create_if_new(self, sync_head):
+        is_inserted = False
         search_domain = [
             (MODEL_NAME_FIELD, '=', sync_head[MODEL_NAME_FIELD]),
             (RECORD_ID_FIELD, '=', sync_head[RECORD_ID_FIELD]),
@@ -82,10 +83,13 @@ class ProductSyncAccess(SyncHeadAccess):
         ]
         records = self._table.search(search_domain)
         if records:
-            log_template = "Create sync exists for template {}. Skip it."
+            log_template = "Create sync exists for template. Skip it."
             _logger.debug(log_template.format(sync_head))
         else:
             self.insert_create(sync_head)
+            is_inserted = True
+
+        return is_inserted
 
     def insert_create(self, sync_head):
         self._insert(sync_head, SYNC_CREATE)

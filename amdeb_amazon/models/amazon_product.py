@@ -66,6 +66,9 @@ class AmazonProductSync(models.Model):
         readonly=True,
     )
 
+    # Amazon mixes creation and updating.
+    # Once created, we never change it back to Waiting/Error.
+    # Before success, the status switches between Waiting and Error
     creation_status = fields.Selection(
         string='Amazon Creation Status',
         required=True,
