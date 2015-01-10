@@ -4,6 +4,7 @@ import logging
 
 from ...shared.model_names import (
     MODEL_NAME_FIELD, RECORD_ID_FIELD, OPERATION_TYPE_FIELD,
+    WRITE_FIELD_NAMES_FIELD,
 )
 from .operation_types import (
     CREATE_RECORD, UNLINK_RECORD,
@@ -30,6 +31,7 @@ class ProductOperationTransformer(object):
         self._create_transformer = ProductCreateTransformer(env)
         self._writer_transformer = ProductWriteTransformer(env)
         self._odoo_product = OdooProductAccess(env)
+
         # this set keeps transformed model_name and record_id
         self._transformed_operations = set()
 
@@ -118,20 +120,23 @@ class ProductOperationTransformer(object):
         for operation in self._new_operations:
             log_template = "Transform product operation." \
                            "Operation Id: {0}, Model: {1}, " \
-                           "Record id: {2}, Operation type: {3}."
+                           "Record id: {2}, Operation type: {3}," \
+                           "Write field names: {4}."
             _logger.debug(log_template.format(
                 operation.id, operation[MODEL_NAME_FIELD],
-                operation[RECORD_ID_FIELD], operation[OPERATION_TYPE_FIELD]))
+                operation[RECORD_ID_FIELD],
+                operation[OPERATION_TYPE_FIELD],
+                operation[WRITE_FIELD_NAMES_FIELD]))
 
             record_key = (operation[MODEL_NAME_FIELD],
                           operation[RECORD_ID_FIELD])
             if record_key in self._transformed_operations:
                 # process each key only once
-                log_template = "Skip processed operation {}"
+                log_template = "Skip processed product operation {}."
                 _logger.debug(log_template.format(record_key))
                 continue
             else:
-                log_template = "First time operation transformation for {}"
+                log_template = "First time transform product operation {}."
                 _logger.debug(log_template.format(record_key))
                 self._transformed_operations.add(record_key)
                 self._transform_operation(operation)

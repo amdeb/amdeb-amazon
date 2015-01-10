@@ -21,34 +21,34 @@ class OdooProductAccess(object):
     def __init__(self, env):
         self._env = env
 
-    def is_existed(self, header):
-        model_name = header[MODEL_NAME_FIELD]
-        record_id = header[RECORD_ID_FIELD]
+    def is_existed(self, sync_head):
+        model_name = sync_head[MODEL_NAME_FIELD]
+        record_id = sync_head[RECORD_ID_FIELD]
         table = self._env[model_name]
         return bool(table.browse(record_id).exists())
 
     @staticmethod
-    def is_product_template(header):
-        flag = header[MODEL_NAME_FIELD] == PRODUCT_TEMPLATE_TABLE
+    def is_product_template(sync_head):
+        flag = sync_head[MODEL_NAME_FIELD] == PRODUCT_TEMPLATE_TABLE
         return flag
 
     @staticmethod
-    def is_product_variant(header):
-        flag = header[MODEL_NAME_FIELD] == PRODUCT_PRODUCT_TABLE
+    def is_product_variant(sync_head):
+        flag = sync_head[MODEL_NAME_FIELD] == PRODUCT_PRODUCT_TABLE
         return flag
 
-    def is_partial_variant(self, header):
+    def is_partial_variant(self, sync_head):
         """
         Find if a variant is part of its template. If it is
         a variant AND doesn't have attribute value ids, it is a
         partial variant. Otherwise, return False.
         A partial variant is not an independent variant that has attributes.
-        :param header: a header that has model name and record id
+        :param sync_head: a head that has model name and record id
         :return: True if it's a partial variant, else False
         """
         result = False
-        if OdooProductAccess.is_product_variant(header):
-            record = self.browse(header)
+        if OdooProductAccess.is_product_variant(sync_head):
+            record = self.browse(sync_head)
             if not record[PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD]:
                 result = True
         return result
@@ -65,9 +65,9 @@ class OdooProductAccess(object):
                 result = True
         return result
 
-    def browse(self, header):
-        model = self._env[header[MODEL_NAME_FIELD]]
-        record = model.browse(header[RECORD_ID_FIELD])
+    def browse(self, sync_head):
+        model = self._env[sync_head[MODEL_NAME_FIELD]]
+        record = model.browse(sync_head[RECORD_ID_FIELD])
         return record
 
     @staticmethod
@@ -79,8 +79,8 @@ class OdooProductAccess(object):
                 break
         return result
 
-    def is_sync_active(self, header):
-        product = self.browse(header)
+    def is_sync_active(self, sync_head):
+        product = self.browse(sync_head)
         if self.has_multi_variants(product):
             # a multi-variant template is active if any
             # of its variants is active
@@ -90,12 +90,12 @@ class OdooProductAccess(object):
             sync_active = product[AMAZON_SYNC_ACTIVE_FIELD]
         return sync_active
 
-    def get_sku(self, header):
+    def get_sku(self, sync_head):
         # for a template that has multi variants,
         # we create a customized SKU
-        product = self.browse(header)
+        product = self.browse(sync_head)
         if self.has_multi_variants(product):
-            sku = 'Template_' + str(header[RECORD_ID_FIELD])
+            sku = 'Template_' + str(sync_head[RECORD_ID_FIELD])
         else:
             sku = product[PRODUCT_DEFAULT_CODE_FIELD]
         return sku

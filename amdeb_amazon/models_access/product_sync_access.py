@@ -37,22 +37,22 @@ _logger = logging.getLogger(__name__)
 class ProductSyncAccess(object):
     """
     Provide methods for accessing Amazon product sync table
-    The header is an object that defines model_name,
+    The sync_head is an object that defines model_name,
     record_id and template_id. It could be a product operation record
     or an Amazon sync record
     """
     def __init__(self, env):
         self._table = env[AMAZON_PRODUCT_SYNC_TABLE]
 
-    def _insert(self, header, sync_type, write_field_names=None):
+    def _insert(self, sync_head, sync_type, write_field_names=None):
         """
         Insert a new sync operation record.
         """
 
         values = {
-            MODEL_NAME_FIELD: header[MODEL_NAME_FIELD],
-            RECORD_ID_FIELD: header[RECORD_ID_FIELD],
-            TEMPLATE_ID_FIELD: header[TEMPLATE_ID_FIELD],
+            MODEL_NAME_FIELD: sync_head[MODEL_NAME_FIELD],
+            RECORD_ID_FIELD: sync_head[RECORD_ID_FIELD],
+            TEMPLATE_ID_FIELD: sync_head[TEMPLATE_ID_FIELD],
             SYNC_TYPE_FIELD: sync_type,
         }
         if write_field_names:
@@ -67,43 +67,43 @@ class ProductSyncAccess(object):
             write_field_names))
         self._table.create(values)
 
-    def insert_create_if_new(self, header):
+    def insert_create_if_new(self, sync_head):
         search_domain = [
-            (MODEL_NAME_FIELD, '=', header[MODEL_NAME_FIELD]),
-            (RECORD_ID_FIELD, '=', header[RECORD_ID_FIELD]),
+            (MODEL_NAME_FIELD, '=', sync_head[MODEL_NAME_FIELD]),
+            (RECORD_ID_FIELD, '=', sync_head[RECORD_ID_FIELD]),
             (SYNC_STATUS_FIELD, '=', SYNC_STATUS_NEW),
             (SYNC_TYPE_FIELD, '=', SYNC_CREATE),
         ]
         records = self._table.search(search_domain)
         if records:
             log_template = "Create sync exists for template {}. Skip it."
-            _logger.debug(log_template.format(header))
+            _logger.debug(log_template.format(sync_head))
         else:
-            self.insert_create(header)
+            self.insert_create(sync_head)
 
-    def insert_create(self, header):
-        self._insert(header, SYNC_CREATE)
+    def insert_create(self, sync_head):
+        self._insert(sync_head, SYNC_CREATE)
 
-    def insert_price(self, header):
-        self._insert(header, SYNC_PRICE)
+    def insert_price(self, sync_head):
+        self._insert(sync_head, SYNC_PRICE)
 
-    def insert_inventory(self, header):
-        self._insert(header, SYNC_INVENTORY)
+    def insert_inventory(self, sync_head):
+        self._insert(sync_head, SYNC_INVENTORY)
 
-    def insert_image(self, header):
-        self._insert(header, SYNC_IMAGE)
+    def insert_image(self, sync_head):
+        self._insert(sync_head, SYNC_IMAGE)
 
-    def insert_update(self, header, write_field_names):
-        self._insert(header, SYNC_UPDATE, write_field_names)
+    def insert_update(self, sync_head, write_field_names):
+        self._insert(sync_head, SYNC_UPDATE, write_field_names)
 
-    def insert_deactivate(self, header):
-        self._insert(header, SYNC_DEACTIVATE)
+    def insert_deactivate(self, sync_head):
+        self._insert(sync_head, SYNC_DEACTIVATE)
 
-    def insert_relation(self, header):
+    def insert_relation(self, sync_head):
         """
         Create sync relation for a product variant
         """
-        self._insert(header, SYNC_RELATION)
+        self._insert(sync_head, SYNC_RELATION)
 
     def insert_delete(self, amazon_product):
         """

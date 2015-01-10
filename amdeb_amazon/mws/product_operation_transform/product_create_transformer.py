@@ -32,14 +32,14 @@ class ProductCreateTransformer(object):
                 _logger.debug("Skip partial variant creation operation.")
             else:
                 self._product_sync.insert_create(operation)
-                template_header = {
+                template_head = {
                     MODEL_NAME_FIELD: PRODUCT_TEMPLATE_TABLE,
                     RECORD_ID_FIELD: operation[TEMPLATE_ID_FIELD],
                     TEMPLATE_ID_FIELD: operation[TEMPLATE_ID_FIELD],
                 }
                 # we don't check whether the template is created in Amazon
                 # or not. Usually all variants are created in a batch.
-                self._product_sync.insert_create_if_new(template_header)
+                self._product_sync.insert_create_if_new(template_head)
         else:
             template = self._odoo_product.browse(operation)
             if self._odoo_product.has_multi_variants(template):
