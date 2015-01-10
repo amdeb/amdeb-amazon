@@ -9,6 +9,15 @@ _last_chore_date = None
 _logger = logging.getLogger(__name__)
 
 
+def _do_it(env):
+    try:
+        product_sync = ProductSyncAccess(env)
+        product_sync.cleanup()
+        product_sync.archive_old()
+    except Exception:
+        _logger.exception("Exception in do_daily_chore.")
+
+
 def do_daily_chore(env):
     global _last_chore_date
 
@@ -26,9 +35,6 @@ def do_daily_chore(env):
     if run:
         _logger.debug("Time to run daily chore for product sync.")
         _last_chore_date = current_day
-        product_sync = ProductSyncAccess(env)
-
-        product_sync.cleanup()
-        product_sync.archive_old()
+        _do_it(env)
     else:
         _logger.debug("Not a new day, skip chore.")

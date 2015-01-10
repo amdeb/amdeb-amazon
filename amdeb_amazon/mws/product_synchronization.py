@@ -28,37 +28,38 @@ class ProductSynchronization(object):
     def synchronize(self):
         """
         synchronize product operations to Amazon
-        This is the entry to all product synchronization functions
-        There are several steps:
-        1. get new operations and set sync timestamp
-        2. convert new product operations to sync operations
-        3. execute sync operations and save submission timestamp
-        4. get sync results for pending sync operations, process
+        This is the entry to all product synchronization functions.
+        We process old business first. There are several steps:
+        1. do daily chore on sync table
+        2. get sync results for pending sync operations, process
         completed syncs
-        5. do daily chore on sync table
+        3. get new operations and set sync timestamp
+        4. convert new product operations to sync operations
+        5. execute sync operations and save submission timestamp
         """
         _logger.debug("Enter ProductSynchronization synchronize()")
 
-        operation_access = ProductOperationAccess(self._env)
-        new_operations = operation_access.get_new_operations()
-        sync_new = ProductSyncNew(self._env, self._mws)
-        if new_operations:
-            operation_access.set_sync_timestamp(new_operations)
-            transformer = ProductOperationTransformer(
-                self._env, new_operations)
-            transformer.transform()
-            sync_new.synchronize()
+        do_daily_chore(self._env)
 
         sync_pending = ProductSyncPending(self._env, self._mws)
         sync_pending.synchronize()
 
         sync_done = ProductSyncDone(self._env, self._mws)
         done_set = sync_done.synchronize()
-        # create relation sync in a separate step because we need
-        # to know the creation status of both the template and the variant
         if done_set:
+            # create relation sync in a separate step because we need to
+            # know the creation status of both the template and the variant
             creation_success = ProductCreationSuccess(self._env)
-            if creation_success.process(done_set):
-                sync_new.synchronize()
+            creation_success.process(done_set)
 
-        do_daily_chore(self._env)
+        operation_access = ProductOperationAccess(self._env)
+        new_operations = operation_access.get_new_operations()
+        if new_operations:
+            operation_access.set_sync_timestamp(new_operations)
+
+            transformer = ProductOperationTransformer(
+                self._env, new_operations)
+            transformer.transform()
+
+            sync_new = ProductSyncNew(self._env, self._mws)
+            sync_new.synchronize()
