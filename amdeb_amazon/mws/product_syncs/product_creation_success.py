@@ -78,7 +78,7 @@ class ProductCreationSuccess(object):
                 if self._odoo_product.is_existed(done):
                     # the order of the following calls matters because
                     # adding relation checks if a product is created or not
-                    self._amazon_product.insert_completed(done)
+                    self._amazon_product.update_created(done)
                     self._write_creation_success(done)
                     self._add_relation_sync(done)
                 else:

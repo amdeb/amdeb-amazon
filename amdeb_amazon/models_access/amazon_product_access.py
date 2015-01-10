@@ -1,11 +1,18 @@
 # -*- coding: utf-8 -*-
-
+import logging
 from ..shared.model_names import (
     AMAZON_PRODUCT_TABLE, MODEL_NAME_FIELD, RECORD_ID_FIELD,
     TEMPLATE_ID_FIELD, PRODUCT_SKU_FIELD, PRODUCT_PRODUCT_TABLE,
+    AMAZON_CREATION_STATUS_FIELD,
 )
-
+from ..shared.product_creation_status import (
+    PRODUCT_CREATION_WAITING,
+    PRODUCT_CREATION_CREATED,
+    PRODUCT_CREATION_ERROR,
+)
 from . import OdooProductAccess
+
+_logger = logging.getLogger(__name__)
 
 
 class AmazonProductAccess(object):
@@ -27,9 +34,26 @@ class AmazonProductAccess(object):
         amazon_product = self._table.search(search_domain)
         return amazon_product
 
+    def get_creation_status(self, sync_head):
+        amazon_product = self.get_by_head(sync_head)
+        status = amazon_product[AMAZON_CREATION_STATUS_FIELD]
+        return status
+
+    def _check_status(self, sync_head, status_code):
+        result = False
+        status = self.get_creation_status(sync_head)
+        if status == status_code:
+            result = True
+        return result
+
     def is_created(self, sync_head):
-        header = sync_head
-        return bool(self.get_by_head(header))
+        return self._check_status(sync_head, PRODUCT_CREATION_CREATED)
+
+    def is_waiting(self, sync_head):
+        return self._check_status(sync_head, PRODUCT_CREATION_WAITING)
+
+    def is_error(self, sync_head):
+        return self._check_status(sync_head, PRODUCT_CREATION_ERROR)
 
     def get_variants(self, template_id):
         search_domain = [
@@ -39,9 +63,14 @@ class AmazonProductAccess(object):
         variants = self._table.search(search_domain)
         return variants
 
-    def insert_completed(self, sync_head):
-        # insert a new record if it doesn't exist
-        if not self.is_created(sync_head):
+    def upsert_creation(self, sync_head):
+        amazon_product = self.get_by_head(sync_head)
+        if amazon_product:
+            amazon_product[AMAZON_CREATION_STATUS_FIELD] = (
+                PRODUCT_CREATION_WAITING)
+            log_template = "Set amazon creation waiting status for {}."
+            _logger.debug(log_template.format(sync_head))
+        else:
             product_sku = self._odoo_product.get_sku(sync_head)
             values = {
                 MODEL_NAME_FIELD: sync_head[MODEL_NAME_FIELD],
@@ -50,6 +79,25 @@ class AmazonProductAccess(object):
                 PRODUCT_SKU_FIELD: product_sku,
             }
             self._table.create(values)
+            log_template = "Insert a new amazon product record for {}. "
+            _logger.debug(log_template.format(sync_head))
+
+    def _update_creation_status(self, sync_head, creation_status):
+        # insert a new record if it doesn't exist
+        amazon_product = self.get_by_head(sync_head)
+        if amazon_product:
+            amazon_product[AMAZON_CREATION_STATUS_FIELD] = creation_status
+            log_template = "Set amazon creation status {0} for {1}. "
+            _logger.debug(log_template.format(creation_status, sync_head))
+        else:
+            log_template = "Unable to find product creation record for {}. "
+            _logger.debug(log_template.format(sync_head))
+
+    def update_created(self, sync_head):
+        self._update_creation_status(sync_head, PRODUCT_CREATION_CREATED)
+
+    def update_error(self, sync_head):
+        self._update_creation_status(sync_head, PRODUCT_CREATION_ERROR)
 
     @staticmethod
     def unlink_record(record):

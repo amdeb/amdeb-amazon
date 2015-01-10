@@ -55,3 +55,4 @@ SYNC_CHECK_STATUS_COUNT_FILED = 'sync_check_status_count'
 
 AMAZON_PRODUCT_TABLE = 'amdeb.amazon.product'
 PRODUCT_SKU_FIELD = 'product_sku'
+AMAZON_CREATION_STATUS_FIELD = 'creation_status'
