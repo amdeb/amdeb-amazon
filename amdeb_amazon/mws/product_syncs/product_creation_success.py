@@ -40,12 +40,12 @@ class ProductCreationSuccess(object):
         # is not created for a product variant.
         # The automatic way to fix this is to create
         # relation syn for both template and variant creation sync
-        if OdooProductAccess.is_product_variant(completed):
+        if ProductSyncAccess.is_product_variant(completed):
             template_head = {
                 MODEL_NAME_FIELD: PRODUCT_TEMPLATE_TABLE,
                 RECORD_ID_FIELD: completed[TEMPLATE_ID_FIELD],
             }
-            if self._amazon_product.is_created(template_head):
+            if self._amazon_product.is_created_by_head(template_head):
                 self._product_sync.insert_relation(completed)
                 self._is_new_sync_added = True
             else:

@@ -13,7 +13,7 @@
                             <field name="amazon_image_trigger" attrs="{'invisible': [('is_product_variant', '=', False), ('product_variant_count','>', 1)]}" />
                             <field name="product_brand" />
                             <field name="amazon_description" />
-                            <field name="amazon_created" />
+                            <field name="amazon_creation_status" />
                         </group>
                         <group>
                             <field name="amazon_bullet_point1" />

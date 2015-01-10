@@ -22,6 +22,7 @@ from ..shared.sync_operation_types import (
     SYNC_INVENTORY, SYNC_IMAGE, SYNC_DEACTIVATE, SYNC_RELATION,
 )
 from ..shared.utility import field_utcnow, get_write_field_names_as_set
+from .sync_head_access import SyncHeadAccess
 
 _UNLINK_DAYS = 100
 _ARCHIVE_DAYS = 5
@@ -34,7 +35,7 @@ _ARCHIVE_MESSAGE = "Pending more than {0} days and {1} checks".format(
 _logger = logging.getLogger(__name__)
 
 
-class ProductSyncAccess(object):
+class ProductSyncAccess(SyncHeadAccess):
     """
     Provide methods for accessing Amazon product sync table
     The sync_head is an object that defines model_name,

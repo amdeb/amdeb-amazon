@@ -11,7 +11,7 @@ from .operation_types import UNLINK_RECORD
 
 from ...models_access import ProductSyncAccess
 from ...models_access import AmazonProductAccess
-from ...models_access import OdooProductAccess
+from ...models_access import ProductOperationAccess
 
 _logger = logging.getLogger(__name__)
 
@@ -31,7 +31,7 @@ class ProductUnlinkTransformer(object):
         found = False
         templates = [
             element for element in self._new_operations if
-            OdooProductAccess.is_product_template(element) and
+            ProductOperationAccess.is_product_template(element) and
             element[RECORD_ID_FIELD] == operation[TEMPLATE_ID_FIELD] and
             element[OPERATION_TYPE_FIELD] == UNLINK_RECORD
         ]
@@ -66,8 +66,8 @@ class ProductUnlinkTransformer(object):
         We also delete unlinked records in amazon_product table
         """
         amazon_product = self._amazon_product.get_by_head(operation)
-        if amazon_product:
-            if OdooProductAccess.is_product_template(operation):
+        if AmazonProductAccess.is_waiting_or_created(amazon_product):
+            if ProductOperationAccess.is_product_template(operation):
                 self._add_template_unlink(amazon_product)
             else:
                 if self._check_template_unlink(operation):

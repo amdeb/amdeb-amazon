@@ -3,6 +3,7 @@
 import logging
 from ...models_access import ProductSyncAccess
 from ...models_access import OdooProductAccess
+from ...models_access import ProductOperationAccess
 from ...shared.model_names import (
     MODEL_NAME_FIELD,
     PRODUCT_TEMPLATE_TABLE, TEMPLATE_ID_FIELD,
@@ -27,7 +28,7 @@ class ProductCreateTransformer(object):
         # because a user usually deletes template, not the partial variant.
         # For non-partial variant, insert the create sync for its template
         # Thus we need to check existence of multi-variant template create
-        if OdooProductAccess.is_product_variant(operation):
+        if ProductOperationAccess.is_product_variant(operation):
             if self._odoo_product.is_partial_variant(operation):
                 _logger.debug("Skip partial variant creation operation.")
             else:
@@ -41,8 +42,7 @@ class ProductCreateTransformer(object):
                 # or not. Usually all variants are created in a batch.
                 self._product_sync.insert_create_if_new(template_head)
         else:
-            template = self._odoo_product.browse(operation)
-            if self._odoo_product.has_multi_variants(template):
+            if self._odoo_product.is_multi_variant(operation):
                 # template create sync is inserted by one of its variants
                 log_template = "Skip creation operation for template {} " \
                                "that has multi-variants."

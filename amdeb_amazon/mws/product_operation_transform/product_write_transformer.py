@@ -12,6 +12,7 @@ from ...shared.model_names import (
 from ...models_access import ProductSyncAccess
 from ...models_access import AmazonProductAccess
 from ...models_access import OdooProductAccess
+from ...models_access import ProductOperationAccess
 from .product_create_transformer import ProductCreateTransformer
 
 _logger = logging.getLogger(__name__)
@@ -40,7 +41,7 @@ class ProductWriteTransformer(object):
         # it can be changed in template and variant and
         # both generate write operations.
         if price is not None:
-            if OdooProductAccess.is_product_template(operation):
+            if ProductOperationAccess.is_product_template(operation):
                 self._add_sync_price(operation)
             else:
                 _logger.debug('Skip variant {} list_price write.'.format(
@@ -60,14 +61,13 @@ class ProductWriteTransformer(object):
         # create image sync regardless the image_trigger value
         # only for non-partial variant or single-variant template
         if image_trigger is not None:
-            if OdooProductAccess.is_product_variant(operation):
+            if ProductOperationAccess.is_product_variant(operation):
                 if self._odoo_product.is_partial_variant(operation):
                     _logger.debug("ignore image trigger for partial variant.")
                 else:
                     insert_flag = True
             else:
-                template = self._odoo_product.browse(operation)
-                if self._odoo_product.has_multi_variants(template):
+                if self._odoo_product.is_multi_variant(operation):
                     _logger.debug("ignore image trigger for "
                                   "multi-variant template.")
                 else:
@@ -81,21 +81,20 @@ class ProductWriteTransformer(object):
         self._transform_inventory(operation, write_values)
         self._transform_image(operation, write_values)
         if write_values:
-            if OdooProductAccess.is_product_template(operation):
+            if ProductOperationAccess.is_product_template(operation):
                 self._product_sync.insert_update(operation, write_values)
             else:
                 _logger.debug("Ignore write operation for product variant.")
 
     def _transform_deactivate(self, operation):
         # ignore partial variant and multi-variant template
-        if OdooProductAccess.is_product_variant(operation):
+        if ProductOperationAccess.is_product_variant(operation):
             if self._odoo_product.is_partial_variant(operation):
                 _logger.debug("Skip partial variant deactivate operation.")
             else:
                 self._product_sync.insert_deactivate(operation)
         else:
-            template = self._odoo_product.browse(operation)
-            if self._odoo_product.has_multi_variants(template):
+            if self._odoo_product.is_multi_variant(operation):
                 # template create sync is inserted by one of its variants
                 log_template = "Skip deactivate operation for template {} " \
                                "that has multi-variants."

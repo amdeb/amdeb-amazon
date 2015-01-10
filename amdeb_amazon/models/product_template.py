@@ -11,20 +11,20 @@ from ..shared.model_names import (
 class product_template(models.Model):
     _inherit = [PRODUCT_TEMPLATE_TABLE]
 
-    def _is_created_amazon(self):
-        model_id = {
+    def _get_creation_status(self):
+        sync_head = {
             MODEL_NAME_FIELD: PRODUCT_TEMPLATE_TABLE,
             RECORD_ID_FIELD: self.ids[0],
         }
 
         amazon_product = AmazonProductAccess(self.env)
-        return amazon_product.is_created(model_id)
+        return amazon_product.get_creation_status(sync_head)
 
-    amazon_created = fields.Boolean(
-        string="Is Created in Amazon",
-        help="A readonly flag showing whether this product is created "
-             "in Amazon or not.",
-        compute=_is_created_amazon,
+    amazon_creation_status = fields.Boolean(
+        string="Amazon Creation Status",
+        help="A status code showing whether this product creation status "
+             "is waiting, created or error.",
+        compute=_get_creation_status,
         readonly=True,
     )
 

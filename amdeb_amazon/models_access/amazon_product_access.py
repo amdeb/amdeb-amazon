@@ -11,11 +11,12 @@ from ..shared.product_creation_status import (
     PRODUCT_CREATION_ERROR,
 )
 from . import OdooProductAccess
+from .sync_head_access import SyncHeadAccess
 
 _logger = logging.getLogger(__name__)
 
 
-class AmazonProductAccess(object):
+class AmazonProductAccess(SyncHeadAccess):
     """
     This class provides methods accessing Amazon Product Table
     that stores created product head and SKU.
@@ -39,21 +40,47 @@ class AmazonProductAccess(object):
         status = amazon_product[AMAZON_CREATION_STATUS_FIELD]
         return status
 
-    def _check_status(self, sync_head, status_code):
+    def _check_status_by_head(self, sync_head, status_code):
         result = False
         status = self.get_creation_status(sync_head)
         if status == status_code:
             result = True
         return result
 
-    def is_created(self, sync_head):
-        return self._check_status(sync_head, PRODUCT_CREATION_CREATED)
+    def is_created_by_head(self, sync_head):
+        return self._check_status_by_head(sync_head, PRODUCT_CREATION_CREATED)
 
-    def is_waiting(self, sync_head):
-        return self._check_status(sync_head, PRODUCT_CREATION_WAITING)
+    def is_waiting_by_head(self, sync_head):
+        return self._check_status_by_head(sync_head, PRODUCT_CREATION_WAITING)
 
-    def is_error(self, sync_head):
-        return self._check_status(sync_head, PRODUCT_CREATION_ERROR)
+    def is_error_by_head(self, sync_head):
+        return self._check_status_by_head(sync_head, PRODUCT_CREATION_ERROR)
+
+    @staticmethod
+    def _check_status(amazon_product, status_code):
+        status = amazon_product[AMAZON_CREATION_STATUS_FIELD]
+        return status == status_code
+
+    @staticmethod
+    def is_waiting(amazon_product):
+        return AmazonProductAccess._check_status(
+            amazon_product, PRODUCT_CREATION_WAITING)
+
+    @staticmethod
+    def is_created(amazon_product):
+        return AmazonProductAccess._check_status(
+            amazon_product, PRODUCT_CREATION_CREATED)
+
+    @staticmethod
+    def is_error(amazon_product):
+        return AmazonProductAccess._check_status(
+            amazon_product, PRODUCT_CREATION_ERROR)
+
+    @staticmethod
+    def is_waiting_or_created(amazon_product):
+        is_waiting = AmazonProductAccess.is_waiting(amazon_product)
+        is_created = AmazonProductAccess.is_created(amazon_product)
+        return is_waiting or is_created
 
     def get_variants(self, template_id):
         search_domain = [

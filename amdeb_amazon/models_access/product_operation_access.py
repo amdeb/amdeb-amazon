@@ -6,11 +6,12 @@ from ..shared.model_names import (
     AMAZON_SYNC_TIMESTAMP_FIELD,
 )
 from ..shared.utility import field_utcnow, get_write_field_names_as_set
+from .sync_head_access import SyncHeadAccess
 
 _logger = logging.getLogger(__name__)
 
 
-class ProductOperationAccess(object):
+class ProductOperationAccess(SyncHeadAccess):
     """
     Get new product operations and set operation sync timestamp
     """

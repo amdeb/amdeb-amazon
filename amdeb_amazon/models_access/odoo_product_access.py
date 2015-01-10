@@ -2,7 +2,6 @@
 
 from ..shared.model_names import(
     MODEL_NAME_FIELD, RECORD_ID_FIELD,
-    PRODUCT_PRODUCT_TABLE, PRODUCT_TEMPLATE_TABLE,
     PRODUCT_IS_PRODUCT_VARIANT_FIELD,
     PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD, AMAZON_SYNC_ACTIVE_FIELD,
     PRODUCT_DEFAULT_CODE_FIELD, PRODUCT_VARIANT_COUNT_FIELD,
@@ -28,14 +27,8 @@ class OdooProductAccess(object):
         return bool(table.browse(record_id).exists())
 
     @staticmethod
-    def is_product_template(sync_head):
-        flag = sync_head[MODEL_NAME_FIELD] == PRODUCT_TEMPLATE_TABLE
-        return flag
-
-    @staticmethod
-    def is_product_variant(sync_head):
-        flag = sync_head[MODEL_NAME_FIELD] == PRODUCT_PRODUCT_TABLE
-        return flag
+    def product_is_variant(product):
+        return product[PRODUCT_IS_PRODUCT_VARIANT_FIELD]
 
     def is_partial_variant(self, sync_head):
         """
@@ -47,15 +40,11 @@ class OdooProductAccess(object):
         :return: True if it's a partial variant, else False
         """
         result = False
-        if OdooProductAccess.is_product_variant(sync_head):
-            record = self.browse(sync_head)
+        record = self.browse(sync_head)
+        if record and OdooProductAccess.product_is_variant(record):
             if not record[PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD]:
                 result = True
         return result
-
-    @staticmethod
-    def product_is_variant(product):
-        return product[PRODUCT_IS_PRODUCT_VARIANT_FIELD]
 
     @staticmethod
     def has_multi_variants(product):
@@ -63,6 +52,13 @@ class OdooProductAccess(object):
         if OdooProductAccess.product_is_variant(product):
             if product[PRODUCT_VARIANT_COUNT_FIELD] > 1:
                 result = True
+        return result
+
+    def is_multi_variant(self, sync_head):
+        result = False
+        record = self.browse(sync_head)
+        if record:
+            result = OdooProductAccess.has_multi_variants(record)
         return result
 
     def browse(self, sync_head):
