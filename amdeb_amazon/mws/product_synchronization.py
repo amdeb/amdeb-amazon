@@ -31,11 +31,11 @@ class ProductSynchronization(object):
         This is the entry to all product synchronization functions.
         We process old business first. There are several steps:
         1. do daily chore on sync table
-        2. get sync results for pending sync operations, process
-        completed syncs
-        3. get new operations and set sync timestamp
-        4. convert new product operations to sync operations
-        5. execute sync operations and save submission timestamp
+        2. get sync results for pending sync operations
+        3. process completed syncs
+        4. get new operations and set sync timestamp
+        5. convert new product operations to sync operations
+        6. execute sync operations and save submission timestamp
         """
         _logger.debug("Enter ProductSynchronization synchronize()")
 

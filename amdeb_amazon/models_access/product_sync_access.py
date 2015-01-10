@@ -11,7 +11,7 @@ from ..shared.model_names import (
     PRODUCT_CREATE_DATE_FIELD, SYNC_STATUS_FIELD,
     SYNC_CHECK_STATUS_COUNT_FILED, AMAZON_MESSAGE_CODE_FIELD,
     AMAZON_RESULT_DESCRIPTION_FIELD, AMAZON_REQUEST_TIMESTAMP_FIELD,
-    FIELD_NAME_DELIMITER,
+    FIELD_NAME_DELIMITER, PRODUCT_SKU_FIELD,
 )
 from ..shared.sync_status import (
     SYNC_STATUS_NEW, SYNC_STATUS_PENDING, SYNC_STATUS_ERROR,
@@ -45,7 +45,8 @@ class ProductSyncAccess(SyncHeadAccess):
     def __init__(self, env):
         self._table = env[AMAZON_PRODUCT_SYNC_TABLE]
 
-    def _insert(self, sync_head, sync_type, write_field_names=None):
+    def _insert(self, sync_head, sync_type,
+                write_field_names=None, product_sku=None):
         """
         Insert a new sync operation record.
         """
@@ -59,13 +60,17 @@ class ProductSyncAccess(SyncHeadAccess):
         if write_field_names:
             values[WRITE_FIELD_NAMES_FIELD] = FIELD_NAME_DELIMITER.join(
                 write_field_names)
+        if product_sku:
+            values[PRODUCT_SKU_FIELD] = product_sku
+
         log_template = "Create new sync record for Model: {0}, " \
-                       "record id: {1}, sync type: {2}, write fields: {3}."
+                       "record id: {1}, sync type: {2}, " \
+                       "write fields: {3}, product sku: {4}."
         _logger.debug(log_template.format(
             values[MODEL_NAME_FIELD],
             values[RECORD_ID_FIELD],
             values[SYNC_TYPE_FIELD],
-            write_field_names))
+            write_field_names, product_sku))
         self._table.create(values)
 
     def insert_create_if_new(self, sync_head):
@@ -111,7 +116,8 @@ class ProductSyncAccess(SyncHeadAccess):
         Insert a delete sync for an amazon product object that
         has a SKU field used by Amazon API
         """
-        self._insert(amazon_product, SYNC_DELETE)
+        self._insert(amazon_product, SYNC_DELETE,
+                     product_sku=amazon_product[PRODUCT_SKU_FIELD])
 
     def _get_new_syncs(self, sync_type):
         search_domain = [

@@ -76,6 +76,13 @@ class AmazonProductSync(models.Model):
         readonly=True,
     )
 
+    # used in unlink sync
+    product_sku = fields.Char(
+        string='Product SKU',
+        index=True,
+        readonly=True,
+    )
+
     sync_status = fields.Selection(
         string='Synchronization Status',
         required=True,

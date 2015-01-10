@@ -3,7 +3,6 @@
 import logging
 
 from ...shared.model_names import (
-    MODEL_NAME_FIELD,
     RECORD_ID_FIELD, TEMPLATE_ID_FIELD,
     OPERATION_TYPE_FIELD,
 )
@@ -22,7 +21,7 @@ class ProductUnlinkTransformer(object):
     Amazon product records for unlinked products
     """
     def __init__(self, env, new_operations):
-        # we need this to find template unlink operation
+        # we need new operations to find template unlink operation
         self._new_operations = new_operations
         self._product_sync = ProductSyncAccess(env)
         self._amazon_product = AmazonProductAccess(env)
@@ -54,8 +53,8 @@ class ProductUnlinkTransformer(object):
 
     def transform(self, operation):
         """
-        Delete a product if it is created in Amazon, even
-        its sync active flag is False because keeping it
+        Delete a product if it is created or creation waiting in Amazon,
+        even its sync active flag is False because keeping it
         in Amazon will cause many confuses when
         we download reports, history etc but couldn't find
         it locally.
@@ -64,24 +63,20 @@ class ProductUnlinkTransformer(object):
         Ignore a variant unlink if its template unlink appears
 
         We also delete unlinked records in amazon_product table
+        after the unlink syncs are created
         """
         amazon_product = self._amazon_product.get_by_head(operation)
         if AmazonProductAccess.is_waiting_or_created(amazon_product):
+            # for a waiting or created product, just send delete request
             if ProductOperationAccess.is_product_template(operation):
                 self._add_template_unlink(amazon_product)
             else:
                 if self._check_template_unlink(operation):
-                    log_template = "Found template unlink operation " \
-                                   "for variant Model: {0}, Record id: {1}"
-                    _logger.debug(log_template.format(
-                        operation[MODEL_NAME_FIELD],
-                        operation[RECORD_ID_FIELD]))
+                    _logger.debug("Found template unlink operation. "
+                                  "Skip variant unlink.")
                 else:
                     self._sync_and_delete(amazon_product)
         else:
             # this include partial variant unlink
-            log_template = "Product is not created in Amazon for unlink " \
-                           "operation for Model: {0}, Record id: {1}"
-            _logger.debug(log_template.format(
-                operation[MODEL_NAME_FIELD], operation[RECORD_ID_FIELD]
-            ))
+            _logger.debug("Product is not created in Amazon or has no "
+                          "waiting creation. Skip unlink.")

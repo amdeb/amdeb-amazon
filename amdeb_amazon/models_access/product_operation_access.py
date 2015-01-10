@@ -28,9 +28,8 @@ class ProductOperationAccess(SyncHeadAccess):
         ]
         operations = self._table.search(search_domain, order="id desc")
 
-        _logger.debug("Found {0} new product operations. Ids: {1}.".format(
-            len(operations), operations.ids
-        ))
+        log_template = "Found {0} new product operations. Ids: {1}."
+        _logger.debug(log_template.format(len(operations), operations.ids))
         return operations
 
     @staticmethod
