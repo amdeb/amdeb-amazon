@@ -35,11 +35,11 @@ class ProductSyncPending(object):
         for pending in self._pending_set:
             submission_id = pending[AMAZON_SUBMISSION_ID_FIELD]
             message_code = submission_statuses[submission_id]
-            self._product_sync.update_message_code(pending, message_code)
+            ProductSyncAccess.update_message_code(pending, message_code)
 
     def _set_exception_status(self, ex):
         for pending in self._pending_set:
-            self._product_sync.update_mws_exception(pending, ex)
+            ProductSyncAccess.update_mws_exception(pending, ex)
 
     def _check_status(self, submission_ids):
         log_template = "Checking sync status for {} submissions."

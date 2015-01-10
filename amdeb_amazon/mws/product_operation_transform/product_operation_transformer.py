@@ -51,9 +51,9 @@ class ProductOperationTransformer(object):
             creation = creations[0]
         return creation
 
-    def _merge_write(self, operation, write_values):
+    def _merge_write(self, operation, write_fields):
         # merge all writes that are ordered by operation id
-        merged_values = write_values
+        merged_fields = write_fields
         other_writes = [
             record for record in self._new_operations if
             record[MODEL_NAME_FIELD] == operation[MODEL_NAME_FIELD] and
@@ -63,9 +63,9 @@ class ProductOperationTransformer(object):
         for other_write in other_writes:
             other_values = ProductOperationAccess.get_write_field_names(
                 other_write)
-            merged_values = merged_values.union(other_values)
-            _logger.debug("Merged write values: {}".format(merged_values))
-        return merged_values
+            merged_fields = merged_fields.union(other_values)
+            _logger.debug("Merged write fields: {}".format(merged_fields))
+        return merged_fields
 
     def _transform_create(self, operation):
         if self._odoo_product.is_sync_active(operation):
@@ -78,16 +78,17 @@ class ProductOperationTransformer(object):
         # if there is a create operation, ignore write
         creation = self._check_create(operation)
         if creation:
+            _logger.debug("Found a creation operation, skip all writes.")
             self._transform_create(operation)
             return
 
-        write_values = ProductOperationAccess.get_write_field_names(
+        write_fields = ProductOperationAccess.get_write_field_names(
             operation)
         log_template = "Product write operation initial values: {}."
-        _logger.debug(log_template.format(write_values))
+        _logger.debug(log_template.format(write_fields))
 
-        merged_values = self._merge_write(operation, write_values)
-        self._writer_transformer.transform(operation, merged_values)
+        merged_fields = self._merge_write(operation, write_fields)
+        self._writer_transformer.transform(operation, merged_fields)
 
     def _transform_create_write(self, operation):
         # create or write operation for existed product

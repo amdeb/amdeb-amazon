@@ -16,6 +16,7 @@ from ..shared.model_names import (
 from ..shared.sync_status import (
     SYNC_STATUS_NEW, SYNC_STATUS_PENDING, SYNC_STATUS_ERROR,
     AMAZON_STATUS_PROCESS_DONE, SYNC_STATUS_SUCCESS,
+    SYNC_STATUS_WAITING,
 )
 from ..shared.sync_operation_types import (
     SYNC_CREATE, SYNC_UPDATE, SYNC_DELETE, SYNC_PRICE,
@@ -31,6 +32,7 @@ _ARCHIVE_CODE = "Timeout"
 _ARCHIVE_MESSAGE = "Pending more than {0} days and {1} checks".format(
     _ARCHIVE_DAYS, _ARCHIVE_CHECK_COUNT
 )
+_CREATION_ERROR_CODE = "Amazon Product Creation Error"
 
 _logger = logging.getLogger(__name__)
 
@@ -46,7 +48,10 @@ class ProductSyncAccess(SyncHeadAccess):
         self._table = env[AMAZON_PRODUCT_SYNC_TABLE]
 
     def _insert(self, sync_head, sync_type,
-                write_field_names=None, product_sku=None):
+                write_field_names=None,
+                product_sku=None,
+                waiting_flag=None,
+                error_flag=None):
         """
         Insert a new sync operation record.
         """
@@ -62,15 +67,23 @@ class ProductSyncAccess(SyncHeadAccess):
                 write_field_names)
         if product_sku:
             values[PRODUCT_SKU_FIELD] = product_sku
+        if waiting_flag:
+            values[SYNC_STATUS_FIELD] = SYNC_STATUS_WAITING
+        if error_flag:
+            values[SYNC_STATUS_FIELD] = SYNC_STATUS_ERROR
+            values[AMAZON_MESSAGE_CODE_FIELD] = _CREATION_ERROR_CODE
 
         log_template = "Create new sync record for Model: {0}, " \
                        "record id: {1}, sync type: {2}, " \
-                       "write fields: {3}, product sku: {4}."
+                       "write fields: {3}, product sku: {4}, " \
+                       "waiting flag: {5}, error_flag: {6}."
         _logger.debug(log_template.format(
             values[MODEL_NAME_FIELD],
             values[RECORD_ID_FIELD],
             values[SYNC_TYPE_FIELD],
-            write_field_names, product_sku))
+            write_field_names, product_sku,
+            waiting_flag, error_flag))
+
         self._table.create(values)
 
     def insert_create_if_new(self, sync_head):
@@ -94,20 +107,41 @@ class ProductSyncAccess(SyncHeadAccess):
     def insert_create(self, sync_head):
         self._insert(sync_head, SYNC_CREATE)
 
-    def insert_price(self, sync_head):
-        self._insert(sync_head, SYNC_PRICE)
+    def insert_price(self, sync_head,
+                     waiting_flag=None,
+                     error_flag=None):
+        self._insert(sync_head, SYNC_PRICE,
+                     waiting_flag=waiting_flag,
+                     error_flag=error_flag)
 
-    def insert_inventory(self, sync_head):
-        self._insert(sync_head, SYNC_INVENTORY)
+    def insert_inventory(self, sync_head,
+                         waiting_flag=None,
+                         error_flag=None):
+        self._insert(sync_head, SYNC_INVENTORY,
+                     waiting_flag=waiting_flag,
+                     error_flag=error_flag)
 
-    def insert_image(self, sync_head):
-        self._insert(sync_head, SYNC_IMAGE)
+    def insert_image(self, sync_head,
+                     waiting_flag=None,
+                     error_flag=None):
+        self._insert(sync_head, SYNC_IMAGE,
+                     waiting_flag=waiting_flag,
+                     error_flag=error_flag)
 
-    def insert_update(self, sync_head, write_field_names):
-        self._insert(sync_head, SYNC_UPDATE, write_field_names)
+    def insert_update(self, sync_head, write_field_names,
+                      waiting_flag=None,
+                      error_flag=None):
+        self._insert(sync_head, SYNC_UPDATE,
+                     write_field_names=write_field_names,
+                     waiting_flag=waiting_flag,
+                     error_flag=error_flag)
 
-    def insert_deactivate(self, sync_head):
-        self._insert(sync_head, SYNC_DEACTIVATE)
+    def insert_deactivate(self, sync_head,
+                          waiting_flag=None,
+                          error_flag=None):
+        self._insert(sync_head, SYNC_DEACTIVATE,
+                     waiting_flag=waiting_flag,
+                     error_flag=error_flag)
 
     def insert_relation(self, sync_head):
         """
@@ -189,16 +223,18 @@ class ProductSyncAccess(SyncHeadAccess):
         values[SYNC_CHECK_STATUS_COUNT_FILED] = check_count + 1
         record.write(values)
 
-    def update_message_code(self, record, message_code):
+    @staticmethod
+    def update_message_code(record, message_code):
         sync_status = {AMAZON_MESSAGE_CODE_FIELD: message_code}
-        self.update_record(record, sync_status)
+        ProductSyncAccess.update_record(record, sync_status)
 
-    def update_mws_exception(self, record, ex):
+    @staticmethod
+    def update_mws_exception(record, ex):
         sync_status = {
             AMAZON_MESSAGE_CODE_FIELD: type(ex).__name__,
             AMAZON_RESULT_DESCRIPTION_FIELD: ex.message,
         }
-        self.update_record(record, sync_status)
+        ProductSyncAccess.update_record(record, sync_status)
 
     def archive_old(self):
         _logger.debug("Enter ProductSyncAccess archive_old()")

@@ -43,7 +43,7 @@ class ProductSyncDone(object):
 
         _logger.debug("write completion result {0} for sync id {1}".format(
             result, done.id))
-        self._product_sync.update_record(done, result)
+        ProductSyncAccess.update_record(done, result)
 
     def _save_done_results(self, completion_results):
         for done in self._done_set:
@@ -51,7 +51,7 @@ class ProductSyncDone(object):
             # should have results for all
             completion_result = completion_results[submission_id]
             if isinstance(completion_result, Exception):
-                self._product_sync.update_mws_exception(
+                ProductSyncAccess.update_mws_exception(
                     done, completion_result)
             else:
                 # if success, Amazon gives no result
