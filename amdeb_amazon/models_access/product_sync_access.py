@@ -21,7 +21,7 @@ from ..shared.sync_operation_types import (
     SYNC_CREATE, SYNC_UPDATE, SYNC_DELETE, SYNC_PRICE,
     SYNC_INVENTORY, SYNC_IMAGE, SYNC_DEACTIVATE, SYNC_RELATION,
 )
-from ..shared.utility import field_utcnow, get_write_field_names_as_set
+from ..shared.utility import field_utcnow
 from .sync_head_access import SyncHeadAccess
 
 _UNLINK_DAYS = 100
@@ -112,10 +112,6 @@ class ProductSyncAccess(SyncHeadAccess):
         has a SKU field used by Amazon API
         """
         self._insert(amazon_product, SYNC_DELETE)
-
-    @staticmethod
-    def get_write_field_names(sync_op):
-        return get_write_field_names_as_set(sync_op)
 
     def _get_new_syncs(self, sync_type):
         search_domain = [
