@@ -76,6 +76,9 @@ class ProductOperationTransformer(object):
 
     def _transform_write(self, operation):
         # if there is a create operation, ignore write
+        # however, the sync_active change may be transformed into a
+        # create. Later, we process create first and skip any
+        # relevant write
         creation = self._check_create(operation)
         if creation:
             _logger.debug("Found a creation operation, skip all writes.")
@@ -100,7 +103,7 @@ class ProductOperationTransformer(object):
     def _transform_operation(self, operation):
         if operation[OPERATION_TYPE_FIELD] == UNLINK_RECORD:
             self._unlink_transformer.transform(operation)
-        elif self._odoo_product.is_existed(operation):
+        elif self._odoo_product.get_existed_product(operation):
             # only transform a create/write operation for an existing product
             self._transform_create_write(operation)
         else:

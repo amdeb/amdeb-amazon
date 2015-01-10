@@ -20,48 +20,47 @@ class OdooProductAccess(object):
     def __init__(self, env):
         self._env = env
 
-    def browse(self, sync_head):
+    def get_product(self, sync_head):
         model = self._env[sync_head[MODEL_NAME_FIELD]]
         record = model.browse(sync_head[RECORD_ID_FIELD])
         return record
 
-    def is_existed(self, sync_head):
-        record = self.browse(sync_head)
-        return bool(record.exists())
+    def get_existed_product(self, sync_head):
+        record = self.get_product(sync_head)
+        if not record.exists():
+            record = None
+        return record
 
     @staticmethod
-    def product_is_variant(product):
+    def is_product_variant(product):
         return product[PRODUCT_IS_PRODUCT_VARIANT_FIELD]
 
-    def is_partial_variant(self, sync_head):
-        """
-        Find if a variant is part of its template. If it is
-        a variant AND doesn't have attribute value ids, it is a
-        partial variant. Otherwise, return False.
-        A partial variant is not an independent variant that has attributes.
-        :param sync_head: a head that has model name and record id
-        :return: True if it's a partial variant, else False
-        """
+    @staticmethod
+    def is_partial_variant(product):
         result = False
-        record = self.browse(sync_head)
-        if record and OdooProductAccess.product_is_variant(record):
-            if not record[PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD]:
+        if OdooProductAccess.is_product_variant(product):
+            # a partial variant doesn't have attribute value ids
+            if not product[PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD]:
                 result = True
         return result
 
     @staticmethod
-    def has_multi_variants(product):
+    def is_multi_variant_template(product):
         result = False
-        if OdooProductAccess.product_is_variant(product):
+        if not OdooProductAccess.is_product_variant(product):
             if product[PRODUCT_VARIANT_COUNT_FIELD] > 1:
                 result = True
         return result
 
-    def is_multi_variant(self, sync_head):
+    def is_partial_variant_multi_template(self, sync_head):
+        # is this a partial variant or a multi-variant template?
         result = False
-        record = self.browse(sync_head)
-        if record:
-            result = OdooProductAccess.has_multi_variants(record)
+        product = self.get_product(sync_head)
+        if OdooProductAccess.is_partial_variant(product):
+            result = True
+        if OdooProductAccess.is_multi_variant_template(product):
+            result = True
+
         return result
 
     @staticmethod
@@ -74,8 +73,8 @@ class OdooProductAccess(object):
         return result
 
     def is_sync_active(self, sync_head):
-        product = self.browse(sync_head)
-        if self.has_multi_variants(product):
+        product = self.get_product(sync_head)
+        if self.is_multi_variant_template(product):
             # a multi-variant template is active if any
             # of its variants is active
             sync_active = self._get_template_sync_active(product)
@@ -87,8 +86,8 @@ class OdooProductAccess(object):
     def get_sku(self, sync_head):
         # for a template that has multi variants,
         # we create a customized SKU
-        product = self.browse(sync_head)
-        if self.has_multi_variants(product):
+        product = self.get_product(sync_head)
+        if self.is_multi_variant_template(product):
             sku = 'Template_' + str(sync_head[RECORD_ID_FIELD])
         else:
             sku = product[PRODUCT_DEFAULT_CODE_FIELD]

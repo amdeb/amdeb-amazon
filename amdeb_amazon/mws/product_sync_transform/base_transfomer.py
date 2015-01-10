@@ -42,7 +42,7 @@ class BaseTransformer(object):
 
     def _convert_sync(self, sync_op):
         sync_value = {'ID': sync_op.id}
-        self._product = self._odoo_product.browse(sync_op)
+        self._product = self._odoo_product.get_product(sync_op)
         sku = self._odoo_product.get_sku(sync_op)
         BaseTransformer._check_string(sync_value, 'SKU', sku)
         return sync_value

@@ -75,7 +75,7 @@ class ProductCreationSuccess(object):
                     done[MODEL_NAME_FIELD], done[RECORD_ID_FIELD]))
 
                 # make sure that the product is still there
-                if self._odoo_product.is_existed(done):
+                if self._odoo_product.get_existed_product(done):
                     # the order of the following calls matters because
                     # adding relation checks if a product is created or not
                     self._amazon_product.update_created(done)

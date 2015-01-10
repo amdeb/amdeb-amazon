@@ -89,34 +89,24 @@ class ProductWriteTransformer(object):
 
     def _transform_inventory(self, operation, values):
         # the inventory is only stored in single-variant template
-        # or non-partial variant, thus the operation has the
-        # right product SKU
+        # or non-partial variant, no need to skip any inventory update
         if PRODUCT_VIRTUAL_AVAILABLE_FIELD in values:
             values.pop(PRODUCT_VIRTUAL_AVAILABLE_FIELD)
             self._insert_sync_operation(
                 operation, self._product_sync.insert_inventory)
 
     def _transform_image(self, operation, values):
-        insert_flag = False
         # create image sync regardless the image_trigger value
         # only for non-partial variant or single-variant template
         if PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD in values:
             values.pop(PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD)
-            if ProductOperationAccess.is_product_variant(operation):
-                if self._odoo_product.is_partial_variant(operation):
-                    _logger.debug("ignore image trigger for partial variant.")
-                else:
-                    insert_flag = True
+            if self._odoo_product.is_partial_variant_multi_template(
+                    operation):
+                _logger.debug("ignore image operation for a partial variant "
+                              "or multi-variant template.")
             else:
-                if self._odoo_product.is_multi_variant(operation):
-                    _logger.debug("ignore image trigger for "
-                                  "multi-variant template.")
-                else:
-                    insert_flag = True
-
-        if insert_flag:
-            self._insert_sync_operation(
-                operation, self._product_sync.insert_image)
+                self._insert_sync_operation(
+                    operation, self._product_sync.insert_image)
 
     def _transform_update(self, operation, write_fields):
         self._transform_price(operation, write_fields)
@@ -130,26 +120,15 @@ class ProductWriteTransformer(object):
                     self._product_sync.insert_update,
                     write_fields)
             else:
-                _logger.debug("Ignore write operation for product variant.")
+                _logger.debug("Ignore write operation because it is a "
+                              "product variant.")
 
     def _transform_deactivate(self, operation):
-        insert_flag = False
-        # ignore partial variant and multi-variant template
-        if ProductOperationAccess.is_product_variant(operation):
-            if self._odoo_product.is_partial_variant(operation):
-                _logger.debug("Skip partial variant deactivate operation.")
-            else:
-                insert_flag = True
+        if self._odoo_product.is_partial_variant_multi_template(
+                operation):
+            _logger.debug("ignore deactivate operation for a partial variant "
+                          "or multi-variant template.")
         else:
-            if self._odoo_product.is_multi_variant(operation):
-                # template create sync is inserted by one of its variants
-                log_template = "Skip deactivate operation for template {} " \
-                               "that has multi-variants."
-                _logger.debug(log_template.format(operation))
-            else:
-                insert_flag = True
-
-        if insert_flag:
             self._insert_sync_operation(
                 operation, self._product_sync.insert_deactivate)
 
@@ -178,9 +157,8 @@ class ProductWriteTransformer(object):
         Update syncs are only for product template, there is no need
         to update a variant field.
 
-
-        !!! Even the sync active is True, a product Amazon creation
-        might be waiting or error.
+        !!! sync initial status could be New (default), Waiting or Error
+        a product Amazon creation might be waiting or error.
         When a new product creation is waiting, all changes
         except creation are put into waiting status.
         When the creation status is error, create a sync operation and set

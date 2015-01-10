@@ -65,9 +65,9 @@ class CreateTransformer(BaseTransformer):
         # only three creation possibilities:
         # it is a non-partial variant
         # it is a template: multi-variant or not
-        if OdooProductAccess.product_is_variant(self._product):
+        if OdooProductAccess.is_product_variant(self._product):
             # this is an independent variant
-            if self._odoo_product.is_partial_variant(sync_op):
+            if OdooProductAccess.is_partial_variant(self._product):
                 _logger.warning("wrong sync creation for partial variant.")
                 sync_value = None
             else:
@@ -77,7 +77,7 @@ class CreateTransformer(BaseTransformer):
             if not sync_value.get('Description', None):
                 self._raise_exception('Description')
 
-            if OdooProductAccess.has_multi_variants(self._product):
+            if OdooProductAccess.is_multi_variant_template(self._product):
                 sync_value['Parentage'] = 'parent'
 
         return sync_value

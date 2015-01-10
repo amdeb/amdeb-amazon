@@ -3,7 +3,6 @@
 import logging
 from ...models_access import ProductSyncAccess
 from ...models_access import OdooProductAccess
-from ...models_access import ProductOperationAccess
 from ...models_access import AmazonProductAccess
 from ...shared.model_names import (
     MODEL_NAME_FIELD, PRODUCT_TEMPLATE_TABLE,
@@ -30,9 +29,13 @@ class ProductCreateTransformer(object):
         # For non-partial variants, because its template maybe not create
         # or out-of-date, always add a template creation.
         # The correct approach to create variants is to create them
-        # from a template in a single batch.
-        if ProductOperationAccess.is_product_variant(operation):
-            if self._odoo_product.is_partial_variant(operation):
+        # from a template in a single batch in Odoo
+
+        # because we always insert a create for template, we can
+        # skip update syncs in the same sync batch.
+        product = self._odoo_product.get_product(operation)
+        if OdooProductAccess.is_product_variant(product):
+            if OdooProductAccess.is_partial_variant(product):
                 _logger.debug("Skip partial variant creation operation.")
             else:
                 self._product_sync.insert_create(operation)
@@ -51,10 +54,10 @@ class ProductCreateTransformer(object):
                                   "for this non-partial variant.")
                     self._amazon_product.upsert_creation(template_head)
         else:
-            if self._odoo_product.is_multi_variant(operation):
+            if OdooProductAccess.is_multi_variant_template(product):
                 # template create sync is inserted by one of its variants
-                _logger.debug("Skip creation operation for "
-                              "multi-variant template.")
+                _logger.debug("Skip creation operation for multi-variant "
+                              "template that is created with its variants.")
             else:
                 self._product_sync.insert_create(operation)
                 self._amazon_product.upsert_creation(operation)
