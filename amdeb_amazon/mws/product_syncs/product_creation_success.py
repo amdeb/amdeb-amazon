@@ -8,7 +8,9 @@ from ...shared.model_names import (
     SYNC_STATUS_FIELD, SYNC_TYPE_FIELD, TEMPLATE_ID_FIELD,
 )
 from ...shared.sync_status import SYNC_STATUS_WARNING, SYNC_STATUS_SUCCESS
-from ...shared.sync_operation_types import SYNC_CREATE
+from ...shared.sync_operation_types import (
+    SYNC_CREATE, SYNC_RELATION,
+)
 
 from ...models_access import ProductSyncAccess
 from ...models_access import AmazonProductAccess
@@ -41,9 +43,11 @@ class ProductCreationSuccess(object):
             template_head = {
                 MODEL_NAME_FIELD: PRODUCT_TEMPLATE_TABLE,
                 RECORD_ID_FIELD: completed[TEMPLATE_ID_FIELD],
+                TEMPLATE_ID_FIELD: completed[TEMPLATE_ID_FIELD]
             }
             if self._amazon_product.is_created_by_head(template_head):
-                self._product_sync.insert_relation(completed)
+                self._product_sync.insert_sync_if_new(
+                    completed, SYNC_RELATION)
                 self._is_new_sync_added = True
             else:
                 log_template = "Product template is not created for a " \
@@ -54,8 +58,9 @@ class ProductCreationSuccess(object):
         else:
             template_id = completed[RECORD_ID_FIELD]
             created_variants = self._amazon_product.get_variants(template_id)
-            for variant in created_variants:
-                self._product_sync.insert_relation(variant)
+            if created_variants:
+                self._product_sync.insert_sync_if_new(
+                    completed, SYNC_RELATION)
                 self._is_new_sync_added = True
 
     def process(self, done_set):

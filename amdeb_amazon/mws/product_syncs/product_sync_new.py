@@ -8,7 +8,8 @@ from ...shared.model_names import (
 )
 from ...shared.sync_operation_types import (
     SYNC_DELETE, SYNC_CREATE, SYNC_DEACTIVATE,
-    SYNC_PRICE, SYNC_UPDATE, SYNC_INVENTORY, SYNC_IMAGE,
+    SYNC_PRICE, SYNC_UPDATE, SYNC_INVENTORY,
+    SYNC_IMAGE, SYNC_RELATION,
 )
 from ...shared.sync_status import SYNC_STATUS_PENDING
 from ...models_access import ProductSyncAccess
@@ -18,6 +19,7 @@ from ..product_sync_transform import PriceTransformer
 from ..product_sync_transform import InventoryTransformer
 from ..product_sync_transform import CreateTransformer
 from ..product_sync_transform import DeactivateTransformer
+from ..product_sync_transform import RelationTransformer
 
 _logger = logging.getLogger(__name__)
 
@@ -29,20 +31,22 @@ class ProductSyncNew(object):
     the sync table record id as the message id
     """
     def _create_sync_types(self):
-        delete_sync = (SYNC_DELETE, BaseTransformer, self._msw.send_delete)
+        delete_sync = (SYNC_DELETE, BaseTransformer, self._mws.send_delete)
         create_sync = (SYNC_CREATE, CreateTransformer, self._mws.send_product)
+        # relation syncs are post-creation work, do it early.
+        relation_sync = (SYNC_RELATION, RelationTransformer,
+                         self._mws.send_relation)
         deactivate_sync = (SYNC_DEACTIVATE, DeactivateTransformer,
-                          self._mws.send_inventory)
+                           self._mws.send_inventory)
         update_sync = (SYNC_UPDATE, UpdateTransformer, self._mws.send_product)
-        price_sync = (SYNC_PRICE,PriceTransformer, self._mws.send_price)
+        price_sync = (SYNC_PRICE, PriceTransformer, self._mws.send_price)
         inventory_sync = (SYNC_INVENTORY, InventoryTransformer,
                           self._mws.send_inventory)
         image_sync = (SYNC_IMAGE, BaseTransformer, self._mws.send_image)
-
         # the order matters because delete and create override other syncs
         self._sync_type_tuples = [
-            delete_sync, create_sync, deactivate_sync,
-            update_sync, price_sync,
+            delete_sync, create_sync, relation_sync,
+            deactivate_sync, update_sync, price_sync,
             inventory_sync, image_sync,
         ]
 

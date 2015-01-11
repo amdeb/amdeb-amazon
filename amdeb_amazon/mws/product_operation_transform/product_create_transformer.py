@@ -8,7 +8,7 @@ from ...shared.model_names import (
     MODEL_NAME_FIELD, PRODUCT_TEMPLATE_TABLE,
     TEMPLATE_ID_FIELD, RECORD_ID_FIELD,
 )
-
+from ...shared.sync_operation_types import SYNC_CREATE
 
 _logger = logging.getLogger(__name__)
 
@@ -47,8 +47,8 @@ class ProductCreateTransformer(object):
                 }
                 # we don't check whether the template is created in Amazon
                 # or not. Usually all variants are created in a batch.
-                is_inserted = self._product_sync.insert_create_if_new(
-                    template_head)
+                is_inserted = self._product_sync.insert_sync_if_new(
+                    template_head, SYNC_CREATE)
                 if is_inserted:
                     _logger.debug("A template creation sync is inserted "
                                   "for this non-partial variant.")

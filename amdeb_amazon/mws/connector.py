@@ -104,6 +104,10 @@ class Boto(object):
         return self._send('_POST_PRODUCT_IMAGE_DATA_',
                           'product_image.jj2', values)
 
+    def send_relation(self, values):
+        return self._send('_POST_PRODUCT_RELATIONSHIP_DATA_ ',
+                          'product_relation.jj2', values)
+
     def check_sync_status(self, submission_id_list):
         sync_status = {}
 

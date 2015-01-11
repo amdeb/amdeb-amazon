@@ -1,0 +1,20 @@
+{% extends "amazon_envelope.jj2" %}
+
+{% block product_feed %}
+    <MessageType>Relationship</MessageType>
+    {% for message in FeedMessages %}
+    <Message>
+        <MessageID>{{ message['ID'] }}</MessageID>
+        <OperationType>Update</OperationType>
+        <Relationship>
+            <ParentSKU>{{ message['ParentSKU'] }}</ParentSKU>
+            {% for variant in message['Variants'] %}
+            <Relation>
+                <SKU>{{ variant }}</SKU>
+                <Type>Variation</Type>
+            </Relation>
+            {% endfor %}
+        </Relationship>
+    </Message>
+    {% endfor %}
+{% endblock %}

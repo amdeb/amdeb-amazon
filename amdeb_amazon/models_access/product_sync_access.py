@@ -65,11 +65,9 @@ class ProductSyncAccess(SyncHeadAccess):
             values.get(AMAZON_MESSAGE_CODE_FIELD, None),
         ))
 
-    def _insert(self, sync_head, sync_type,
-                write_field_names=None,
-                product_sku=None,
-                waiting_flag=None,
-                error_flag=None):
+    def _insert_sync(self, sync_head, sync_type,
+                     write_field_names=None, product_sku=None,
+                     waiting_flag=None, error_flag=None):
         """
         Insert a new sync operation record.
         """
@@ -99,70 +97,76 @@ class ProductSyncAccess(SyncHeadAccess):
         # We know that there is no duplicated create/delete syncs.
         self._table.create(values)
 
-    def insert_create_if_new(self, sync_head):
+    def insert_sync_if_new(self, sync_head, sync_type):
         # this is called when a non-partial variant adds
         # its template
         is_inserted = False
+        model_name = sync_head[MODEL_NAME_FIELD]
+        record_id = sync_head[RECORD_ID_FIELD]
+        log_template = "About to insert sync {0}:{1} with type {2}."
+        _logger.debug(log_template.format(model_name, record_id, sync_type))
         search_domain = [
-            (MODEL_NAME_FIELD, '=', sync_head[MODEL_NAME_FIELD]),
-            (RECORD_ID_FIELD, '=', sync_head[RECORD_ID_FIELD]),
+            (MODEL_NAME_FIELD, '=', model_name),
+            (RECORD_ID_FIELD, '=', record_id),
             (SYNC_STATUS_FIELD, '=', SYNC_STATUS_NEW),
-            (SYNC_TYPE_FIELD, '=', SYNC_CREATE),
+            (SYNC_TYPE_FIELD, '=', sync_type),
         ]
         records = self._table.search(search_domain)
         if records:
-            log_template = "Create sync exists for template. Skip it."
-            _logger.debug(log_template.format(sync_head))
+            _logger("Sync record exists, skip insert.")
         else:
-            self.insert_create(sync_head)
+            self._insert_sync(sync_head, SYNC_CREATE)
             is_inserted = True
 
         return is_inserted
 
+    # define method for each sync type because
+    # 1) they have different parameters and extra steps
+    # 2) the type-specific method is used in refactor operation transformation
     def insert_create(self, sync_head):
-        self._insert(sync_head, SYNC_CREATE)
+        self._insert_sync(sync_head, SYNC_CREATE)
 
     def insert_price(self, sync_head, waiting_flag=None, error_flag=None):
-        self._insert(sync_head, SYNC_PRICE,
-                     waiting_flag=waiting_flag,
-                     error_flag=error_flag)
+        self._insert_sync(
+            sync_head, SYNC_PRICE, waiting_flag=waiting_flag,
+            error_flag=error_flag)
 
     def insert_inventory(self, sync_head, waiting_flag=None, error_flag=None):
-        self._insert(sync_head, SYNC_INVENTORY,
-                     waiting_flag=waiting_flag,
-                     error_flag=error_flag)
+        self._insert_sync(
+            sync_head, SYNC_INVENTORY, waiting_flag=waiting_flag,
+            error_flag=error_flag)
 
     def insert_image(self, sync_head, waiting_flag=None, error_flag=None):
-        self._insert(sync_head, SYNC_IMAGE,
-                     waiting_flag=waiting_flag,
-                     error_flag=error_flag)
+        self._insert_sync(
+            sync_head, SYNC_IMAGE, waiting_flag=waiting_flag,
+            error_flag=error_flag)
 
     def insert_update(self, sync_head, write_field_names,
                       waiting_flag=None, error_flag=None):
-        self._insert(sync_head, SYNC_UPDATE,
-                     write_field_names=write_field_names,
-                     waiting_flag=waiting_flag,
-                     error_flag=error_flag)
+        self._insert_sync(
+            sync_head, SYNC_UPDATE, write_field_names=write_field_names,
+            waiting_flag=waiting_flag, error_flag=error_flag)
 
     def insert_deactivate(self, sync_head,
                           waiting_flag=None, error_flag=None):
-        self._insert(sync_head, SYNC_DEACTIVATE,
-                     waiting_flag=waiting_flag,
-                     error_flag=error_flag)
+        self._insert_sync(
+            sync_head, SYNC_DEACTIVATE, waiting_flag=waiting_flag,
+            error_flag=error_flag)
 
     def insert_relation(self, sync_head):
         """
         Create sync relation for a product variant
         """
-        self._insert(sync_head, SYNC_RELATION)
+        self._insert_sync(sync_head, SYNC_RELATION)
 
     def insert_delete(self, amazon_product):
         """
         Insert a delete sync for an amazon product object that
         has a SKU field used by Amazon API
         """
-        self._insert(amazon_product, SYNC_DELETE,
-                     product_sku=amazon_product[PRODUCT_SKU_FIELD])
+        self._insert_sync(
+            amazon_product, SYNC_DELETE,
+            product_sku=amazon_product[PRODUCT_SKU_FIELD])
 
     def get_new_syncs(self, sync_type):
         search_domain = [

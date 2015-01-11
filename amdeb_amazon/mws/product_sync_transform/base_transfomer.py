@@ -1,7 +1,9 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from ...models_access import OdooProductAccess, ProductSyncAccess
+from ...models_access import (
+    OdooProductAccess, ProductSyncAccess, AmazonProductAccess
+)
 from ...shared.model_names import (
     MODEL_NAME_FIELD, RECORD_ID_FIELD,
     SYNC_TYPE_FIELD,
@@ -18,6 +20,7 @@ class BaseTransformer(object):
     def __init__(self, env):
         self._odoo_product = OdooProductAccess(env)
         self._product_sync = ProductSyncAccess(env)
+        self._amazon_product = AmazonProductAccess(env)
         self._product = None
 
     @staticmethod
