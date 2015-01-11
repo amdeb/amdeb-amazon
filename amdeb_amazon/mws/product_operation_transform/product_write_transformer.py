@@ -37,7 +37,7 @@ class ProductWriteTransformer(object):
 
     def _insert_sync_operation(self, operation, insert_method,
                                write_field_names=None):
-        amazon_product = self._amazon_product.get_by_head(operation)
+        amazon_product = self._amazon_product.search_by_head(operation)
         if amazon_product:
             waiting_flag, error_flag = self._get_creation_status(
                 amazon_product)

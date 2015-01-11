@@ -120,7 +120,10 @@ class ProductOperationTransformer(object):
         are skipped !!!
         2. add create directly, ignore write if there is a create
         3. merge all writes into one then break it into different
-        sync operations such as update, price, inventory and image
+        sync operations such as update, price, inventory and image.
+
+        Because we check sync_active flag before transform create,
+        changing sync_active to False after product creation is not an issue.
         """
         _logger.debug("Enter ProductOperationTransformer transform().")
         for operation in self._new_operations:

@@ -164,27 +164,12 @@ class ProductSyncAccess(SyncHeadAccess):
         self._insert(amazon_product, SYNC_DELETE,
                      product_sku=amazon_product[PRODUCT_SKU_FIELD])
 
-    def _get_new_syncs(self, sync_type):
+    def get_new_syncs(self, sync_type):
         search_domain = [
             (SYNC_STATUS_FIELD, '=', SYNC_STATUS_NEW),
             (SYNC_TYPE_FIELD, '=', sync_type)
         ]
         return self._table.search(search_domain)
-
-    def get_new_creates(self):
-        return self._get_new_syncs(SYNC_CREATE)
-
-    def get_new_updates(self):
-        return self._get_new_syncs(SYNC_UPDATE)
-
-    def get_new_prices(self):
-        return self._get_new_syncs(SYNC_PRICE)
-
-    def get_new_inventories(self):
-        return self._get_new_syncs(SYNC_INVENTORY)
-
-    def get_new_images(self):
-        return self._get_new_syncs(SYNC_IMAGE)
 
     def get_pending(self):
         # get pending in the ascending id order to

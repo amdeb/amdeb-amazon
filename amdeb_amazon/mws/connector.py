@@ -89,16 +89,20 @@ class Boto(object):
     def send_product(self, values):
         return self._send('_POST_PRODUCT_DATA_', 'product.jj2', values)
 
+    def send_delete(self, values):
+        return self._send('_POST_PRODUCT_DATA_', 'product_delete', values)
+
     def send_price(self, values):
-        return self._send('_POST_PRODUCT_PRICING_DATA_', 'price.jj2', values)
+        return self._send('_POST_PRODUCT_PRICING_DATA_',
+                          'product_price.jj2', values)
 
     def send_inventory(self, values):
         return self._send('_POST_INVENTORY_AVAILABILITY_DATA_',
-                          'inventory.jj2', values)
+                          'product_inventory.jj2', values)
 
     def send_image(self, values):
         return self._send('_POST_PRODUCT_IMAGE_DATA_',
-                          'image_transformer.jj2', values)
+                          'product_image.jj2', values)
 
     def check_sync_status(self, submission_id_list):
         sync_status = {}

@@ -1,0 +1,17 @@
+{% extends "amazon_envelope.jj2" %}
+
+{% block product_feed %}
+    <MessageType>Product</MessageType>
+    <PurgeAndReplace>false</PurgeAndReplace>
+
+    {% for message in FeedMessages %}
+    {% import 'product_macro.jj2' as macros with context %}
+    <Message>
+        <MessageID>{{ message['ID'] }}</MessageID>
+        <OperationType>Delete</OperationType>
+        <Product>
+            <SKU>{{ message['SKU'] }}</SKU>
+        </Product>
+    </Message>
+    {% endfor %}
+{% endblock %}

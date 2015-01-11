@@ -5,3 +5,4 @@ from .update_transformer import UpdateTransformer
 from .price_transfom import PriceTransformer
 from .inventory_transformer import InventoryTransformer
 from .create_transform import CreateTransformer
+from .deactivate_transformer import DeactivateTransformer

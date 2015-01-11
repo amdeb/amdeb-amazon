@@ -25,7 +25,7 @@ class AmazonProductAccess(SyncHeadAccess):
         self._table = env[AMAZON_PRODUCT_TABLE]
         self._odoo_product = OdooProductAccess(env)
 
-    def get_by_head(self, sync_head):
+    def search_by_head(self, sync_head):
         model_name = sync_head[MODEL_NAME_FIELD]
         record_id = sync_head[RECORD_ID_FIELD]
         search_domain = [
@@ -36,7 +36,7 @@ class AmazonProductAccess(SyncHeadAccess):
         return amazon_product
 
     def get_creation_status(self, sync_head):
-        amazon_product = self.get_by_head(sync_head)
+        amazon_product = self.search_by_head(sync_head)
         status = amazon_product[AMAZON_CREATION_STATUS_FIELD]
         return status
 
@@ -91,7 +91,7 @@ class AmazonProductAccess(SyncHeadAccess):
         return variants
 
     def upsert_creation(self, product_operation):
-        amazon_product = self.get_by_head(product_operation)
+        amazon_product = self.search_by_head(product_operation)
         if amazon_product:
             if AmazonProductAccess.is_created(amazon_product):
                 # once in created status, never change it.
@@ -113,7 +113,7 @@ class AmazonProductAccess(SyncHeadAccess):
 
     def _update_creation_status(self, sync_head, creation_status):
         # insert a new record if it doesn't exist
-        amazon_product = self.get_by_head(sync_head)
+        amazon_product = self.search_by_head(sync_head)
         if amazon_product:
             # once in created status, never change it.
             if AmazonProductAccess.is_created(amazon_product):

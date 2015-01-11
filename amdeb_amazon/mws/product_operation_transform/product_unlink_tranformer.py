@@ -65,7 +65,7 @@ class ProductUnlinkTransformer(object):
         We also delete unlinked records in amazon_product table
         after the unlink syncs are created
         """
-        amazon_product = self._amazon_product.get_by_head(operation)
+        amazon_product = self._amazon_product.search_by_head(operation)
         if AmazonProductAccess.is_waiting_or_created(amazon_product):
             # for a waiting or created product, just send delete request
             if ProductOperationAccess.is_product_template(operation):
