@@ -3,7 +3,7 @@
 from datetime import date
 import logging
 
-from ...models_access import ProductSyncAccess
+from ...models_access import ProductSyncChore
 
 _last_chore_date = None
 _logger = logging.getLogger(__name__)
@@ -11,7 +11,7 @@ _logger = logging.getLogger(__name__)
 
 def _do_it(env):
     try:
-        product_sync = ProductSyncAccess(env)
+        product_sync = ProductSyncChore(env)
         product_sync.cleanup()
         product_sync.archive_old()
     except Exception:

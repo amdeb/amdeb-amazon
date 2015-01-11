@@ -1,14 +1,11 @@
 # -*- coding: utf-8 -*-
 
-from datetime import datetime, timedelta
 import logging
-
-from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT as DATETIME_FORMAT
 
 from ..shared.model_names import (
     MODEL_NAME_FIELD, RECORD_ID_FIELD, TEMPLATE_ID_FIELD,
-    AMAZON_PRODUCT_SYNC_TABLE, SYNC_TYPE_FIELD, WRITE_FIELD_NAMES_FIELD,
-    PRODUCT_CREATE_DATE_FIELD, SYNC_STATUS_FIELD,
+    AMAZON_PRODUCT_SYNC_TABLE, SYNC_TYPE_FIELD,
+    WRITE_FIELD_NAMES_FIELD, SYNC_STATUS_FIELD,
     SYNC_CHECK_STATUS_COUNT_FILED, AMAZON_MESSAGE_CODE_FIELD,
     AMAZON_RESULT_DESCRIPTION_FIELD, AMAZON_REQUEST_TIMESTAMP_FIELD,
     FIELD_NAME_DELIMITER, PRODUCT_SKU_FIELD,
@@ -25,13 +22,6 @@ from ..shared.sync_operation_types import (
 from ..shared.utility import field_utcnow
 from .sync_head_access import SyncHeadAccess
 
-_UNLINK_DAYS = 100
-_ARCHIVE_DAYS = 5
-_ARCHIVE_CHECK_COUNT = 100
-_ARCHIVE_CODE = "Timeout"
-_ARCHIVE_MESSAGE = "Pending more than {0} days and {1} checks".format(
-    _ARCHIVE_DAYS, _ARCHIVE_CHECK_COUNT
-)
 _CREATION_ERROR_CODE = "Amazon Product Creation Error."
 _REDUNDANT_SKIP_CODE = "Redundant Or Merged Operation."
 _PRODUCT_NOT_FOUND_CODE = "Product Not Found Or Sync Disabled."
@@ -283,40 +273,3 @@ class ProductSyncAccess(SyncHeadAccess):
             records.write({SYNC_STATUS_FIELD: SYNC_STATUS_NEW})
             log_template = "Change {} waiting syncs to new status."
             _logger.debug(log_template.format(len(records)))
-
-    def archive_old(self):
-        _logger.debug("Enter ProductSyncAccess archive_old()")
-        now = datetime.utcnow()
-        archive_date = now - timedelta(days=_ARCHIVE_DAYS)
-        archive_date_str = archive_date.strftime(DATETIME_FORMAT)
-        archive_records = self._table.search([
-            (PRODUCT_CREATE_DATE_FIELD, '<', archive_date_str),
-            (SYNC_STATUS_FIELD, '=', SYNC_STATUS_PENDING),
-            (SYNC_CHECK_STATUS_COUNT_FILED, '>=', _ARCHIVE_CHECK_COUNT)
-        ])
-        if archive_records:
-            archive_status = {
-                SYNC_STATUS_FIELD: SYNC_STATUS_ERROR,
-                AMAZON_MESSAGE_CODE_FIELD: _ARCHIVE_CODE,
-                AMAZON_RESULT_DESCRIPTION_FIELD: _ARCHIVE_MESSAGE
-            }
-            archive_records.write(archive_status)
-        count = len(archive_records)
-        _logger.debug("Archived {} timeout amazon sync records".format(
-            count
-        ))
-
-    def cleanup(self):
-        _logger.debug("Enter ProductSyncAccess cleanup()")
-        now = datetime.utcnow()
-        unlink_date = now - timedelta(days=_UNLINK_DAYS)
-        unlink_date_str = unlink_date.strftime(DATETIME_FORMAT)
-        unlink_records = self._table.search([
-            (PRODUCT_CREATE_DATE_FIELD, '<', unlink_date_str)
-        ])
-        count = len(unlink_records)
-        if unlink_records:
-            unlink_records.unlink()
-
-        log_template = "Cleaned {} ancient amazon sync records."
-        _logger.debug(log_template.format(count))
