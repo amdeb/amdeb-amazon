@@ -4,7 +4,9 @@ import logging
 from ...models_access import OdooProductAccess, ProductSyncAccess
 from ...shared.model_names import (
     MODEL_NAME_FIELD, RECORD_ID_FIELD,
+    SYNC_TYPE_FIELD,
 )
+from ...shared.sync_operation_types import SYNC_DELETE
 
 _logger = logging.getLogger(__name__)
 
@@ -52,7 +54,8 @@ class BaseTransformer(object):
 
     def _merge_others(self, sync_op, sync_ops):
         """
-        This is implemented in update transformer to merge syncs
+        This is stub that to be implement in a child class if
+        it needs to do other work
         """
         pass
 
@@ -78,21 +81,31 @@ class BaseTransformer(object):
         """
         To be called and extended in subclass to convert more fields
         """
-        self._product = self._odoo_product.get_product(sync_op)
         sync_value = {'ID': sync_op.id}
         sku = self._odoo_product.get_sku(sync_op)
         BaseTransformer._check_string(sync_value, 'SKU', sku)
         return sync_value
 
     def _transform_op(self, sync_op, invalid_ops, sync_values):
-        sync_value = self._convert_sync(sync_op)
-        if sync_value:
-            sync_values.append(sync_value)
-        else:
-            log_template = "Sync id {0} has empty sync value. Skip it "
-            _logger.debug(log_template.format(sync_op.id))
-            self._product_sync.update_sync_new_empty_value(sync_op)
-            invalid_ops.append(sync_op)
+        self._product = self._odoo_product.get_existed_product(sync_op)
+
+        # for all but delete, we want to make sure the product
+        # is not unlinked because of waiting syncs
+        if sync_op[SYNC_TYPE_FIELD] != SYNC_DELETE:
+            if self._processed_sync:
+                sync_value = self._convert_sync(sync_op)
+                if sync_value:
+                    sync_values.append(sync_value)
+                else:
+                    log_template = "Sync id {0} has empty value. Skip it."
+                    _logger.debug(log_template.format(sync_op.id))
+                    ProductSyncAccess.update_sync_new_empty_value(sync_op)
+                    invalid_ops.append(sync_op)
+            else:
+                log_template = "Product not found for sync id {0}. Skip it."
+                _logger.debug(log_template.format(sync_op.id))
+                ProductSyncAccess.set_sync_no_product(sync_op)
+                invalid_ops.append(sync_op)
 
     def transform(self, sync_ops):
         # we change sync_ops record set because making a copy
@@ -109,7 +122,7 @@ class BaseTransformer(object):
                                "Exception: {1}."
                 _logger.debug(log_template.format(sync_op.id, ex.message))
 
-                self._product_sync.update_sync_new_exception(sync_op, ex)
+                ProductSyncAccess.update_sync_new_exception(sync_op, ex)
                 invalid_ops.append(sync_op)
 
         sync_ops = BaseTransformer._remove_syncs(sync_ops, invalid_ops)

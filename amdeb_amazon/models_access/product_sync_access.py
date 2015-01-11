@@ -32,8 +32,9 @@ _ARCHIVE_CODE = "Timeout"
 _ARCHIVE_MESSAGE = "Pending more than {0} days and {1} checks".format(
     _ARCHIVE_DAYS, _ARCHIVE_CHECK_COUNT
 )
-_CREATION_ERROR_CODE = "Amazon Product Creation Error"
+_CREATION_ERROR_CODE = "Amazon Product Creation Error."
 _REDUNDANT_SKIP_CODE = "Redundant Or Merged Operation."
+_PRODUCT_NOT_FOUND_CODE = "Product Not Found."
 
 _logger = logging.getLogger(__name__)
 
@@ -203,13 +204,23 @@ class ProductSyncAccess(SyncHeadAccess):
         records.write(sync_status)
 
     @staticmethod
-    def set_sync_redundant(records):
+    def set_sync_success_code(records, message_code):
         sync_status = {
             SYNC_STATUS_FIELD: SYNC_STATUS_SUCCESS,
             AMAZON_REQUEST_TIMESTAMP_FIELD: field_utcnow(),
-            AMAZON_MESSAGE_CODE_FIELD: _REDUNDANT_SKIP_CODE
+            AMAZON_MESSAGE_CODE_FIELD: message_code
         }
         ProductSyncAccess.update_sync_status(records, sync_status)
+
+    @staticmethod
+    def set_sync_redundant(records):
+        ProductSyncAccess.set_sync_success_code(
+            records, _REDUNDANT_SKIP_CODE)
+
+    @staticmethod
+    def set_sync_no_product(records):
+        ProductSyncAccess.set_sync_success_code(
+            records, _PRODUCT_NOT_FOUND_CODE)
 
     def find_set_redundant(self, sync_op):
         model_name = sync_op[MODEL_NAME_FIELD]

@@ -65,12 +65,12 @@ class ProductSyncNew(object):
         try:
             results = mws_send(sync_values)
             sync_result = self._convert_results(results)
-            self._product_sync.update_sync_status(syncs, sync_result)
+            ProductSyncAccess.update_sync_status(syncs, sync_result)
         except Exception as ex:
             # we may want to re-try for recoverable exceptions
             # for now, just report error
             _logger.exception("mws send() threw exception.")
-            self._product_sync.update_sync_new_exception(syncs, ex)
+            ProductSyncAccess.update_sync_new_exception(syncs, ex)
 
     def synchronize(self):
         _logger.debug("Enter ProductSyncNew synchronize().")
