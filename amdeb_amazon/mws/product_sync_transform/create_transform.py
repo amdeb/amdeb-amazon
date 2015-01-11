@@ -69,7 +69,7 @@ class CreateTransformer(BaseTransformer):
             sync_value['Parentage'] = 'child'
             sync_value = self._convert_variation(sync_value)
         else:
-            if not 'Description' in sync_value:
+            if 'Description' not in sync_value:
                 self._raise_exception('Description')
 
             if OdooProductAccess.is_multi_variant_template(self._product):
