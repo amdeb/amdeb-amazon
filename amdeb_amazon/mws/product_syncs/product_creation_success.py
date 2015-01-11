@@ -25,13 +25,10 @@ class ProductCreationSuccess(object):
         self._is_new_sync_added = False
 
     def _add_success_syncs(self, completed):
-        self._product_sync.insert_price(completed)
-        self._product_sync.insert_inventory(completed)
-        self._product_sync.insert_image(completed)
-
-    def _write_creation_success(self, completed):
         if self._odoo_product.is_sync_active(completed):
-            self._add_success_syncs(completed)
+            self._product_sync.insert_price(completed)
+            self._product_sync.insert_inventory(completed)
+            self._product_sync.insert_image(completed)
             self._is_new_sync_added = True
 
     def _add_relation_sync(self, completed):
@@ -63,25 +60,29 @@ class ProductCreationSuccess(object):
 
     def process(self, done_set):
         for done in done_set:
-            # for warning and success, set success flag
+            if not self._odoo_product.get_existed_product(done):
+                _logger.debug("Skip creation success for unlinked product.")
+                continue
+
             done_status = done[SYNC_STATUS_FIELD]
+            log_template = "Post creation process for product Model: {0}, " \
+                           "Record Id: {1}, sync status: {2}."
+            _logger.debug(log_template.format(
+                done[MODEL_NAME_FIELD], done[RECORD_ID_FIELD], done_status))
+            # for warning and success, set success flag
             is_success = (done_status == SYNC_STATUS_SUCCESS or
                           done_status == SYNC_STATUS_WARNING)
             is_sync_create = done[SYNC_TYPE_FIELD] == SYNC_CREATE
             if is_sync_create and is_success:
-                log_template = "Post process creation success for " \
-                               "product Model: {0}, Record Id: {1}."
-                _logger.debug(log_template.format(
-                    done[MODEL_NAME_FIELD], done[RECORD_ID_FIELD]))
+                # the order of the following calls matters because
+                # adding relation checks if a product is created or not
+                self._amazon_product.update_created(done)
 
-                # make sure that the product is still there
-                if self._odoo_product.get_existed_product(done):
-                    # the order of the following calls matters because
-                    # adding relation checks if a product is created or not
-                    self._amazon_product.update_created(done)
-                    self._write_creation_success(done)
-                    self._add_relation_sync(done)
-                else:
-                    _logger.debug("Skip creation success for "
-                                  "unlinked product.")
+                # old syncs first
+                self._product_sync.update_waiting_to_new(done)
+                self._add_success_syncs(done)
+                self._add_relation_sync(done)
+            elif is_sync_create:
+                self._amazon_product.update_error(done)
+
         return self._is_new_sync_added

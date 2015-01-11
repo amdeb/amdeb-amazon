@@ -72,8 +72,7 @@ class OdooProductAccess(object):
                 break
         return result
 
-    def is_sync_active(self, sync_head):
-        product = self.get_product(sync_head)
+    def is_sync_active_product(self, product):
         if self.is_multi_variant_template(product):
             # a multi-variant template is active if any
             # of its variants is active
@@ -82,6 +81,10 @@ class OdooProductAccess(object):
             # all other cases, use the field directly
             sync_active = product[AMAZON_SYNC_ACTIVE_FIELD]
         return sync_active
+
+    def is_sync_active(self, sync_head):
+        product = self.get_product(sync_head)
+        return self.is_sync_active_product(product)
 
     def get_sku(self, sync_head):
         # for a template that has multi variants,

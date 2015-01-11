@@ -34,7 +34,7 @@ _ARCHIVE_MESSAGE = "Pending more than {0} days and {1} checks".format(
 )
 _CREATION_ERROR_CODE = "Amazon Product Creation Error."
 _REDUNDANT_SKIP_CODE = "Redundant Or Merged Operation."
-_PRODUCT_NOT_FOUND_CODE = "Product Not Found."
+_PRODUCT_NOT_FOUND_CODE = "Product Not Found Or Sync Disabled."
 
 _logger = logging.getLogger(__name__)
 
@@ -282,6 +282,18 @@ class ProductSyncAccess(SyncHeadAccess):
             AMAZON_RESULT_DESCRIPTION_FIELD: ex.message,
         }
         ProductSyncAccess.update_record(record, sync_status)
+
+    def update_waiting_to_new(self, sync_op):
+        search_domain = [
+            (MODEL_NAME_FIELD, '=', sync_op[MODEL_NAME_FIELD]),
+            (RECORD_ID_FIELD, '=', sync_op[RECORD_ID_FIELD]),
+            (SYNC_STATUS_FIELD, '=', SYNC_STATUS_WAITING),
+        ]
+        records = self._table.search(search_domain)
+        if records:
+            records.write({SYNC_STATUS_FIELD: SYNC_STATUS_NEW})
+            log_template = "Change {} waiting syncs to new status."
+            _logger.debug(log_template.format(len(records)))
 
     def archive_old(self):
         _logger.debug("Enter ProductSyncAccess archive_old()")

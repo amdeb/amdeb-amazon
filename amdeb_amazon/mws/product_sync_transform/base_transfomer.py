@@ -19,7 +19,6 @@ class BaseTransformer(object):
         self._odoo_product = OdooProductAccess(env)
         self._product_sync = ProductSyncAccess(env)
         self._product = None
-        self._processed_sync = set()
 
     @staticmethod
     def _raise_exception(field_name):
@@ -92,7 +91,8 @@ class BaseTransformer(object):
         # for all but delete, we want to make sure the product
         # is not unlinked because of waiting syncs
         if sync_op[SYNC_TYPE_FIELD] != SYNC_DELETE:
-            if self._processed_sync:
+            if self._product and self._odoo_product.is_sync_active_product(
+                    self._product):
                 sync_value = self._convert_sync(sync_op)
                 if sync_value:
                     sync_values.append(sync_value)
@@ -102,7 +102,8 @@ class BaseTransformer(object):
                     ProductSyncAccess.update_sync_new_empty_value(sync_op)
                     invalid_ops.append(sync_op)
             else:
-                log_template = "Product not found for sync id {0}. Skip it."
+                log_template = "Product not found or sync disabled " \
+                               "for sync id {0}. Skip it."
                 _logger.debug(log_template.format(sync_op.id))
                 ProductSyncAccess.set_sync_no_product(sync_op)
                 invalid_ops.append(sync_op)
