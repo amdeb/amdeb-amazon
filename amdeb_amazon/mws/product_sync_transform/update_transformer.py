@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
+import logging
 from ...shared.model_names import (
+    MODEL_NAME_FIELD, RECORD_ID_FIELD,
+    WRITE_FIELD_NAMES_FIELD,
     PRODUCT_NAME_FIELD,
     PRODUCT_DESCRIPTION_SALE_FIELD,
     PRODUCT_AMAZON_DESCRIPTION_FIELD,
@@ -11,6 +14,8 @@ from ...shared.model_names import (
 from .base_transfomer import BaseTransformer
 from ...models_access import OdooProductAccess
 from ...models_access import ProductSyncAccess
+
+_logger = logging.getLogger(__name__)
 
 
 class UpdateTransformer(BaseTransformer):
@@ -75,3 +80,30 @@ class UpdateTransformer(BaseTransformer):
             sync_value = None
 
         return sync_value
+
+    def _merge_others(self, sync_op, sync_ops):
+        """
+        Override the parent method to merge write field names
+        """
+        _logger("About to merge other update syncs.")
+        merged_fields = sync_op[WRITE_FIELD_NAMES_FIELD]
+        _logger("initial write fields: {}.".format(merged_fields))
+        other_writes = [
+            record for record in sync_ops if
+            record[MODEL_NAME_FIELD] == sync_op[MODEL_NAME_FIELD] and
+            record[RECORD_ID_FIELD] == sync_op[RECORD_ID_FIELD] and
+            record.id != sync_op.id
+        ]
+
+        is_merged = False
+        for other_write in other_writes:
+            other_values = ProductSyncAccess.get_write_field_names(
+                other_write)
+            merged_fields = merged_fields.union(other_values)
+            _logger.debug("Merged write fields: {}".format(merged_fields))
+            is_merged = True
+
+        if is_merged:
+            sync_op[WRITE_FIELD_NAMES_FIELD] = merged_fields
+        else:
+            _logger.debug("No other update syncs to merge.")

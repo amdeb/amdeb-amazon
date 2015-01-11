@@ -55,9 +55,12 @@ class CreateTransformer(BaseTransformer):
             sync_value = None
         return sync_value
 
-    # check the required field
-    # create a pseudo-sku for multi-variant template
     def _convert_sync(self, sync_op):
+
+        # some pending write syncs or newly-switched new write syncs
+        # set them redundant
+        self._product_sync.find_set_redundant(sync_op)
+
         sync_value = super(CreateTransformer, self)._convert_sync(sync_op)
         self._convert_description(sync_value)
 

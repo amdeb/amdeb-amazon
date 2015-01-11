@@ -33,6 +33,7 @@ _ARCHIVE_MESSAGE = "Pending more than {0} days and {1} checks".format(
     _ARCHIVE_DAYS, _ARCHIVE_CHECK_COUNT
 )
 _CREATION_ERROR_CODE = "Amazon Product Creation Error"
+_REDUNDANT_SKIP_CODE = "Redundant Or Merged Operation."
 
 _logger = logging.getLogger(__name__)
 
@@ -93,8 +94,8 @@ class ProductSyncAccess(SyncHeadAccess):
         # because there are existing waiting syncs or some waiting
         # syncs change to New  -- it is rare but exists.
         # However, check existing sync here for every new sync is
-        # too expensive. Duplicated write syncs are tolerated.
-        # there is no duplicated create/delete syncs.
+        # expensive. Duplicated write syncs are tolerated.
+        # We know that there is no duplicated create/delete syncs.
         self._table.create(values)
 
     def insert_create_if_new(self, sync_head):
@@ -198,8 +199,38 @@ class ProductSyncAccess(SyncHeadAccess):
         return self._table.search(search_domain)
 
     @staticmethod
-    def update_sync_new_status(records, sync_status):
+    def update_sync_status(records, sync_status):
         records.write(sync_status)
+
+    @staticmethod
+    def set_sync_redundant(records):
+        sync_status = {
+            SYNC_STATUS_FIELD: SYNC_STATUS_SUCCESS,
+            AMAZON_REQUEST_TIMESTAMP_FIELD: field_utcnow(),
+            AMAZON_MESSAGE_CODE_FIELD: _REDUNDANT_SKIP_CODE
+        }
+        ProductSyncAccess.update_sync_status(records, sync_status)
+
+    def find_set_redundant(self, sync_op):
+        model_name = sync_op[MODEL_NAME_FIELD]
+        record_id = sync_op[RECORD_ID_FIELD]
+        sync_type = sync_op[SYNC_TYPE_FIELD]
+        log_template = "About to set redundant syncs for {0}:{1}, " \
+                       "Sync type: {2}."
+        _logger.debug(log_template.format(model_name, record_id, sync_type))
+        search_domain = [
+            (MODEL_NAME_FIELD, '=', model_name),
+            (RECORD_ID_FIELD, '=', record_id),
+            ('id', '!=', sync_op.id),
+            (SYNC_STATUS_FIELD, 'in', [SYNC_STATUS_NEW, SYNC_STATUS_WAITING])
+        ]
+        records = self._table.search(search_domain)
+        if records:
+            log_template = "Found {0} redundant syncs, ids: {1}."
+            _logger.debug(log_template.format(len(records), record_id.ids))
+            ProductSyncAccess.set_sync_redundant(records)
+        else:
+            _logger.debug("Found no redundant sync operations.")
 
     @staticmethod
     def update_sync_new_exception(records, ex):

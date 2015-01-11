@@ -21,11 +21,9 @@ _logger = logging.getLogger(__name__)
 class ProductSyncNew(object):
     """
     This class processes new sync operations.
-
     To match a request with response result, we use
     the sync table record id as the message id
     """
-
     def _create_sync_types(self):
         create_sync = (self._product_sync.get_new_creates,
                        CreateTransformer, self._mws.send_product)
@@ -61,20 +59,21 @@ class ProductSyncNew(object):
         return sync_result
 
     def _mws_send(self, mws_send, syncs, sync_values):
-        _logger.debug("about to call MWS send() for product sync.")
-        # set to pending thus we keep calling send
-        # even there is an exception threw
+        log_template = "about to call MWS send() for product syncs."
+        _logger.debug(log_template.format(len(sync_values)))
+
         try:
             results = mws_send(sync_values)
             sync_result = self._convert_results(results)
-            self._product_sync.update_sync_new_status(syncs, sync_result)
+            self._product_sync.update_sync_status(syncs, sync_result)
         except Exception as ex:
+            # we may want to re-try for recoverable exceptions
+            # for now, just report error
             _logger.exception("mws send() threw exception.")
             self._product_sync.update_sync_new_exception(syncs, ex)
 
     def synchronize(self):
         _logger.debug("Enter ProductSyncNew synchronize().")
-        # ToDo
         # Some waiting syncs may change to new
         # need to check product existence and duplicated/override syncs
         for sync_type in self._sync_types:
@@ -86,9 +85,9 @@ class ProductSyncNew(object):
                 _logger.debug(log_template.format(len(sync_ops)))
 
                 transformer = sync_type[1](self._env)
-                sync_values = transformer.transform(sync_ops)
+                valid_ops, sync_values = transformer.transform(sync_ops)
                 if sync_values:
-                    self._mws_send(sync_type[2], sync_ops, sync_values)
+                    self._mws_send(sync_type[2], valid_ops, sync_values)
                 else:
                     _logger.debug("Empty sync values, skipped.")
             else:
