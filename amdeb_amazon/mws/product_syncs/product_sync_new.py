@@ -98,23 +98,26 @@ class ProductSyncNew(object):
         """
         _logger.debug("Enter ProductSyncNew synchronize().")
 
-        # Some waiting syncs may change to new
-        # need to check product existence and
-        # duplicated/override syncs
-        for sync_type_tuple in self._sync_type_tuples:
-            sync_type = sync_type_tuple[0]
-            sync_ops = self._product_sync.search_new_type(sync_type)
-            if sync_ops:
-                log_template = "Got {} new {} syncs."
-                _logger.debug(log_template.format(
-                    len(sync_ops), sync_type))
+        try:
+            # Some waiting syncs may change to new
+            # need to check product existence and
+            # duplicated/override syncs
+            for sync_type_tuple in self._sync_type_tuples:
+                sync_type = sync_type_tuple[0]
+                sync_ops = self._product_sync.search_new_type(sync_type)
+                if sync_ops:
+                    log_template = "Got {} new {} syncs."
+                    _logger.debug(log_template.format(
+                        len(sync_ops), sync_type))
 
-                transformer = sync_type_tuple[1](self._env)
-                valid_ops, sync_values = transformer.transform(sync_ops)
-                if sync_values:
-                    self._mws_send(sync_type_tuple[2],
-                                   valid_ops, sync_values)
+                    transformer = sync_type_tuple[1](self._env)
+                    valid_ops, sync_values = transformer.transform(sync_ops)
+                    if sync_values:
+                        self._mws_send(sync_type_tuple[2],
+                                       valid_ops, sync_values)
+                    else:
+                        _logger.debug("Empty sync values, skipped.")
                 else:
-                    _logger.debug("Empty sync values, skipped.")
-            else:
-                _logger.debug("No new {} syncs.".format(sync_type))
+                    _logger.debug("No new {} syncs.".format(sync_type))
+        except:
+            _logger.exception("Exception in ProductSyncNew synchronize().")

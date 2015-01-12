@@ -63,7 +63,7 @@ class BaseTransformer(object):
 
     # the default implementation, update transform should combine values
     def _check_redundant(self, sync_ops):
-        _logger("check and remove redundant syncs.")
+        _logger.debug("check and remove redundant syncs.")
         processed = set()
         redundant = []
         for sync_op in sync_ops:
@@ -76,7 +76,7 @@ class BaseTransformer(object):
                 # a hook method that might be implemented in a subclass
                 self._merge_others(sync_op, sync_ops)
 
-        _logger("Found {} redundant syncs.".format(len(redundant)))
+        _logger.debug("Found {} redundant syncs.".format(len(redundant)))
         return BaseTransformer._remove_syncs(sync_ops, redundant)
 
     def _convert_sync(self, sync_op):

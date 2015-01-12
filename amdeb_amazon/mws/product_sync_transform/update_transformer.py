@@ -85,9 +85,9 @@ class UpdateTransformer(BaseTransformer):
         """
         Override the parent method to merge write field names
         """
-        _logger("About to merge other update syncs.")
+        _logger.debug("About to merge other update syncs.")
         merged_fields = sync_op[WRITE_FIELD_NAMES_FIELD]
-        _logger("initial write fields: {}.".format(merged_fields))
+        _logger.debug("initial write fields: {}.".format(merged_fields))
         other_writes = [
             record for record in sync_ops if
             record[MODEL_NAME_FIELD] == sync_op[MODEL_NAME_FIELD] and

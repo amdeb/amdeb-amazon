@@ -103,7 +103,7 @@ class ProductSyncAccess(SyncHeadAccess):
         ]
         records = self._table.search(search_domain)
         if records:
-            _logger("Sync record exists, skip insert.")
+            _logger.debug("Sync record exists, skip insert.")
         else:
             self._insert_sync(sync_head, SYNC_CREATE)
             is_inserted = True

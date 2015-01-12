@@ -20,13 +20,12 @@ class ProductOperationAccess(SyncHeadAccess):
 
     def search_new_operations(self):
         """
-        Get the new operations ordered by descending id (creation time)
         A new operation doesn't have a sync timestamp
         """
         search_domain = [
             (AMAZON_SYNC_TIMESTAMP_FIELD, '=', False),
         ]
-        operations = self._table.search(search_domain, order="id desc")
+        operations = self._table.search(search_domain)
 
         log_template = "Found {0} new product operations. Ids: {1}."
         _logger.debug(log_template.format(len(operations), operations.ids))
