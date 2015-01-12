@@ -33,7 +33,7 @@ def _parse_sync_result(feed_result):
                 result_message_code,
                 result_description
             )
-    _logger.debug("Submission results: {}".format(completion_result))
+    _logger.debug("Parsed submission results: {}".format(completion_result))
     return completion_result
 
 
@@ -147,4 +147,8 @@ class Boto(object):
         """
         feed_result = self.conn.get_feed_submission_result(
             FeedSubmissionId=submission_id)
+
+        log_template = "Submission Id: {0}, Result: {1}."
+        _logger.debug(log_template.format(submission_id, feed_result))
+
         return _parse_sync_result(feed_result)
