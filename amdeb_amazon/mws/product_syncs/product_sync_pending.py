@@ -29,40 +29,38 @@ class ProductSyncPending(object):
         return submission_ids
 
     def _update_status(self, submission_statuses):
-        _logger.debug("updating {} pending sync statuses".format(
-            len(submission_statuses)
-        ))
+        """
+        the result may be incomplete due to mws error.
+        """
+        log_template = "updating {} pending sync statuses"
+        _logger.debug(log_template.format(len(submission_statuses)))
+
         for pending in self._pending_set:
             submission_id = pending[AMAZON_SUBMISSION_ID_FIELD]
-            message_code = submission_statuses[submission_id]
-            ProductSyncAccess.update_message_code(pending, message_code)
-
-    def _set_exception_status(self, ex):
-        for pending in self._pending_set:
-            ProductSyncAccess.update_mws_exception(pending, ex)
+            message_code = submission_statuses.get(submission_id, None)
+            if message_code:
+                ProductSyncAccess.update_message_code(pending, message_code)
 
     def _check_status(self, submission_ids):
         log_template = "Checking sync status for {} submissions."
         _logger.debug(log_template.format(len(submission_ids)))
 
-        try:
-            submission_statuses = self._mws.check_sync_status(submission_ids)
+        submission_statuses = self._mws.check_sync_status(submission_ids)
+        if submission_statuses:
             self._update_status(submission_statuses)
-        except Exception as ex:
-            _logger.warning("mws check sync status exception: {}.".format(
-                ex.message
-            ))
-            self._set_exception_status(ex)
 
     def synchronize(self):
         """
-        1. get pending submissions
-        2. update submission status
+        The mws call swallows exception to return any results it has.
         """
         _logger.debug("Enter ProductSyncPending synchronize()")
-        self._pending_set = self._product_sync.get_pending()
-        _logger.debug("Got {} pending syncs.".format(len(self._pending_set)))
+        try:
+            self._pending_set = self._product_sync.search_pending()
+            log_template = "Got {} pending syncs."
+            _logger.debug(log_template.format(len(self._pending_set)))
 
-        if self._pending_set:
-            submission_ids = self._get_submission_ids()
-            self._check_status(submission_ids)
+            if self._pending_set:
+                submission_ids = self._get_submission_ids()
+                self._check_status(submission_ids)
+        except:
+            _logger.exception("Exception in ProductSyncPending synchronize().")

@@ -126,26 +126,30 @@ class ProductOperationTransformer(object):
         changing sync_active to False after product creation is not an issue.
         """
         _logger.debug("Enter ProductOperationTransformer transform().")
-        for operation in self._new_operations:
-            log_template = "Transform product operation." \
-                           "Operation Id: {0}, Model: {1}, " \
-                           "Record id: {2}, Operation type: {3}," \
-                           "Write field names: {4}."
-            _logger.debug(log_template.format(
-                operation.id, operation[MODEL_NAME_FIELD],
-                operation[RECORD_ID_FIELD],
-                operation[OPERATION_TYPE_FIELD],
-                operation[WRITE_FIELD_NAMES_FIELD]))
+        try:
+            for operation in self._new_operations:
+                log_template = "Transform product operation." \
+                               "Operation Id: {0}, Model: {1}, " \
+                               "Record id: {2}, Operation type: {3}," \
+                               "Write field names: {4}."
+                _logger.debug(log_template.format(
+                    operation.id, operation[MODEL_NAME_FIELD],
+                    operation[RECORD_ID_FIELD],
+                    operation[OPERATION_TYPE_FIELD],
+                    operation[WRITE_FIELD_NAMES_FIELD]))
 
-            record_key = (operation[MODEL_NAME_FIELD],
-                          operation[RECORD_ID_FIELD])
-            if record_key in self._transformed_operations:
-                # process each key only once
-                log_template = "Skip processed product operation {}."
-                _logger.debug(log_template.format(record_key))
-                continue
-            else:
-                log_template = "First time transform product operation {}."
-                _logger.debug(log_template.format(record_key))
-                self._transformed_operations.add(record_key)
-                self._transform_operation(operation)
+                record_key = (operation[MODEL_NAME_FIELD],
+                              operation[RECORD_ID_FIELD])
+                if record_key in self._transformed_operations:
+                    # process each key only once
+                    log_template = "Skip processed product operation {}."
+                    _logger.debug(log_template.format(record_key))
+                    continue
+                else:
+                    log_template = "About to transform product operation {}."
+                    _logger.debug(log_template.format(record_key))
+                    self._transformed_operations.add(record_key)
+                    self._transform_operation(operation)
+        except:
+            _logger.exception("Unexpected exception in "
+                              "ProductOperationTransformer transform().")

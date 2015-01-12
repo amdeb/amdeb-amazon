@@ -1,6 +1,7 @@
 # -*- coding: utf-8 -*-
 
 import logging
+from boto.exception import BotoServerError
 
 from ...shared.model_names import (
     SYNC_STATUS_FIELD, AMAZON_MESSAGE_CODE_FIELD,
@@ -74,6 +75,14 @@ class ProductSyncNew(object):
             results = mws_send(sync_values)
             sync_result = self._convert_results(results)
             ProductSyncAccess.update_sync_status(syncs, sync_result)
+        except BotoServerError as boto_ex:
+            _logger.debug("MWS Request error: {}".format(
+                boto_ex.error_code))
+            if boto_ex.error_code in ["RequestThrottled",
+                                      "ServiceUnavailable"]:
+                _logger.debug("Continue with throttled or unavailable error.")
+            else:
+                ProductSyncAccess.update_sync_new_exception(syncs, boto_ex)
         except Exception as ex:
             # we may want to re-try for recoverable exceptions
             # for now, just report error
@@ -81,20 +90,30 @@ class ProductSyncNew(object):
             ProductSyncAccess.update_sync_new_exception(syncs, ex)
 
     def synchronize(self):
+        """
+        there are different types of errors: bad request, server
+        unavailable, request throttling. It swallows request
+        throttling and service unavailable errors for future retry.
+        For other error, the call is done with an error.
+        """
         _logger.debug("Enter ProductSyncNew synchronize().")
+
         # Some waiting syncs may change to new
-        # need to check product existence and duplicated/override syncs
+        # need to check product existence and
+        # duplicated/override syncs
         for sync_type_tuple in self._sync_type_tuples:
             sync_type = sync_type_tuple[0]
-            sync_ops = self._product_sync.get_new_syncs(sync_type)
+            sync_ops = self._product_sync.search_new_type(sync_type)
             if sync_ops:
                 log_template = "Got {} new {} syncs."
-                _logger.debug(log_template.format(len(sync_ops), sync_type))
+                _logger.debug(log_template.format(
+                    len(sync_ops), sync_type))
 
                 transformer = sync_type_tuple[1](self._env)
                 valid_ops, sync_values = transformer.transform(sync_ops)
                 if sync_values:
-                    self._mws_send(sync_type_tuple[2], valid_ops, sync_values)
+                    self._mws_send(sync_type_tuple[2],
+                                   valid_ops, sync_values)
                 else:
                     _logger.debug("Empty sync values, skipped.")
             else:

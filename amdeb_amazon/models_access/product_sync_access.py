@@ -13,7 +13,7 @@ from ..shared.model_names import (
 from ..shared.sync_status import (
     SYNC_STATUS_NEW, SYNC_STATUS_PENDING, SYNC_STATUS_ERROR,
     AMAZON_STATUS_PROCESS_DONE, SYNC_STATUS_SUCCESS,
-    SYNC_STATUS_WAITING,
+    SYNC_STATUS_WAITING, SYNC_STATUS_WARNING,
 )
 from ..shared.sync_operation_types import (
     SYNC_CREATE, SYNC_UPDATE, SYNC_DELETE, SYNC_PRICE,
@@ -158,20 +158,20 @@ class ProductSyncAccess(SyncHeadAccess):
             amazon_product, SYNC_DELETE,
             product_sku=amazon_product[PRODUCT_SKU_FIELD])
 
-    def get_new_syncs(self, sync_type):
+    def search_new_type(self, sync_type):
         search_domain = [
             (SYNC_STATUS_FIELD, '=', SYNC_STATUS_NEW),
             (SYNC_TYPE_FIELD, '=', sync_type)
         ]
         return self._table.search(search_domain)
 
-    def get_pending(self):
+    def search_pending(self):
         # get pending in the ascending id order to
-        # process the newest sync first.
+        # process the old sync first.
         search_domain = [(SYNC_STATUS_FIELD, '=', SYNC_STATUS_PENDING)]
         return self._table.search(search_domain, order="id asc")
 
-    def get_done(self):
+    def search_done(self):
         search_domain = [
             (SYNC_STATUS_FIELD, '=', SYNC_STATUS_PENDING),
             (AMAZON_MESSAGE_CODE_FIELD, '=', AMAZON_STATUS_PROCESS_DONE)

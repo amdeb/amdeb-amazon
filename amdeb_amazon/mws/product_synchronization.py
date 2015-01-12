@@ -12,7 +12,6 @@ from .product_syncs import ProductSyncNew
 from .product_syncs import ProductSyncPending
 from .product_syncs import do_daily_chore
 from .product_syncs import ProductSyncDone
-from .product_syncs import ProductCreationSuccess
 
 _logger = logging.getLogger(__name__)
 
@@ -27,6 +26,10 @@ class ProductSynchronization(object):
 
     def synchronize(self):
         """
+        We need a good strategy to deal with request exception.
+        1. Make all request idempotent by using the latest data in request
+        2. When there is an exception, save current results and stop
+
         synchronize product operations to Amazon
         This is the entry to all product synchronization functions.
         We process old business first. There are several steps:
@@ -36,6 +39,9 @@ class ProductSynchronization(object):
         4. get new operations and set sync timestamp
         5. convert new product operations to sync operations
         6. execute sync operations and save submission timestamp
+
+        All calls report exception inside their methods because
+        they should run independently.
         """
         _logger.debug("Enter ProductSynchronization synchronize()")
 
@@ -45,15 +51,10 @@ class ProductSynchronization(object):
         sync_pending.synchronize()
 
         sync_done = ProductSyncDone(self._env, self._mws)
-        done_set = sync_done.synchronize()
-        if done_set:
-            # create relation sync in a separate step because we need to
-            # know the creation status of both the template and the variant
-            creation_success = ProductCreationSuccess(self._env)
-            creation_success.process(done_set)
+        sync_done.synchronize()
 
         operation_access = ProductOperationAccess(self._env)
-        new_operations = operation_access.get_new_operations()
+        new_operations = operation_access.search_new_operations()
         if new_operations:
             operation_access.set_sync_timestamp(new_operations)
 

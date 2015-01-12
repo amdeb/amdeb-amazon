@@ -5,13 +5,10 @@ import logging
 from ...shared.model_names import (
     PRODUCT_TEMPLATE_TABLE,
     MODEL_NAME_FIELD, RECORD_ID_FIELD,
-    SYNC_STATUS_FIELD, SYNC_TYPE_FIELD, TEMPLATE_ID_FIELD,
+    SYNC_STATUS_FIELD, TEMPLATE_ID_FIELD,
 )
 from ...shared.sync_status import SYNC_STATUS_WARNING, SYNC_STATUS_SUCCESS
-from ...shared.sync_operation_types import (
-    SYNC_CREATE, SYNC_RELATION,
-)
-
+from ...shared.sync_operation_types import SYNC_RELATION
 from ...models_access import ProductSyncAccess
 from ...models_access import AmazonProductAccess
 from ...models_access import OdooProductAccess
@@ -63,31 +60,27 @@ class ProductCreationSuccess(object):
                     completed, SYNC_RELATION)
                 self._is_new_sync_added = True
 
-    def process(self, done_set):
-        for done in done_set:
-            if not self._odoo_product.get_existed_product(done):
-                _logger.debug("Skip creation success for unlinked product.")
-                continue
+    def process(self, done_sync):
+        if not self._odoo_product.get_existed_product(done_sync):
+            _logger.debug("Skip creation success for unlinked product.")
 
-            done_status = done[SYNC_STATUS_FIELD]
-            log_template = "Post creation process for product Model: {0}, " \
-                           "Record Id: {1}, sync status: {2}."
-            _logger.debug(log_template.format(
-                done[MODEL_NAME_FIELD], done[RECORD_ID_FIELD], done_status))
-            # for warning and success, set success flag
-            is_success = (done_status == SYNC_STATUS_SUCCESS or
-                          done_status == SYNC_STATUS_WARNING)
-            is_sync_create = done[SYNC_TYPE_FIELD] == SYNC_CREATE
-            if is_sync_create and is_success:
-                # the order of the following calls matters because
-                # adding relation checks if a product is created or not
-                self._amazon_product.update_created(done)
+        done_status = done_sync[SYNC_STATUS_FIELD]
+        log_template = "Post creation process for product Model: {0}, " \
+                       "Record Id: {1}, sync status: {2}."
+        _logger.debug(log_template.format(
+            done_sync[MODEL_NAME_FIELD],
+            done_sync[RECORD_ID_FIELD], done_status))
+        # for warning and success, set success flag
+        is_success = (done_status == SYNC_STATUS_SUCCESS or
+                      done_status == SYNC_STATUS_WARNING)
+        if is_success:
+            # the order of the following calls matters because
+            # adding relation checks if a product is created or not
+            self._amazon_product.update_created(done_sync)
 
-                # old syncs first
-                self._product_sync.update_waiting_to_new(done)
-                self._add_success_syncs(done)
-                self._add_relation_sync(done)
-            elif is_sync_create:
-                self._amazon_product.update_error(done)
-
-        return self._is_new_sync_added
+            # old syncs first
+            self._product_sync.update_waiting_to_new(done_sync)
+            self._add_success_syncs(done_sync)
+            self._add_relation_sync(done_sync)
+        else:
+            self._amazon_product.update_error(done_sync)

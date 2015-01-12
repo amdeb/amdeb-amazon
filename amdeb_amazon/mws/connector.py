@@ -82,8 +82,8 @@ class Boto(object):
 
         logger_template = "Boto send result. Id: {0}, Time: {1},status {2}."
         _logger.debug(logger_template.format(
-            feed_id, feed_time, feed_status
-        ))
+            feed_id, feed_time, feed_status))
+
         return feed_id, feed_time, feed_status
 
     def send_product(self, values):
@@ -108,13 +108,8 @@ class Boto(object):
         return self._send('_POST_PRODUCT_RELATIONSHIP_DATA_ ',
                           'product_relation.jj2', values)
 
-    def check_sync_status(self, submission_id_list):
-        sync_status = {}
-
-        # ToDo: handle pagination and return all results to make it simple
-        submission_list = self.conn.get_feed_submission_list(
-            FeedSubmissionIdList=submission_id_list
-        )
+    @staticmethod
+    def _get_submission_list_result(submission_list, sync_status):
         list_result = submission_list.GetFeedSubmissionListResult
         for info in list_result.FeedSubmissionInfo:
             submission_id = info.FeedSubmissionId
@@ -122,6 +117,19 @@ class Boto(object):
             _logger.debug('Submission Id: {}. Current status: {}'.format(
                 submission_id, status))
             sync_status[submission_id] = status
+
+    def check_sync_status(self, submission_id_list):
+        sync_status = {}
+        # iter_call handles pagination, stop and return result when
+        # any exception happens
+        try:
+            for submission_list in self.conn.iter_call(
+                    'get_feed_submission_list',
+                    FeedSubmissionIdList=submission_id_list):
+                Boto._get_submission_list_result(
+                    submission_list, sync_status)
+        except:
+            _logger.exception("Exception in mws check_sync_status.")
 
         log_template = "Got {0} sync statuses for {1} submissions."
         _logger.debug(log_template.format(
@@ -135,8 +143,6 @@ class Boto(object):
         The value is a tuple of result code (Error or Warning),
         Amazon error/warning message code and description.
 
-        :param submission_id: the feed submission id
-        :return: warning and error results indexed by message id
         """
         feed_result = self.conn.get_feed_submission_result(
             FeedSubmissionId=submission_id)

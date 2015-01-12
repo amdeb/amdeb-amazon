@@ -18,7 +18,7 @@ class ProductOperationAccess(SyncHeadAccess):
     def __init__(self, env):
         self._table = env[PRODUCT_OPERATION_TABLE]
 
-    def get_new_operations(self):
+    def search_new_operations(self):
         """
         Get the new operations ordered by descending id (creation time)
         A new operation doesn't have a sync timestamp

@@ -5,9 +5,12 @@ import logging
 from ...shared.model_names import (
     SYNC_STATUS_FIELD, AMAZON_MESSAGE_CODE_FIELD,
     AMAZON_SUBMISSION_ID_FIELD, AMAZON_RESULT_DESCRIPTION_FIELD,
+    SYNC_TYPE_FIELD
 )
 from ...shared.sync_status import SYNC_STATUS_SUCCESS
+from ...shared.sync_operation_types import SYNC_CREATE
 from ...models_access import ProductSyncAccess
+from .product_creation_success import ProductCreationSuccess
 
 _logger = logging.getLogger(__name__)
 
@@ -21,6 +24,7 @@ class ProductSyncDone(object):
     def __init__(self, env, mws):
         self._mws = mws
         self._product_sync = ProductSyncAccess(env)
+        self._creation_success = ProductCreationSuccess(env)
         self._done_set = None
 
     def _get_submission_ids(self):
@@ -48,15 +52,14 @@ class ProductSyncDone(object):
     def _save_done_results(self, completion_results):
         for done in self._done_set:
             submission_id = done[AMAZON_SUBMISSION_ID_FIELD]
-            # should have results for all
-            completion_result = completion_results[submission_id]
-            if isinstance(completion_result, Exception):
-                ProductSyncAccess.update_mws_exception(
-                    done, completion_result)
-            else:
-                # if success, Amazon gives no result
+            # result is an empty dict for successful submission
+            completion_result = completion_results.get(submission_id, None)
+            if completion_result is not None:
+                # if success, Amazon gives empty result
                 sync_result = completion_result.get(done.id, None)
                 self._write_result(done, sync_result)
+                if done[SYNC_TYPE_FIELD] == SYNC_CREATE:
+                    self._creation_success.process(done)
 
     def _get_results(self, submission_ids):
         completion_results = {}
@@ -64,11 +67,11 @@ class ProductSyncDone(object):
             try:
                 completion_result = self._mws.get_sync_result(submission_id)
                 completion_results[submission_id] = completion_result
-            except Exception as ex:
-                log_template = "mws sync result for exception {0} for" \
+            except:
+                log_template = "Exception in get_sync_result for" \
                                " submission id {1}"
-                _logger.debug(log_template.format(ex.message, submission_id))
-                completion_results[submission_id] = ex
+                _logger.exception(log_template.format(submission_id))
+                break
 
         log_template = "get {} results for completed sync operations."
         _logger.debug(log_template.format(len(completion_results)))
@@ -76,15 +79,18 @@ class ProductSyncDone(object):
 
     def synchronize(self):
         """
-        Process completed sync requests
+        Should save any result that mws returns.
         """
         _logger.debug("Enter ProductSyncDone synchronize()")
-        self._done_set = self._product_sync.get_done()
-        _logger.debug("Got {} done syncs.".format(len(self._done_set)))
 
-        if self._done_set:
-            submission_ids = self._get_submission_ids()
-            completion_results = self._get_results(submission_ids)
-            self._save_done_results(completion_results)
+        try:
+            self._done_set = self._product_sync.search_done()
+            _logger.debug("Got {} done syncs.".format(len(self._done_set)))
 
-        return self._done_set
+            if self._done_set:
+                submission_ids = self._get_submission_ids()
+                completion_results = self._get_results(submission_ids)
+                if completion_results:
+                    self._save_done_results(completion_results)
+        except:
+            _logger.exception("Exception in ProductSyncDone synchronize().")
