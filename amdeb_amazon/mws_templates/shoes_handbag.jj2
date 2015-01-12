@@ -9,10 +9,12 @@
         {{ macros.add_tag('VariationTheme') }}
     </VariationData>
 
-    {# this is a required element #}
+    {# this is a required element, tag order matters !!! #}
     <ClassificationData>
         {# MWS shows warning if this tag is missing #}
-        <ModelNumber>{{ message['SKU'] }}</ModelNumber>
         <Department>{{ message['Department'] }}</Department>
+        <ModelNumber>{{ message['SKU'] }}</ModelNumber>
+        {# required by mws #}
+        <NumberOfItems>1</NumberOfItems>
     </ClassificationData>
 </Shoes>

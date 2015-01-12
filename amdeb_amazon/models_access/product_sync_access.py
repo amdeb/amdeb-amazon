@@ -19,7 +19,7 @@ from ..shared.sync_operation_types import SYNC_DELETE
 from ..shared.utility import field_utcnow
 from .sync_head_access import SyncHeadAccess
 
-_CREATION_ERROR_CODE = "Amazon Product Creation Error."
+_CREATION_ERROR_CODE = "Amazon Product Is Not Created Or Being Created."
 _REDUNDANT_SKIP_CODE = "Redundant Or Merged Operation."
 _PRODUCT_NOT_FOUND_CODE = "Product Not Found Or Sync Disabled."
 
