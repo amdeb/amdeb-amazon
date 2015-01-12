@@ -28,9 +28,9 @@ class ProductCreationSuccess(object):
 
     def _add_success_syncs(self, completed):
         product = self._odoo_product.get_product(completed)
-        sync_active = OdooProductAccess.is_sync_active_product(product)
-        is_partial_variant = OdooProductAccess.is_partial_variant(product)
-        multi_template = OdooProductAccess.is_multi_variant_template(product)
+        sync_active = self._odoo_product.is_sync_active_product(product)
+        is_partial_variant = self._odoo_product.is_partial_variant(product)
+        multi_template = self._odoo_product.is_multi_variant_template(product)
         if sync_active and not is_partial_variant and not multi_template:
             self._product_sync.insert_sync(completed, SYNC_PRICE)
             self._product_sync.insert_sync(completed, SYNC_INVENTORY)
