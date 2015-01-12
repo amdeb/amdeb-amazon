@@ -130,7 +130,7 @@ class ProductOperationTransformer(object):
             for operation in self._new_operations:
                 log_template = "Transform product operation." \
                                "Operation Id: {0}, Model: {1}, " \
-                               "Record id: {2}, Operation type: {3}," \
+                               "Record id: {2}, Operation type: {3}, " \
                                "Write field names: {4}."
                 _logger.debug(log_template.format(
                     operation.id, operation[MODEL_NAME_FIELD],

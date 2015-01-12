@@ -123,8 +123,9 @@ class Boto(object):
         # iter_call handles pagination, stop and return result when
         # any exception happens
         try:
+            # has to use the capitalized method name due to a boto bug
             for submission_list in self.conn.iter_call(
-                    'get_feed_submission_list',
+                    'GetFeedSubmissionList',
                     FeedSubmissionIdList=submission_id_list):
                 Boto._get_submission_list_result(
                     submission_list, sync_status)

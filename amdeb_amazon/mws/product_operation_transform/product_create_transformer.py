@@ -38,7 +38,7 @@ class ProductCreateTransformer(object):
             if OdooProductAccess.is_partial_variant(product):
                 _logger.debug("Skip partial variant creation operation.")
             else:
-                self._product_sync.insert_create(operation)
+                self._product_sync.insert_sync(operation, SYNC_CREATE)
                 self._amazon_product.upsert_creation(operation)
                 template_head = {
                     MODEL_NAME_FIELD: PRODUCT_TEMPLATE_TABLE,
@@ -59,5 +59,5 @@ class ProductCreateTransformer(object):
                 _logger.debug("Skip creation operation for multi-variant "
                               "template that is created with its variants.")
             else:
-                self._product_sync.insert_create(operation)
+                self._product_sync.insert_sync(operation, SYNC_CREATE)
                 self._amazon_product.upsert_creation(operation)

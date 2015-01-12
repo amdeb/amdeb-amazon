@@ -8,7 +8,10 @@ from ...shared.model_names import (
     PRODUCT_VIRTUAL_AVAILABLE_FIELD,
     PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD,
 )
-
+from ...shared.sync_operation_types import (
+    SYNC_UPDATE, SYNC_PRICE, SYNC_INVENTORY,
+    SYNC_IMAGE, SYNC_DEACTIVATE,
+)
 from ...models_access import ProductSyncAccess
 from ...models_access import AmazonProductAccess
 from ...models_access import OdooProductAccess
@@ -35,23 +38,17 @@ class ProductWriteTransformer(object):
 
         return waiting_flag, error_flag
 
-    def _insert_sync_operation(self, operation, insert_method,
+    def _insert_sync_operation(self, operation, sync_type,
                                write_field_names=None):
         amazon_product = self._amazon_product.search_by_head(operation)
         if amazon_product:
             waiting_flag, error_flag = self._get_creation_status(
                 amazon_product)
-            if write_field_names:
-                insert_method(
-                    operation,
-                    write_field_names=write_field_names,
-                    waiting_flag=waiting_flag,
-                    error_flag=error_flag)
-            else:
-                insert_method(
-                    operation,
-                    waiting_flag=waiting_flag,
-                    error_flag=error_flag)
+            self._product_sync.insert_sync(
+                operation, sync_type,
+                write_field_names=write_field_names,
+                waiting_flag=waiting_flag,
+                error_flag=error_flag)
         else:
             # the only normal but rare case where there is no amazon
             # product record -- users may update
@@ -68,11 +65,9 @@ class ProductWriteTransformer(object):
             # we are sure a multi-variant template has at least one
             # variant record
             for variant in variants:
-                self._insert_sync_operation(
-                    variant, self._product_sync.insert_price)
+                self._insert_sync_operation(variant, SYNC_PRICE)
         else:
-            self._insert_sync_operation(
-                operation, self._product_sync.insert_price)
+            self._insert_sync_operation(operation, SYNC_PRICE)
 
     def _transform_price(self, operation, values):
         # we don't handle the extra price change in attribute line
@@ -92,8 +87,7 @@ class ProductWriteTransformer(object):
         # or non-partial variant, no need to skip any inventory update
         if PRODUCT_VIRTUAL_AVAILABLE_FIELD in values:
             values.pop(PRODUCT_VIRTUAL_AVAILABLE_FIELD)
-            self._insert_sync_operation(
-                operation, self._product_sync.insert_inventory)
+            self._insert_sync_operation(operation, SYNC_INVENTORY)
 
     def _transform_image(self, operation, values):
         # create image sync regardless the image_trigger value
@@ -105,8 +99,7 @@ class ProductWriteTransformer(object):
                 _logger.debug("ignore image operation for a partial variant "
                               "or multi-variant template.")
             else:
-                self._insert_sync_operation(
-                    operation, self._product_sync.insert_image)
+                self._insert_sync_operation(operation, SYNC_IMAGE)
 
     def _transform_update(self, operation, write_fields):
         self._transform_price(operation, write_fields)
@@ -114,11 +107,8 @@ class ProductWriteTransformer(object):
         self._transform_image(operation, write_fields)
         if write_fields:
             if ProductOperationAccess.is_product_template(operation):
-                self._product_sync.insert_update(operation, write_fields)
                 self._insert_sync_operation(
-                    operation,
-                    self._product_sync.insert_update,
-                    write_fields)
+                    operation, SYNC_UPDATE, write_fields)
             else:
                 _logger.debug("Ignore write operation because it is a "
                               "product variant.")
@@ -129,8 +119,7 @@ class ProductWriteTransformer(object):
             _logger.debug("ignore deactivate operation for a partial variant "
                           "or multi-variant template.")
         else:
-            self._insert_sync_operation(
-                operation, self._product_sync.insert_deactivate)
+            self._insert_sync_operation(operation, SYNC_DEACTIVATE)
 
     def _transform_sync_active(self, operation, sync_active_value):
         if sync_active_value:

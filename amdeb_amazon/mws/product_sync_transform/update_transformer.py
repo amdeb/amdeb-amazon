@@ -3,7 +3,6 @@
 import logging
 from ...shared.model_names import (
     MODEL_NAME_FIELD, RECORD_ID_FIELD,
-    WRITE_FIELD_NAMES_FIELD,
     PRODUCT_NAME_FIELD,
     PRODUCT_DESCRIPTION_SALE_FIELD,
     PRODUCT_AMAZON_DESCRIPTION_FIELD,
@@ -86,7 +85,7 @@ class UpdateTransformer(BaseTransformer):
         Override the parent method to merge write field names
         """
         _logger.debug("About to merge other update syncs.")
-        merged_fields = sync_op[WRITE_FIELD_NAMES_FIELD]
+        merged_fields = ProductSyncAccess.get_write_field_names(sync_op)
         _logger.debug("initial write fields: {}.".format(merged_fields))
         other_writes = [
             record for record in sync_ops if
@@ -104,6 +103,6 @@ class UpdateTransformer(BaseTransformer):
             is_merged = True
 
         if is_merged:
-            sync_op[WRITE_FIELD_NAMES_FIELD] = merged_fields
+            ProductSyncAccess.save_write_field_names(sync_op, merged_fields)
         else:
             _logger.debug("No other update syncs to merge.")

@@ -8,17 +8,14 @@ from ..shared.model_names import (
     WRITE_FIELD_NAMES_FIELD, SYNC_STATUS_FIELD,
     SYNC_CHECK_STATUS_COUNT_FILED, AMAZON_MESSAGE_CODE_FIELD,
     AMAZON_RESULT_DESCRIPTION_FIELD, AMAZON_REQUEST_TIMESTAMP_FIELD,
-    FIELD_NAME_DELIMITER, PRODUCT_SKU_FIELD,
+    PRODUCT_SKU_FIELD,
 )
 from ..shared.sync_status import (
     SYNC_STATUS_NEW, SYNC_STATUS_PENDING,
     SYNC_STATUS_ERROR, AMAZON_STATUS_PROCESS_DONE,
     SYNC_STATUS_SUCCESS, SYNC_STATUS_WAITING,
 )
-from ..shared.sync_operation_types import (
-    SYNC_CREATE, SYNC_UPDATE, SYNC_DELETE, SYNC_PRICE,
-    SYNC_INVENTORY, SYNC_IMAGE, SYNC_DEACTIVATE, SYNC_RELATION,
-)
+from ..shared.sync_operation_types import SYNC_DELETE
 from ..shared.utility import field_utcnow
 from .sync_head_access import SyncHeadAccess
 
@@ -55,9 +52,9 @@ class ProductSyncAccess(SyncHeadAccess):
             values.get(AMAZON_MESSAGE_CODE_FIELD, None),
         ))
 
-    def _insert_sync(self, sync_head, sync_type,
-                     write_field_names=None, product_sku=None,
-                     waiting_flag=None, error_flag=None):
+    def insert_sync(self, sync_head, sync_type,
+                    write_field_names=None, product_sku=None,
+                    waiting_flag=None, error_flag=None):
         """
         Insert a new sync operation record.
         """
@@ -68,8 +65,8 @@ class ProductSyncAccess(SyncHeadAccess):
             SYNC_TYPE_FIELD: sync_type,
         }
         if write_field_names:
-            values[WRITE_FIELD_NAMES_FIELD] = FIELD_NAME_DELIMITER.join(
-                write_field_names)
+            ProductSyncAccess.save_write_field_names(
+                values, write_field_names)
         if product_sku:
             values[PRODUCT_SKU_FIELD] = product_sku
         if waiting_flag:
@@ -105,56 +102,17 @@ class ProductSyncAccess(SyncHeadAccess):
         if records:
             _logger.debug("Sync record exists, skip insert.")
         else:
-            self._insert_sync(sync_head, SYNC_CREATE)
+            self.insert_sync(sync_head, sync_type)
             is_inserted = True
 
         return is_inserted
-
-    # define method for each sync type because
-    # 1) they have different parameters and extra steps
-    # 2) the type-specific method is used in refactor operation transformation
-    def insert_create(self, sync_head):
-        self._insert_sync(sync_head, SYNC_CREATE)
-
-    def insert_price(self, sync_head, waiting_flag=None, error_flag=None):
-        self._insert_sync(
-            sync_head, SYNC_PRICE, waiting_flag=waiting_flag,
-            error_flag=error_flag)
-
-    def insert_inventory(self, sync_head, waiting_flag=None, error_flag=None):
-        self._insert_sync(
-            sync_head, SYNC_INVENTORY, waiting_flag=waiting_flag,
-            error_flag=error_flag)
-
-    def insert_image(self, sync_head, waiting_flag=None, error_flag=None):
-        self._insert_sync(
-            sync_head, SYNC_IMAGE, waiting_flag=waiting_flag,
-            error_flag=error_flag)
-
-    def insert_update(self, sync_head, write_field_names,
-                      waiting_flag=None, error_flag=None):
-        self._insert_sync(
-            sync_head, SYNC_UPDATE, write_field_names=write_field_names,
-            waiting_flag=waiting_flag, error_flag=error_flag)
-
-    def insert_deactivate(self, sync_head,
-                          waiting_flag=None, error_flag=None):
-        self._insert_sync(
-            sync_head, SYNC_DEACTIVATE, waiting_flag=waiting_flag,
-            error_flag=error_flag)
-
-    def insert_relation(self, sync_head):
-        """
-        Create sync relation for a product variant
-        """
-        self._insert_sync(sync_head, SYNC_RELATION)
 
     def insert_delete(self, amazon_product):
         """
         Insert a delete sync for an amazon product object that
         has a SKU field used by Amazon API
         """
-        self._insert_sync(
+        self.insert_sync(
             amazon_product, SYNC_DELETE,
             product_sku=amazon_product[PRODUCT_SKU_FIELD])
 

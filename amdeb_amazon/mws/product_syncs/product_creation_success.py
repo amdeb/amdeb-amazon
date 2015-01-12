@@ -8,7 +8,10 @@ from ...shared.model_names import (
     SYNC_STATUS_FIELD, TEMPLATE_ID_FIELD,
 )
 from ...shared.sync_status import SYNC_STATUS_WARNING, SYNC_STATUS_SUCCESS
-from ...shared.sync_operation_types import SYNC_RELATION
+from ...shared.sync_operation_types import (
+    SYNC_RELATION, SYNC_PRICE,
+    SYNC_IMAGE, SYNC_INVENTORY,
+)
 from ...models_access import ProductSyncAccess
 from ...models_access import AmazonProductAccess
 from ...models_access import OdooProductAccess
@@ -25,9 +28,9 @@ class ProductCreationSuccess(object):
 
     def _add_success_syncs(self, completed):
         if self._odoo_product.is_sync_active(completed):
-            self._product_sync.insert_price(completed)
-            self._product_sync.insert_inventory(completed)
-            self._product_sync.insert_image(completed)
+            self._product_sync.insert_sync(completed, SYNC_PRICE)
+            self._product_sync.insert_sync(completed, SYNC_INVENTORY)
+            self._product_sync.insert_sync(completed, SYNC_IMAGE)
             self._is_new_sync_added = True
 
     def _add_relation_sync(self, completed):
@@ -36,6 +39,8 @@ class ProductCreationSuccess(object):
         # is not created for a product variant.
         # The automatic way to fix this is to create
         # relation syn for both template and variant creation sync
+        # we only add a sync for the template with at least one variant
+        # created successfully in Amazon
         if ProductSyncAccess.is_product_variant(completed):
             template_head = {
                 MODEL_NAME_FIELD: PRODUCT_TEMPLATE_TABLE,

@@ -8,7 +8,7 @@ from ...shared.model_names import (
     MODEL_NAME_FIELD, RECORD_ID_FIELD,
     SYNC_TYPE_FIELD,
 )
-from ...shared.sync_operation_types import SYNC_DELETE
+from ...shared.sync_operation_types import SYNC_DELETE, SYNC_CREATE
 
 _logger = logging.getLogger(__name__)
 
@@ -67,12 +67,12 @@ class BaseTransformer(object):
         processed = set()
         redundant = []
         for sync_op in sync_ops:
-            op_key = (sync_op[MODEL_NAME_FIELD], sync_op[RECORD_ID_FIELD])
-            if op_key in processed:
+            sync_key = (sync_op[MODEL_NAME_FIELD], sync_op[RECORD_ID_FIELD])
+            if sync_key in processed:
                 self._product_sync.set_sync_redundant(sync_op)
                 redundant.append(sync_op)
             else:
-                processed.add(op_key)
+                processed.add(sync_key)
                 # a hook method that might be implemented in a subclass
                 self._merge_others(sync_op, sync_ops)
 
@@ -88,7 +88,7 @@ class BaseTransformer(object):
         BaseTransformer._check_string(sync_value, 'SKU', sku)
         return sync_value
 
-    def _transform_op(self, sync_op, invalid_ops, sync_values):
+    def _transform_sync(self, sync_op, invalid_ops, sync_values):
         self._product = self._odoo_product.get_existed_product(sync_op)
 
         # for all but delete, we want to make sure the product
@@ -120,7 +120,11 @@ class BaseTransformer(object):
         invalid_ops = []
         for sync_op in sync_ops:
             try:
-                self._transform_op(sync_op, invalid_ops, sync_values)
+                self._transform_sync(sync_op, invalid_ops, sync_values)
+                # some pending write syncs or newly-switched new
+                # write syncs are made redundant by delete and create
+                if sync_op[SYNC_TYPE_FIELD] in [SYNC_CREATE, SYNC_DELETE]:
+                    self._product_sync.find_set_redundant(sync_op)
             except Exception as ex:
                 log_template = "Sync transform error for sync id {0}  " \
                                "Exception: {1}."

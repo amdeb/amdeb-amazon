@@ -4,9 +4,9 @@ from ..shared.model_names import(
     MODEL_NAME_FIELD,
     PRODUCT_TEMPLATE_TABLE,
     PRODUCT_PRODUCT_TABLE,
+    WRITE_FIELD_NAMES_FIELD,
+    FIELD_NAME_DELIMITER
 )
-from ..shared.utility import get_write_field_names_as_set
-
 
 class SyncHeadAccess(object):
     """
@@ -23,4 +23,14 @@ class SyncHeadAccess(object):
 
     @staticmethod
     def get_write_field_names(sync_head):
-        return get_write_field_names_as_set(sync_head)
+        field_names = sync_head[WRITE_FIELD_NAMES_FIELD]
+        if field_names:
+            data = set(field_names.split(FIELD_NAME_DELIMITER))
+        else:
+            data = set()
+        return data
+
+    @staticmethod
+    def save_write_field_names(sync_head, write_fields):
+        joined = FIELD_NAME_DELIMITER.join(write_fields)
+        sync_head[WRITE_FIELD_NAMES_FIELD] = joined

@@ -56,17 +56,10 @@ class CreateTransformer(BaseTransformer):
         return sync_value
 
     def _convert_sync(self, sync_op):
-
-        # some pending write syncs or newly-switched new write syncs
-        # set them redundant
-        self._product_sync.find_set_redundant(sync_op)
-
         sync_value = super(CreateTransformer, self)._convert_sync(sync_op)
         self._convert_description(sync_value)
-
-        # only three creation possibilities:
-        # it is a non-partial variant
-        # it is a template: multi-variant or not
+        # only three creation possibilities 1) a non-partial variant
+        # 2) a multi-variant template 3) a single-variant template
         if OdooProductAccess.is_product_variant(self._product):
             # this is an independent variant
             sync_value['Parentage'] = 'child'
