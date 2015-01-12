@@ -62,5 +62,5 @@ class ProductSynchronization(object):
                 self._env, new_operations)
             transformer.transform()
 
-            sync_new = ProductSyncNew(self._env, self._mws)
-            sync_new.synchronize()
+        sync_new = ProductSyncNew(self._env, self._mws)
+        sync_new.synchronize()

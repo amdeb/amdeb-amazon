@@ -3,7 +3,7 @@
 {
     'name': 'Amdeb Amazon Integration',
     'summary': 'Integrate Amazon Marketplace as an Odoo sales channel',
-    'version': '0.1111',
+    'version': '0.2',
     'category': 'Amdeb Integration',
     'website': 'https://github.com/amdeb/amdeb-amazon',
     'author': 'Amdeb Developers',
