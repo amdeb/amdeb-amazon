@@ -3,8 +3,10 @@
 import logging
 
 from ...shared.model_names import (
-    RECORD_ID_FIELD, TEMPLATE_ID_FIELD,
     OPERATION_TYPE_FIELD,
+)
+from ...shared.model_names.shared_names import (
+    RECORD_ID_FIELD, TEMPLATE_ID_FIELD,
 )
 from .operation_types import UNLINK_RECORD
 

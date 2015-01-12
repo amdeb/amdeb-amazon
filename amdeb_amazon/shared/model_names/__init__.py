@@ -1,13 +1,5 @@
 # -*- coding: utf-8 -*-
 
-"""
-contains definition of models names
-"""
-
-IR_VALUES_TABLE = 'ir.values'
-IR_CRON_TABLE = 'ir.cron'
-AMAZON_SETTINGS_TABLE = 'amdeb.amazon.config.settings'
-
 PRODUCT_TEMPLATE_TABLE = 'product.template'
 PRODUCT_VARIANT_COUNT_FIELD = 'product_variant_count'
 PRODUCT_VARIANT_IDS_FIELD = 'product_variant_ids'
@@ -24,10 +16,8 @@ AMAZON_SYNC_ACTIVE_FIELD = 'amazon_sync_active'
 PRODUCT_DEFAULT_CODE_FIELD = 'default_code'
 PRODUCT_LIST_PRICE_FIELD = 'list_price'
 PRODUCT_LST_PRICE_FIELD = 'lst_price'
-PRODUCT_NAME_FIELD = 'name'
-PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD = 'attribute_value_ids'
 
-PRODUCT_CREATE_DATE_FIELD = 'create_date'
+PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD = 'attribute_value_ids'
 
 PRODUCT_VIRTUAL_AVAILABLE_FIELD = 'virtual_available'
 PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD = 'amazon_image_trigger'
@@ -35,9 +25,7 @@ PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD = 'amazon_image_trigger'
 PRODUCT_ATTRIBUTE_ID_FIELD = 'attribute_id'
 
 PRODUCT_OPERATION_TABLE = 'amdeb.product.operation'
-MODEL_NAME_FIELD = 'model_name'
-RECORD_ID_FIELD = 'record_id'
-TEMPLATE_ID_FIELD = 'template_id'
+
 OPERATION_TYPE_FIELD = 'operation_type'
 WRITE_FIELD_NAMES_FIELD = 'write_field_names'
 FIELD_NAME_DELIMITER = ', '
@@ -54,5 +42,4 @@ AMAZON_RESULT_DESCRIPTION_FIELD = 'amazon_result_description'
 SYNC_CHECK_STATUS_COUNT_FILED = 'sync_check_status_count'
 
 AMAZON_PRODUCT_TABLE = 'amdeb.amazon.product'
-PRODUCT_SKU_FIELD = 'product_sku'
 AMAZON_CREATION_STATUS_FIELD = 'creation_status'

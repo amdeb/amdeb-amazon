@@ -3,8 +3,9 @@
 import logging
 
 from .base_transfomer import BaseTransformer
-from ...shared.model_names import RECORD_ID_FIELD, PRODUCT_SKU_FIELD
-
+from ...shared.model_names.shared_names import (
+    RECORD_ID_FIELD, PRODUCT_SKU_FIELD,
+)
 _logger = logging.getLogger(__name__)
 
 

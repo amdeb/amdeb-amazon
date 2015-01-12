@@ -131,6 +131,7 @@ class AmazonProductSync(models.Model):
     )
 
     # use with creation timestamp to archive old syncs.
+    # it increases by one before checking status for pending syncs
     sync_check_status_count = fields.Integer(
         string='The Counter of Submission Status Check',
         required=True,

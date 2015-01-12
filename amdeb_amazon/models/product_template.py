@@ -4,9 +4,11 @@ from openerp import models, fields
 
 from ..models_access.amazon_product_access import AmazonProductAccess
 from ..shared.model_names import (
-    PRODUCT_TEMPLATE_TABLE, MODEL_NAME_FIELD, RECORD_ID_FIELD,
+    PRODUCT_TEMPLATE_TABLE,
 )
-
+from ..shared.model_names.shared_names import (
+    MODEL_NAME_FIELD, RECORD_ID_FIELD,
+)
 
 class product_template(models.Model):
     _inherit = [PRODUCT_TEMPLATE_TABLE]

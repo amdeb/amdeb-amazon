@@ -1,12 +1,12 @@
 # -*- coding: utf-8 -*-
 
 from ..shared.model_names import(
-    MODEL_NAME_FIELD,
     PRODUCT_TEMPLATE_TABLE,
     PRODUCT_PRODUCT_TABLE,
     WRITE_FIELD_NAMES_FIELD,
     FIELD_NAME_DELIMITER
 )
+from ..shared.model_names.shared_names import MODEL_NAME_FIELD
 
 
 class SyncHeadAccess(object):

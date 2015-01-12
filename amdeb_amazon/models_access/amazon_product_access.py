@@ -1,9 +1,12 @@
 # -*- coding: utf-8 -*-
 import logging
 from ..shared.model_names import (
-    AMAZON_PRODUCT_TABLE, MODEL_NAME_FIELD, RECORD_ID_FIELD,
-    TEMPLATE_ID_FIELD, PRODUCT_SKU_FIELD, PRODUCT_PRODUCT_TABLE,
+    AMAZON_PRODUCT_TABLE, PRODUCT_PRODUCT_TABLE,
     AMAZON_CREATION_STATUS_FIELD,
+)
+from ..shared.model_names.shared_names import (
+    MODEL_NAME_FIELD, RECORD_ID_FIELD,
+    TEMPLATE_ID_FIELD, PRODUCT_SKU_FIELD,
 )
 from ..shared.product_creation_status import (
     PRODUCT_CREATION_WAITING,

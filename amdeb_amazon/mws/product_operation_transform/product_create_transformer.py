@@ -5,8 +5,10 @@ from ...models_access import ProductSyncAccess
 from ...models_access import OdooProductAccess
 from ...models_access import AmazonProductAccess
 from ...shared.model_names import (
-    MODEL_NAME_FIELD, PRODUCT_TEMPLATE_TABLE,
-    TEMPLATE_ID_FIELD, RECORD_ID_FIELD,
+    PRODUCT_TEMPLATE_TABLE,
+)
+from ...shared.model_names.shared_names import (
+    MODEL_NAME_FIELD, TEMPLATE_ID_FIELD, RECORD_ID_FIELD,
 )
 from ...shared.sync_operation_types import SYNC_CREATE
 

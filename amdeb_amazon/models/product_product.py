@@ -4,18 +4,18 @@ from openerp import api, models, fields
 from openerp.exceptions import ValidationError
 
 from ..models_access.amazon_product_access import AmazonProductAccess
-
 from ..shared.model_names import (
     PRODUCT_PRODUCT_TABLE,
     PRODUCT_TEMPLATE_TABLE,
     AMAZON_SYNC_ACTIVE_FIELD,
     PRODUCT_DEFAULT_CODE_FIELD,
-    PRODUCT_NAME_FIELD,
     PRODUCT_TEMPLATE_ID_FIELD,
     PRODUCT_DESCRIPTION_SALE_FIELD,
     PRODUCT_AMAZON_DESCRIPTION_FIELD,
-    MODEL_NAME_FIELD, RECORD_ID_FIELD,
     PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD,
+)
+from ..shared.model_names.shared_names import(
+    SHARED_NAME_FIELD, MODEL_NAME_FIELD, RECORD_ID_FIELD,
 )
 
 
@@ -65,9 +65,9 @@ class product_product(models.Model):
             template = record[PRODUCT_TEMPLATE_ID_FIELD]
             has_error = False
             message = 'Unable to enable sync because of missing value of: '
-            if not template[PRODUCT_NAME_FIELD]:
+            if not template[SHARED_NAME_FIELD]:
                 has_error = True
-                message += ' ' + PRODUCT_NAME_FIELD
+                message += ' ' + SHARED_NAME_FIELD
             if not record[PRODUCT_DEFAULT_CODE_FIELD]:
                 has_error = True
                 message += ' ' + PRODUCT_DEFAULT_CODE_FIELD

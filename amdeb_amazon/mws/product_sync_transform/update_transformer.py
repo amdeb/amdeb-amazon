@@ -2,13 +2,14 @@
 
 import logging
 from ...shared.model_names import (
-    MODEL_NAME_FIELD, RECORD_ID_FIELD,
-    PRODUCT_NAME_FIELD,
     PRODUCT_DESCRIPTION_SALE_FIELD,
     PRODUCT_AMAZON_DESCRIPTION_FIELD,
     PRODUCT_PRODUCT_BRAND_FIELD,
     PRODUCT_BULLET_POINT_PREFIX,
     PRODUCT_BULLET_POINT_COUNT,
+)
+from ...shared.model_names.shared_names import(
+    SHARED_NAME_FIELD, MODEL_NAME_FIELD, RECORD_ID_FIELD,
 )
 from .base_transfomer import BaseTransformer
 from ...models_access import OdooProductAccess
@@ -48,9 +49,9 @@ class UpdateTransformer(BaseTransformer):
             self._add_string(sync_value, 'Description', description)
 
     def _convert_title(self, write_field_names, sync_value):
-        if PRODUCT_NAME_FIELD in write_field_names:
+        if SHARED_NAME_FIELD in write_field_names:
             self._has_mws_data = True
-        title = self._product[PRODUCT_NAME_FIELD]
+        title = self._product[SHARED_NAME_FIELD]
         self._check_string(sync_value, 'Title', title)
 
     def _convert_brand(self, write_field_names, sync_value):

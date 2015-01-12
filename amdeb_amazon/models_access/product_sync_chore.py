@@ -5,10 +5,11 @@ from datetime import datetime, timedelta
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT as DATETIME_FORMAT
 from ..shared.model_names import (
     AMAZON_PRODUCT_SYNC_TABLE,
-    PRODUCT_CREATE_DATE_FIELD, SYNC_STATUS_FIELD,
+    SYNC_STATUS_FIELD,
     SYNC_CHECK_STATUS_COUNT_FILED, AMAZON_MESSAGE_CODE_FIELD,
     AMAZON_RESULT_DESCRIPTION_FIELD,
 )
+from ..shared.model_names.shared_names import MODEL_CREATE_DATE_FIELD
 from ..shared.sync_status import SYNC_STATUS_PENDING, SYNC_STATUS_ERROR
 
 _logger = logging.getLogger(__name__)
@@ -32,7 +33,7 @@ class ProductSyncChore(object):
         archive_date = now - timedelta(days=_ARCHIVE_DAYS)
         archive_date_str = archive_date.strftime(DATETIME_FORMAT)
         archive_records = self._table.search([
-            (PRODUCT_CREATE_DATE_FIELD, '<', archive_date_str),
+            (MODEL_CREATE_DATE_FIELD, '<', archive_date_str),
             (SYNC_STATUS_FIELD, '=', SYNC_STATUS_PENDING),
             (SYNC_CHECK_STATUS_COUNT_FILED, '>=', _ARCHIVE_CHECK_COUNT)
         ])
@@ -49,12 +50,15 @@ class ProductSyncChore(object):
         ))
 
     def cleanup(self):
-        _logger.debug("Enter ProductSyncAccess cleanup()")
+        """
+        clean ancient syncs regardless of its status
+        """
+        _logger.debug("Enter ProductSyncChore cleanup()")
         now = datetime.utcnow()
         unlink_date = now - timedelta(days=_UNLINK_DAYS)
         unlink_date_str = unlink_date.strftime(DATETIME_FORMAT)
         unlink_records = self._table.search([
-            (PRODUCT_CREATE_DATE_FIELD, '<', unlink_date_str)
+            (MODEL_CREATE_DATE_FIELD, '<', unlink_date_str)
         ])
         count = len(unlink_records)
         if unlink_records:

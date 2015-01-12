@@ -2,7 +2,7 @@
 
 import logging
 
-from ..shared.model_names import (
+from ..shared.model_names.amazon_setting_model import (
     IR_VALUES_TABLE, AMAZON_SETTINGS_TABLE,
 )
 from .connector import Boto

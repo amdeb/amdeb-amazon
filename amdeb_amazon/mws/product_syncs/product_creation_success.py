@@ -4,8 +4,10 @@ import logging
 
 from ...shared.model_names import (
     PRODUCT_TEMPLATE_TABLE,
-    MODEL_NAME_FIELD, RECORD_ID_FIELD,
-    SYNC_STATUS_FIELD, TEMPLATE_ID_FIELD,
+    SYNC_STATUS_FIELD,
+)
+from ...shared.model_names.shared_names import (
+    MODEL_NAME_FIELD, RECORD_ID_FIELD, TEMPLATE_ID_FIELD
 )
 from ...shared.sync_status import SYNC_STATUS_WARNING, SYNC_STATUS_SUCCESS
 from ...shared.sync_operation_types import (
