@@ -8,7 +8,9 @@ from ...shared.model_names import (
     MODEL_NAME_FIELD, RECORD_ID_FIELD,
     SYNC_TYPE_FIELD,
 )
-from ...shared.sync_operation_types import SYNC_DELETE, SYNC_CREATE
+from ...shared.sync_operation_types import (
+    SYNC_DELETE, SYNC_CREATE, SYNC_DEACTIVATE,
+)
 
 _logger = logging.getLogger(__name__)
 
@@ -88,27 +90,42 @@ class BaseTransformer(object):
         BaseTransformer._check_string(sync_value, 'SKU', sku)
         return sync_value
 
-    def _transform_sync(self, sync_op, invalid_ops, sync_values):
+    def _check_stop(self, sync_op):
+        stop_sync = False
         self._product = self._odoo_product.get_existed_product(sync_op)
-
-        # for all but delete, we want to make sure the product
-        # is not unlinked because of waiting syncs
+        # for all but delete, we want to make sure the product exists
+        # no need to check Amazon Product table because both
+        # waiting syncs are checked before switch to new
         if sync_op[SYNC_TYPE_FIELD] != SYNC_DELETE:
-            if self._product and self._odoo_product.is_sync_active_product(
-                    self._product):
-                sync_value = self._convert_sync(sync_op)
-                if sync_value:
-                    sync_values.append(sync_value)
+            if self._product:
+                if self._odoo_product.is_sync_active_product(
+                        self._product):
+                    # may be unnecessary but does not hurt
+                    if sync_op[SYNC_TYPE_FIELD] == SYNC_DEACTIVATE:
+                        stop_sync = True
                 else:
-                    log_template = "Sync id {0} has empty value. Skip it."
-                    _logger.debug(log_template.format(sync_op.id))
-                    ProductSyncAccess.update_sync_new_empty_value(sync_op)
-                    invalid_ops.append(sync_op)
+                    if sync_op[SYNC_TYPE_FIELD] != SYNC_DEACTIVATE:
+                        stop_sync = True
+
             else:
-                log_template = "Product not found or sync disabled " \
-                               "for sync id {0}. Skip it."
+                stop_sync = True
+        return stop_sync
+
+    def _transform_sync(self, sync_op, invalid_ops, sync_values):
+        if self._check_stop(sync_op):
+            log_template = "Product not found or sync disabled " \
+                           "for sync id {0}. Skip it."
+            _logger.debug(log_template.format(sync_op.id))
+            ProductSyncAccess.set_sync_no_product(sync_op)
+            invalid_ops.append(sync_op)
+        else:
+            sync_value = self._convert_sync(sync_op)
+            if sync_value:
+                sync_values.append(sync_value)
+            else:
+                log_template = "Sync id {0} has empty value. Skip it."
                 _logger.debug(log_template.format(sync_op.id))
-                ProductSyncAccess.set_sync_no_product(sync_op)
+                ProductSyncAccess.update_sync_new_empty_value(sync_op)
                 invalid_ops.append(sync_op)
 
     def transform(self, sync_ops):
