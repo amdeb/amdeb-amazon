@@ -69,7 +69,7 @@ class ProductWriteTransformer(object):
         # it can be changed in template and variant and
         # both generate write operations.
         if PRODUCT_LIST_PRICE_FIELD in values:
-            values.pop(PRODUCT_LIST_PRICE_FIELD)
+            values.remove(PRODUCT_LIST_PRICE_FIELD)
             if ProductOperationAccess.is_product_template(operation):
                 self._add_sync_price(operation)
             else:
@@ -80,14 +80,14 @@ class ProductWriteTransformer(object):
         # the inventory is only stored in single-variant template
         # or non-partial variant, no need to skip any inventory update
         if PRODUCT_VIRTUAL_AVAILABLE_FIELD in values:
-            values.pop(PRODUCT_VIRTUAL_AVAILABLE_FIELD)
+            values.remove(PRODUCT_VIRTUAL_AVAILABLE_FIELD)
             self._insert_sync_operation(operation, SYNC_INVENTORY)
 
     def _transform_image(self, operation, values):
         # create image sync regardless the image_trigger value
         # only for non-partial variant or single-variant template
         if PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD in values:
-            values.pop(PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD)
+            values.remove(PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD)
             if self._odoo_product.is_partial_variant_multi_template(
                     operation):
                 _logger.debug("ignore image operation for a partial variant "
