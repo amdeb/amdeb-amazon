@@ -1,16 +1,17 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from ...models_access import ProductSyncAccess
-from ...models_access import OdooProductAccess
-from ...models_access import AmazonProductAccess
-from ...shared.model_names import (
-    PRODUCT_TEMPLATE_TABLE,
+
+from ...models_access import (
+    ProductSyncAccess,
+    OdooProductAccess,
+    AmazonProductAccess,
 )
-from ...shared.model_names.shared_names import (
+from ...model_names.product_template import PRODUCT_TEMPLATE_TABLE
+from ...model_names.shared_names import (
     MODEL_NAME_FIELD, TEMPLATE_ID_FIELD, RECORD_ID_FIELD,
 )
-from ...shared.sync_operation_types import SYNC_CREATE
+from ...model_names.product_sync import SYNC_CREATE
 
 _logger = logging.getLogger(__name__)
 

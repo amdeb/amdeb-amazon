@@ -2,7 +2,7 @@
 
 import logging
 
-from ...shared.model_names import PRODUCT_LST_PRICE_FIELD
+from ...model_names.product_product import PRODUCT_LST_PRICE_FIELD
 from .base_transfomer import BaseTransformer
 
 _logger = logging.getLogger(__name__)

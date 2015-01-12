@@ -2,19 +2,16 @@
 
 from openerp import models, fields, api
 
-from ..shared.model_names import (
+from ..model_names.product_template import PRODUCT_TEMPLATE_TABLE
+from ..model_names.product_product import PRODUCT_PRODUCT_TABLE
+from ..model_names.product_sync import (
     AMAZON_PRODUCT_SYNC_TABLE,
-    PRODUCT_TEMPLATE_TABLE,
-    PRODUCT_PRODUCT_TABLE,
-)
-from ..shared.sync_operation_types import (
     SYNC_CREATE, SYNC_UPDATE, SYNC_DELETE,
     SYNC_PRICE, SYNC_INVENTORY, SYNC_IMAGE,
     SYNC_DEACTIVATE, SYNC_RELATION,
-)
-from ..shared.sync_status import (
-    SYNC_STATUS_NEW, SYNC_STATUS_PENDING, SYNC_STATUS_SUCCESS,
-    SYNC_STATUS_WARNING, SYNC_STATUS_ERROR, SYNC_STATUS_WAITING,
+    SYNC_STATUS_NEW, SYNC_STATUS_PENDING,
+    SYNC_STATUS_SUCCESS, SYNC_STATUS_WARNING,
+    SYNC_STATUS_ERROR, SYNC_STATUS_WAITING,
 )
 from ..mws import ProductSynchronization
 

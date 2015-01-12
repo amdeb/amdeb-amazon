@@ -2,21 +2,20 @@
 
 import logging
 
-from ...shared.model_names import (
-    OPERATION_TYPE_FIELD,
+from ...model_names.shared_names import (
+    MODEL_NAME_FIELD, RECORD_ID_FIELD,
     WRITE_FIELD_NAMES_FIELD,
 )
-from ...shared.model_names.shared_names import (
-    MODEL_NAME_FIELD, RECORD_ID_FIELD,
-)
+from ...model_names.product_operation import OPERATION_TYPE_FIELD
 from .operation_types import (
     CREATE_RECORD, UNLINK_RECORD,
 )
-
 from ...models_access import OdooProductAccess, ProductOperationAccess
-from . import ProductUnlinkTransformer
-from . import ProductCreateTransformer
-from . import ProductWriteTransformer
+from . import (
+    ProductUnlinkTransformer,
+    ProductCreateTransformer,
+    ProductWriteTransformer,
+)
 
 _logger = logging.getLogger(__name__)
 

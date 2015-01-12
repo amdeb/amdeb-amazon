@@ -2,17 +2,14 @@
 
 from openerp import models, fields
 
-from ..shared.model_names import (
+from ..model_names.product_template import PRODUCT_TEMPLATE_TABLE
+from ..model_names.product_product import PRODUCT_PRODUCT_TABLE
+from ..model_names.amazon_product import (
     AMAZON_PRODUCT_TABLE,
-    PRODUCT_TEMPLATE_TABLE,
-    PRODUCT_PRODUCT_TABLE,
-)
-from ..shared.product_creation_status import (
     PRODUCT_CREATION_WAITING,
     PRODUCT_CREATION_CREATED,
     PRODUCT_CREATION_ERROR,
 )
-
 
 class AmazonProductSync(models.Model):
     """

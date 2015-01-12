@@ -3,19 +3,21 @@
 from openerp import api, models, fields
 from openerp.exceptions import ValidationError
 
+from ..model_names.shared_names import(
+    SHARED_NAME_FIELD, MODEL_NAME_FIELD, RECORD_ID_FIELD,
+)
 from ..models_access.amazon_product_access import AmazonProductAccess
-from ..shared.model_names import (
+from ..model_names.product_product import (
     PRODUCT_PRODUCT_TABLE,
-    PRODUCT_TEMPLATE_TABLE,
     AMAZON_SYNC_ACTIVE_FIELD,
     PRODUCT_DEFAULT_CODE_FIELD,
     PRODUCT_TEMPLATE_ID_FIELD,
-    PRODUCT_DESCRIPTION_SALE_FIELD,
-    PRODUCT_AMAZON_DESCRIPTION_FIELD,
     PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD,
 )
-from ..shared.model_names.shared_names import(
-    SHARED_NAME_FIELD, MODEL_NAME_FIELD, RECORD_ID_FIELD,
+from ..model_names.product_template import (
+    PRODUCT_TEMPLATE_TABLE,
+    PRODUCT_DESCRIPTION_SALE_FIELD,
+    PRODUCT_AMAZON_DESCRIPTION_FIELD,
 )
 
 

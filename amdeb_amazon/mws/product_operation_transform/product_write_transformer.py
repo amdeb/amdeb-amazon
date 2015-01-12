@@ -2,22 +2,22 @@
 
 import logging
 
-from ...shared.model_names import (
+from ...model_names.shared_names import RECORD_ID_FIELD
+from ...model_names.product_product import (
     AMAZON_SYNC_ACTIVE_FIELD, PRODUCT_LIST_PRICE_FIELD,
     PRODUCT_VIRTUAL_AVAILABLE_FIELD,
     PRODUCT_AMAZON_IMAGE_TRIGGER_FIELD,
 )
-from ...shared.model_names.shared_names import (
-    RECORD_ID_FIELD,
-)
-from ...shared.sync_operation_types import (
+from ...model_names.product_sync import (
     SYNC_UPDATE, SYNC_PRICE, SYNC_INVENTORY,
     SYNC_IMAGE, SYNC_DEACTIVATE,
 )
-from ...models_access import ProductSyncAccess
-from ...models_access import AmazonProductAccess
-from ...models_access import OdooProductAccess
-from ...models_access import ProductOperationAccess
+from ...models_access import (
+    ProductSyncAccess,
+    AmazonProductAccess,
+    OdooProductAccess,
+    ProductOperationAccess
+)
 from .product_create_transformer import ProductCreateTransformer
 
 _logger = logging.getLogger(__name__)

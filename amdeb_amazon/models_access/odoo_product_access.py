@@ -1,17 +1,21 @@
 # -*- coding: utf-8 -*-
 
-from ..shared.model_names import(
-    PRODUCT_IS_PRODUCT_VARIANT_FIELD,
+from ..model_names.shared_names import(
+    SHARED_NAME_FIELD, MODEL_NAME_FIELD, RECORD_ID_FIELD,
+)
+from ..model_names.product_product import(
     PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD, AMAZON_SYNC_ACTIVE_FIELD,
-    PRODUCT_DEFAULT_CODE_FIELD, PRODUCT_VARIANT_COUNT_FIELD,
+    PRODUCT_DEFAULT_CODE_FIELD,
     PRODUCT_ATTRIBUTE_ID_FIELD,
+)
+from ..model_names.product_template import (
+    PRODUCT_IS_PRODUCT_VARIANT_FIELD,
+    PRODUCT_VARIANT_COUNT_FIELD,
     PRODUCT_VARIANT_IDS_FIELD,
     PRODUCT_BULLET_POINT_PREFIX,
     PRODUCT_BULLET_POINT_COUNT,
 )
-from ..shared.model_names.shared_names import(
-    SHARED_NAME_FIELD, MODEL_NAME_FIELD, RECORD_ID_FIELD,
-)
+
 
 class OdooProductAccess(object):
     """

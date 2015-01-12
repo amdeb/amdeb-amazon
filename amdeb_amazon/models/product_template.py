@@ -2,13 +2,12 @@
 
 from openerp import models, fields
 
-from ..models_access.amazon_product_access import AmazonProductAccess
-from ..shared.model_names import (
-    PRODUCT_TEMPLATE_TABLE,
-)
-from ..shared.model_names.shared_names import (
+from ..model_names.shared_names import (
     MODEL_NAME_FIELD, RECORD_ID_FIELD,
 )
+from ..models_access.amazon_product_access import AmazonProductAccess
+from ..model_names.product_template import PRODUCT_TEMPLATE_TABLE
+
 
 class product_template(models.Model):
     _inherit = [PRODUCT_TEMPLATE_TABLE]

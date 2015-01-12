@@ -2,7 +2,7 @@
 
 import logging
 
-from ...shared.model_names import AMAZON_SUBMISSION_ID_FIELD
+from ...model_names.product_sync import AMAZON_SUBMISSION_ID_FIELD
 from ...models_access import ProductSyncAccess
 
 _logger = logging.getLogger(__name__)

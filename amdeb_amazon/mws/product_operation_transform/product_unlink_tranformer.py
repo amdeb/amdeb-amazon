@@ -2,17 +2,16 @@
 
 import logging
 
-from ...shared.model_names import (
-    OPERATION_TYPE_FIELD,
-)
-from ...shared.model_names.shared_names import (
+from ...model_names.shared_names import (
     RECORD_ID_FIELD, TEMPLATE_ID_FIELD,
 )
+from ...model_names.product_operation import OPERATION_TYPE_FIELD
+from ...models_access import (
+    ProductSyncAccess,
+    AmazonProductAccess,
+    ProductOperationAccess,
+)
 from .operation_types import UNLINK_RECORD
-
-from ...models_access import ProductSyncAccess
-from ...models_access import AmazonProductAccess
-from ...models_access import ProductOperationAccess
 
 _logger = logging.getLogger(__name__)
 

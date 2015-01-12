@@ -3,14 +3,16 @@
 import logging
 from datetime import datetime, timedelta
 from openerp.tools import DEFAULT_SERVER_DATETIME_FORMAT as DATETIME_FORMAT
-from ..shared.model_names import (
+
+from ..model_names.shared_names import MODEL_CREATE_DATE_FIELD
+from ..model_names.product_sync import (
     AMAZON_PRODUCT_SYNC_TABLE,
     SYNC_STATUS_FIELD,
-    SYNC_CHECK_STATUS_COUNT_FILED, AMAZON_MESSAGE_CODE_FIELD,
+    SYNC_CHECK_STATUS_COUNT_FILED,
+    AMAZON_MESSAGE_CODE_FIELD,
     AMAZON_RESULT_DESCRIPTION_FIELD,
+    SYNC_STATUS_PENDING, SYNC_STATUS_ERROR,
 )
-from ..shared.model_names.shared_names import MODEL_CREATE_DATE_FIELD
-from ..shared.sync_status import SYNC_STATUS_PENDING, SYNC_STATUS_ERROR
 
 _logger = logging.getLogger(__name__)
 

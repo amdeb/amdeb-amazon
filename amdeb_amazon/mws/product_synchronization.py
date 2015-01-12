@@ -2,11 +2,11 @@
 
 import logging
 
-from ..shared.model_names.amazon_setting_model import (
+from ..model_names.amazon_setting import (
     IR_VALUES_TABLE, AMAZON_SETTINGS_TABLE,
 )
-from .connector import Boto
 from ..models_access import ProductOperationAccess
+from .connector import Boto
 from .product_operation_transform import ProductOperationTransformer
 from .product_syncs import ProductSyncNew
 from .product_syncs import ProductSyncPending

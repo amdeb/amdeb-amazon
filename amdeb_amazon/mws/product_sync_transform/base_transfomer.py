@@ -1,16 +1,15 @@
 # -*- coding: utf-8 -*-
 
 import logging
+
 from ...models_access import (
     OdooProductAccess, ProductSyncAccess, AmazonProductAccess
 )
-from ...shared.model_names import (
-    SYNC_TYPE_FIELD,
-)
-from ...shared.model_names.shared_names import (
+from ...model_names.shared_names import (
     MODEL_NAME_FIELD, RECORD_ID_FIELD,
 )
-from ...shared.sync_operation_types import (
+from ...model_names.product_sync import (
+    SYNC_TYPE_FIELD,
     SYNC_DELETE, SYNC_CREATE, SYNC_DEACTIVATE,
 )
 

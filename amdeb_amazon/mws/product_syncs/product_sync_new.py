@@ -1,26 +1,24 @@
 # -*- coding: utf-8 -*-
 
 import logging
+
 from boto.exception import BotoServerError
 
-from ...shared.model_names import (
+from ...model_names.product_sync import (
     SYNC_STATUS_FIELD, AMAZON_MESSAGE_CODE_FIELD,
     AMAZON_REQUEST_TIMESTAMP_FIELD, AMAZON_SUBMISSION_ID_FIELD,
-)
-from ...shared.sync_operation_types import (
     SYNC_DELETE, SYNC_CREATE, SYNC_DEACTIVATE,
     SYNC_PRICE, SYNC_UPDATE, SYNC_INVENTORY,
     SYNC_IMAGE, SYNC_RELATION,
+    SYNC_STATUS_PENDING,
 )
-from ...shared.sync_status import SYNC_STATUS_PENDING
 from ...models_access import ProductSyncAccess
-from ..product_sync_transform import BaseTransformer
-from ..product_sync_transform import UpdateTransformer
-from ..product_sync_transform import PriceTransformer
-from ..product_sync_transform import InventoryTransformer
-from ..product_sync_transform import CreateTransformer
-from ..product_sync_transform import DeactivateTransformer
-from ..product_sync_transform import RelationTransformer
+from ..product_sync_transform import (
+    BaseTransformer, UpdateTransformer,
+    PriceTransformer, InventoryTransformer,
+    CreateTransformer, DeactivateTransformer,
+    RelationTransformer,
+)
 
 _logger = logging.getLogger(__name__)
 

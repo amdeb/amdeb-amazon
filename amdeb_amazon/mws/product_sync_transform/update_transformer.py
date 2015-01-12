@@ -1,19 +1,19 @@
 # -*- coding: utf-8 -*-
 
 import logging
-from ...shared.model_names import (
+
+from ...model_names.shared_names import(
+    SHARED_NAME_FIELD, MODEL_NAME_FIELD, RECORD_ID_FIELD,
+)
+from ...model_names.product_template import (
     PRODUCT_DESCRIPTION_SALE_FIELD,
     PRODUCT_AMAZON_DESCRIPTION_FIELD,
     PRODUCT_PRODUCT_BRAND_FIELD,
     PRODUCT_BULLET_POINT_PREFIX,
     PRODUCT_BULLET_POINT_COUNT,
 )
-from ...shared.model_names.shared_names import(
-    SHARED_NAME_FIELD, MODEL_NAME_FIELD, RECORD_ID_FIELD,
-)
+from ...models_access import OdooProductAccess, ProductSyncAccess
 from .base_transfomer import BaseTransformer
-from ...models_access import OdooProductAccess
-from ...models_access import ProductSyncAccess
 
 _logger = logging.getLogger(__name__)
 

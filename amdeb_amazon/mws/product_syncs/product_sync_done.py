@@ -2,13 +2,12 @@
 
 import logging
 
-from ...shared.model_names import (
+from ...model_names.product_sync import (
     SYNC_STATUS_FIELD, AMAZON_MESSAGE_CODE_FIELD,
     AMAZON_SUBMISSION_ID_FIELD, AMAZON_RESULT_DESCRIPTION_FIELD,
-    SYNC_TYPE_FIELD
+    SYNC_TYPE_FIELD, SYNC_CREATE,
+    SYNC_STATUS_SUCCESS,
 )
-from ...shared.sync_status import SYNC_STATUS_SUCCESS
-from ...shared.sync_operation_types import SYNC_CREATE
 from ...models_access import ProductSyncAccess
 from .product_creation_success import ProductCreationSuccess
 

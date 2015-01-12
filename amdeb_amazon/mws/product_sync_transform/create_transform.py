@@ -2,22 +2,19 @@
 
 import logging
 
-from .base_transfomer import BaseTransformer
 from ...models_access import OdooProductAccess
-from ...shared.model_names import (
+from ...model_names.shared_names import SHARED_NAME_FIELD
+from ...model_names.product_template import (
     PRODUCT_DESCRIPTION_SALE_FIELD,
     PRODUCT_AMAZON_DESCRIPTION_FIELD,
     PRODUCT_PRODUCT_BRAND_FIELD,
 )
-from ...shared.model_names.shared_names import(
-    SHARED_NAME_FIELD,
-)
+from .base_transfomer import BaseTransformer
 
 _logger = logging.getLogger(__name__)
 
 
 class CreateTransformer(BaseTransformer):
-
     def _convert_description(self, sync_value):
         title = self._product[SHARED_NAME_FIELD]
         self._check_string(sync_value, 'Title', title)

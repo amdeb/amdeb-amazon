@@ -2,21 +2,21 @@
 
 import logging
 
-from ...shared.model_names import (
-    PRODUCT_TEMPLATE_TABLE,
-    SYNC_STATUS_FIELD,
-)
-from ...shared.model_names.shared_names import (
+from ...model_names.shared_names import (
     MODEL_NAME_FIELD, RECORD_ID_FIELD, TEMPLATE_ID_FIELD
 )
-from ...shared.sync_status import SYNC_STATUS_WARNING, SYNC_STATUS_SUCCESS
-from ...shared.sync_operation_types import (
+from ...model_names.product_template import PRODUCT_TEMPLATE_TABLE
+from ...model_names.product_sync import (
+    SYNC_STATUS_FIELD,
     SYNC_RELATION, SYNC_PRICE,
     SYNC_IMAGE, SYNC_INVENTORY,
+    SYNC_STATUS_WARNING, SYNC_STATUS_SUCCESS,
 )
-from ...models_access import ProductSyncAccess
-from ...models_access import AmazonProductAccess
-from ...models_access import OdooProductAccess
+from ...models_access import (
+    ProductSyncAccess,
+    AmazonProductAccess,
+    OdooProductAccess,
+)
 
 _logger = logging.getLogger(__name__)
 

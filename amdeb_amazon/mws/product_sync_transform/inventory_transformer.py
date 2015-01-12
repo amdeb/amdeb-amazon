@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 
+from ...model_names.product_product import PRODUCT_VIRTUAL_AVAILABLE_FIELD
 from .base_transfomer import BaseTransformer
-from ...shared.model_names import PRODUCT_VIRTUAL_AVAILABLE_FIELD
 
 
 class InventoryTransformer(BaseTransformer):

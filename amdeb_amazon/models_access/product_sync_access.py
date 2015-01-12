@@ -2,22 +2,24 @@
 
 import logging
 
-from ..shared.model_names import (
-    AMAZON_PRODUCT_SYNC_TABLE, SYNC_TYPE_FIELD,
-    WRITE_FIELD_NAMES_FIELD, SYNC_STATUS_FIELD,
-    SYNC_CHECK_STATUS_COUNT_FILED, AMAZON_MESSAGE_CODE_FIELD,
-    AMAZON_RESULT_DESCRIPTION_FIELD, AMAZON_REQUEST_TIMESTAMP_FIELD,
-)
-from ..shared.model_names.shared_names import (
+from ..model_names.shared_names import (
     MODEL_NAME_FIELD, RECORD_ID_FIELD,
     TEMPLATE_ID_FIELD, PRODUCT_SKU_FIELD,
+    WRITE_FIELD_NAMES_FIELD,
 )
-from ..shared.sync_status import (
+from ..model_names.product_sync import (
+    AMAZON_PRODUCT_SYNC_TABLE,
+    SYNC_TYPE_FIELD,
+    SYNC_STATUS_FIELD,
+    SYNC_CHECK_STATUS_COUNT_FILED,
+    AMAZON_MESSAGE_CODE_FIELD,
+    AMAZON_RESULT_DESCRIPTION_FIELD,
+    AMAZON_REQUEST_TIMESTAMP_FIELD,
+    SYNC_DELETE,
     SYNC_STATUS_NEW, SYNC_STATUS_PENDING,
     SYNC_STATUS_ERROR, AMAZON_STATUS_PROCESS_DONE,
     SYNC_STATUS_SUCCESS, SYNC_STATUS_WAITING,
 )
-from ..shared.sync_operation_types import SYNC_DELETE
 from ..shared.utility import field_utcnow
 from .sync_head_access import SyncHeadAccess
 
