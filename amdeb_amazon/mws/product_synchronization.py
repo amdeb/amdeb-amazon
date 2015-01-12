@@ -28,20 +28,21 @@ class ProductSynchronization(object):
         """
         We need a good strategy to deal with request exception.
         1. Make all request idempotent by using the latest data in request
-        2. When there is an exception, save current results and stop
+        2. When there is an exception, save current results, report and
+        swallow the exception.
 
         synchronize product operations to Amazon
         This is the entry to all product synchronization functions.
         We process old business first. There are several steps:
         1. do daily chore on sync table
-        2. get sync results for pending sync operations
+        2. get sync status for pending sync operations
         3. process completed syncs
-        4. get new operations and set sync timestamp
+        4. get new product operations and set sync timestamp
         5. convert new product operations to sync operations
-        6. execute sync operations and save submission timestamp
+        6. send syncs to Amazon
 
-        All calls report exception inside their methods because
-        they should run independently.
+        All stages swallows exception because each stage retrieves
+        data from database
         """
         _logger.debug("Enter ProductSynchronization synchronize()")
 

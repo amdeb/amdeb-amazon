@@ -13,7 +13,7 @@ def _do_it(env):
     try:
         product_sync = ProductSyncChore(env)
         product_sync.cleanup()
-        product_sync.archive_old()
+        product_sync.archive_pending()
     except Exception:
         _logger.exception("Exception in do_daily_chore.")
 
@@ -37,4 +37,4 @@ def do_daily_chore(env):
         _last_chore_date = current_day
         _do_it(env)
     else:
-        _logger.debug("Not a new day, skip chore.")
+        _logger.debug("Not a new day, skip daily product sync chore.")

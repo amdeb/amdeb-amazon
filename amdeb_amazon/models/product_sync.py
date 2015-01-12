@@ -86,13 +86,41 @@ class AmazonProductSync(models.Model):
         readonly=True,
     )
 
+    # When created, a sync is in New or Waiting status
+    # Default is New. It is Waiting when the Amazon Product
+    # is waiting for creation. When a product is created
+    # successfully, the Waiting status of its syncs switches to
+    # New. When a product creation failed, the Waiting status of
+    # its sync switches to Error.
+    #
+    # Each synchronization run sends New Syncs to Amazon. When there is a
+    # submission id, a New sync becomes a Pending sync. If there
+    # is no submission id or mws call fails, its status becomes Error.
+    # Because mws call library has built-in retry, we don't re-try
+    # it in anther synchronization run except for exceptions
+    # such as Server unavailable or request throttling.
+    # These exceptions are temporal conditions that stop the
+    # synchronization process without changing the New sync status.
+    #
+    # Every synchronization run checks Pending syncs and increase
+    # its counter. If a New sync meets archive condition,
+    # its status becomes Error in daily chore. If its submission
+    # is complete, its status could be Success, Warning, or Error.
+    #
+    # The life of a sync starts in New or Waiting and ends in one of
+    # Success, Warning, or Error status
     sync_status = fields.Selection(
         string='Synchronization Status',
         required=True,
         selection=[
+            # stage 1, beginning of life
             (SYNC_STATUS_NEW, SYNC_STATUS_NEW),
             (SYNC_STATUS_WAITING, SYNC_STATUS_WAITING),
+
+            # stage 2, has a submission id
             (SYNC_STATUS_PENDING, SYNC_STATUS_PENDING),
+
+            # stage 3, the final status of life
             (SYNC_STATUS_SUCCESS, SYNC_STATUS_SUCCESS),
             (SYNC_STATUS_WARNING, SYNC_STATUS_WARNING),
             (SYNC_STATUS_ERROR, SYNC_STATUS_ERROR),
@@ -102,8 +130,7 @@ class AmazonProductSync(models.Model):
         readonly=True,
     )
 
-    # use both creation timestamp and status count to
-    # get clean up old sync operations
+    # use with creation timestamp to archive old syncs.
     sync_check_status_count = fields.Integer(
         string='The Counter of Submission Status Check',
         required=True,
@@ -117,8 +144,9 @@ class AmazonProductSync(models.Model):
         readonly=True,
     )
 
-    # this field stores Amazon processing status and when it is done,
-    # the message code for a warning or an error
+    # this field stores Amazon processing status.
+    # when it is done, the sync status changes to
+    # one of the final status.
     amazon_message_code = fields.Char(
         string='Amazon Result Message Code',
         index=True,

@@ -26,8 +26,8 @@ class ProductSyncChore(object):
     def __init__(self, env):
         self._table = env[AMAZON_PRODUCT_SYNC_TABLE]
 
-    def archive_old(self):
-        _logger.debug("Enter ProductSyncAccess archive_old()")
+    def archive_pending(self):
+        _logger.debug("Enter ProductSyncChore archive_pending()")
         now = datetime.utcnow()
         archive_date = now - timedelta(days=_ARCHIVE_DAYS)
         archive_date_str = archive_date.strftime(DATETIME_FORMAT)

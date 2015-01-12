@@ -51,7 +51,7 @@ class ProductSyncPending(object):
 
     def synchronize(self):
         """
-        The mws call swallows exception to return any results it has.
+        A sync is in "pending" status
         """
         _logger.debug("Enter ProductSyncPending synchronize()")
         try:
