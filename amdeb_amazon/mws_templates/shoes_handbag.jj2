@@ -14,7 +14,5 @@
         {# MWS shows warning if this tag is missing #}
         <Department>{{ message['Department'] }}</Department>
         <ModelNumber>{{ message['SKU'] }}</ModelNumber>
-        {# required by mws #}
-        <NumberOfItems>1</NumberOfItems>
     </ClassificationData>
 </Shoes>

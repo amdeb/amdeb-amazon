@@ -10,7 +10,7 @@ from ..shared.model_names import (
 from ..shared.sync_operation_types import (
     SYNC_CREATE, SYNC_UPDATE, SYNC_DELETE,
     SYNC_PRICE, SYNC_INVENTORY, SYNC_IMAGE,
-    SYNC_DEACTIVATE,
+    SYNC_DEACTIVATE, SYNC_RELATION,
 )
 from ..shared.sync_status import (
     SYNC_STATUS_NEW, SYNC_STATUS_PENDING, SYNC_STATUS_SUCCESS,
@@ -68,6 +68,7 @@ class AmazonProductSync(models.Model):
             (SYNC_INVENTORY, SYNC_INVENTORY),
             (SYNC_IMAGE, SYNC_IMAGE),
             (SYNC_DEACTIVATE, SYNC_DEACTIVATE),
+            (SYNC_RELATION, SYNC_RELATION)
         ],
         index=True,
         readonly=True,
