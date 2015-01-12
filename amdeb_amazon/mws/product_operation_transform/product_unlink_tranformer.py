@@ -66,7 +66,7 @@ class ProductUnlinkTransformer(object):
         after the unlink syncs are created
         """
         amazon_product = self._amazon_product.search_by_head(operation)
-        if AmazonProductAccess.is_waiting_or_created(amazon_product):
+        if AmazonProductAccess.is_sync_enabled(amazon_product):
             # for a waiting or created product, just send delete request
             if ProductOperationAccess.is_product_template(operation):
                 self._add_template_unlink(amazon_product)
@@ -78,5 +78,4 @@ class ProductUnlinkTransformer(object):
                     self._sync_and_delete(amazon_product)
         else:
             # this include partial variant unlink
-            _logger.debug("Product is not created in Amazon or has no "
-                          "waiting creation. Skip unlink.")
+            _logger.debug("Product is not created in Amazon. Skip unlink.")

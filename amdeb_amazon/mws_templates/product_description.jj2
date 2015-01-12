@@ -4,3 +4,4 @@
 {{ macros.add_tag('Brand') }}
 {{ macros.add_tag('Description') }}
 {{ macros.add_tags('BulletPoint') }}
+{{ macros.add_tag('ItemType') }}

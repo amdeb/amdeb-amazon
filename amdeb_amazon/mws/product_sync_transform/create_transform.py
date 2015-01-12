@@ -25,12 +25,19 @@ class CreateTransformer(BaseTransformer):
             description = self._product[PRODUCT_DESCRIPTION_SALE_FIELD]
         self._check_string(sync_value, 'Description', description)
 
+        # Todo: required fields
+        sync_value['Department'] = "womens"
+        sync_value['ItemType'] = 'handbags'
+
         brand = self._product[PRODUCT_PRODUCT_BRAND_FIELD]
-        self._add_string(sync_value, 'Brand', brand)
+        self._check_string(sync_value, 'Brand', brand)
 
         bullet_points = OdooProductAccess.get_bullet_points(self._product)
         if bullet_points:
             sync_value['BulletPoint'] = bullet_points
+
+        sync_value['Department'] = "womens"
+        sync_value['ItemType'] = 'handbags'
 
     def _convert_variation(self, sync_value):
         has_color = False
@@ -71,4 +78,6 @@ class CreateTransformer(BaseTransformer):
             if OdooProductAccess.is_multi_variant_template(self._product):
                 sync_value['Parentage'] = 'parent'
 
+                # ToDo get from table
+                sync_value['VariationTheme'] = 'Color'
         return sync_value

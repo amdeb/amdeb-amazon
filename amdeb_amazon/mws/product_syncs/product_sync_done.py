@@ -32,8 +32,8 @@ class ProductSyncDone(object):
         for done in self._done_set:
             submission_id = done[AMAZON_SUBMISSION_ID_FIELD]
             submission_ids.add(submission_id)
-        log_template = "get {} submission ids for completed sync operations."
-        _logger.debug(log_template.format(len(submission_ids)))
+        log_text = "Got {0} submission ids: {1}"
+        _logger.debug(log_text.format(len(submission_ids), submission_ids))
         return submission_ids
 
     def _write_result(self, done, sync_result):

@@ -61,6 +61,9 @@ class ProductSyncPending(object):
 
             if self._pending_set:
                 submission_ids = self._get_submission_ids()
+                log_template = "Got {0} submission ids: {1}"
+                _logger.debug(log_template.format(
+                    len(submission_ids), submission_ids))
                 self._check_status(submission_ids)
         except:
             _logger.exception("Exception in ProductSyncPending synchronize().")

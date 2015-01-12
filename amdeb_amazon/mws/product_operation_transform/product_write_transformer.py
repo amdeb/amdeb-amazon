@@ -28,6 +28,8 @@ class ProductWriteTransformer(object):
         self._amazon_product = AmazonProductAccess(env)
         self._odoo_product = OdooProductAccess(env)
 
+        self._current_amazon_product = None
+
     def _get_creation_status(self, amazon_product):
         waiting_flag = False
         error_flag = False
@@ -40,22 +42,14 @@ class ProductWriteTransformer(object):
 
     def _insert_sync_operation(self, operation, sync_type,
                                write_field_names=None):
-        amazon_product = self._amazon_product.search_by_head(operation)
-        if amazon_product:
-            waiting_flag, error_flag = self._get_creation_status(
-                amazon_product)
-            self._product_sync.insert_sync(
-                operation, sync_type,
-                write_field_names=write_field_names,
-                waiting_flag=waiting_flag,
-                error_flag=error_flag)
-        else:
-            # the only normal but rare case where there is no amazon
-            # product record -- users may update
-            # sync active field several times and the current one is False
-            # it should be an error in other cases.
-            _logger.debug("No amazon product record, not insert a new "
-                          "record in product sync table.")
+
+        waiting_flag, error_flag = self._get_creation_status(
+            self._current_amazon_product)
+        self._product_sync.insert_sync(
+            operation, sync_type,
+            write_field_names=write_field_names,
+            waiting_flag=waiting_flag,
+            error_flag=error_flag)
 
     def _add_sync_price(self, operation):
         variants = self._amazon_product.get_variants(
@@ -124,13 +118,18 @@ class ProductWriteTransformer(object):
     def _transform_sync_active(self, operation, sync_active_value):
         if sync_active_value:
             _logger.debug("Amazon sync active flag changes to True,"
-                          "call create transformer for create sync.")
+                          "Call create transformer for create sync.")
             create_transformer = ProductCreateTransformer(self._env)
             create_transformer.transform(operation)
         else:
-            _logger.debug("Amazon sync active flag changes to "
-                          "False, generate a deactivate sync.")
-            self._transform_deactivate(operation)
+            if AmazonProductAccess.is_sync_enabled(
+                    self._current_amazon_product):
+                _logger.debug("Amazon sync active flag changes to "
+                              "False, generate a deactivate sync.")
+                self._transform_deactivate(operation)
+            else:
+                _logger.debug("Product is not created in Amazon. "
+                              "Ignore deactivate sync.")
 
     def transform(self, operation, write_fields):
         """
@@ -153,6 +152,9 @@ class ProductWriteTransformer(object):
         When the creation status is error, create a sync operation and set
         its status as Error and DONE.
         """
+
+        self._current_amazon_product = self._amazon_product.search_by_head(
+            operation)
         sync_active_value = self._odoo_product.is_sync_active(operation)
         if AMAZON_SYNC_ACTIVE_FIELD in write_fields:
             # sync active is in the write field, use the
@@ -160,8 +162,13 @@ class ProductWriteTransformer(object):
             self._transform_sync_active(operation, sync_active_value)
         else:
             if sync_active_value:
-                # we change the local copy in other methods
-                values_copy = write_fields.copy()
-                self._transform_update(operation, values_copy)
+                if AmazonProductAccess.is_sync_enabled(
+                        self._current_amazon_product):
+                    # we change the local copy in other methods
+                    values_copy = write_fields.copy()
+                    self._transform_update(operation, values_copy)
+                else:
+                    _logger.debug("Product is not created in Amazon. "
+                                  "Ignore write operation.")
             else:
                 _logger.debug("Product sync flag is disabled. Ignore writes.")

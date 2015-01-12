@@ -13,5 +13,6 @@
     <ClassificationData>
         {# MWS shows warning if this tag is missing #}
         <ModelNumber>{{ message['SKU'] }}</ModelNumber>
+        <Department>{{ message['Department'] }}</Department>
     </ClassificationData>
 </Shoes>

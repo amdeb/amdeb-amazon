@@ -77,7 +77,7 @@ class AmazonProductAccess(SyncHeadAccess):
             amazon_product, PRODUCT_CREATION_ERROR)
 
     @staticmethod
-    def is_waiting_or_created(amazon_product):
+    def is_sync_enabled(amazon_product):
         is_waiting = AmazonProductAccess.is_waiting(amazon_product)
         is_created = AmazonProductAccess.is_created(amazon_product)
         return is_waiting or is_created
