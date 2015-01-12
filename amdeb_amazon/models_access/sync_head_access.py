@@ -8,6 +8,7 @@ from ..shared.model_names import(
     FIELD_NAME_DELIMITER
 )
 
+
 class SyncHeadAccess(object):
     """
     The base class used to define common methods for

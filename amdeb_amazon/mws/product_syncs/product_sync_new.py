@@ -39,16 +39,19 @@ class ProductSyncNew(object):
                          self._mws.send_relation)
         deactivate_sync = (SYNC_DEACTIVATE, DeactivateTransformer,
                            self._mws.send_inventory)
-        update_sync = (SYNC_UPDATE, UpdateTransformer, self._mws.send_product)
-        price_sync = (SYNC_PRICE, PriceTransformer, self._mws.send_price)
         inventory_sync = (SYNC_INVENTORY, InventoryTransformer,
                           self._mws.send_inventory)
         image_sync = (SYNC_IMAGE, BaseTransformer, self._mws.send_image)
+        price_sync = (SYNC_PRICE, PriceTransformer, self._mws.send_price)
+
+        update_sync = (SYNC_UPDATE, UpdateTransformer, self._mws.send_product)
+
         # the order matters because delete and create override other syncs
         self._sync_type_tuples = [
-            delete_sync, create_sync, relation_sync,
-            deactivate_sync, update_sync, price_sync,
-            inventory_sync, image_sync,
+            delete_sync, create_sync,
+            relation_sync, deactivate_sync,
+            image_sync, inventory_sync,
+            price_sync, update_sync,
         ]
 
     def __init__(self, env, mws):
