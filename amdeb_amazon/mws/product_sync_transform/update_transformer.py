@@ -6,7 +6,6 @@ from ...model_names.shared_names import(
     SHARED_NAME_FIELD, MODEL_NAME_FIELD, RECORD_ID_FIELD,
 )
 from ...model_names.product_template import (
-    PRODUCT_DESCRIPTION_SALE_FIELD,
     PRODUCT_AMAZON_DESCRIPTION_FIELD,
     PRODUCT_PRODUCT_BRAND_FIELD,
     PRODUCT_BULLET_POINT_PREFIX,
@@ -41,8 +40,6 @@ class UpdateTransformer(BaseTransformer):
         description = None
         if PRODUCT_AMAZON_DESCRIPTION_FIELD in write_field_names:
             description = self._product[PRODUCT_AMAZON_DESCRIPTION_FIELD]
-        elif PRODUCT_DESCRIPTION_SALE_FIELD in write_field_names:
-            description = self._product[PRODUCT_DESCRIPTION_SALE_FIELD]
 
         if description:
             self._has_mws_data = True

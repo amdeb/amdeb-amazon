@@ -5,7 +5,6 @@ import logging
 from ...models_access import OdooProductAccess
 from ...model_names.shared_names import SHARED_NAME_FIELD
 from ...model_names.product_template import (
-    PRODUCT_DESCRIPTION_SALE_FIELD,
     PRODUCT_AMAZON_DESCRIPTION_FIELD,
     PRODUCT_PRODUCT_BRAND_FIELD,
 )
@@ -20,8 +19,6 @@ class CreateTransformer(BaseTransformer):
         self._check_string(sync_value, 'Title', title)
 
         description = self._product[PRODUCT_AMAZON_DESCRIPTION_FIELD]
-        if not description:
-            description = self._product[PRODUCT_DESCRIPTION_SALE_FIELD]
         self._check_string(sync_value, 'Description', description)
 
         # Todo: required fields
