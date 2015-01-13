@@ -16,12 +16,11 @@ from ..model_names.product_product import (
 )
 from ..model_names.product_template import (
     PRODUCT_TEMPLATE_TABLE,
-    PRODUCT_DESCRIPTION_SALE_FIELD,
     PRODUCT_AMAZON_DESCRIPTION_FIELD,
 )
 
 
-class product_product(models.Model):
+class ProductProduct(models.Model):
     _inherit = [PRODUCT_PRODUCT_TABLE]
 
     def _get_creation_status(self):
@@ -64,19 +63,20 @@ class product_product(models.Model):
         for record in self:
             if not record[AMAZON_SYNC_ACTIVE_FIELD]:
                 continue
+
             template = record[PRODUCT_TEMPLATE_ID_FIELD]
             has_error = False
             message = 'Unable to enable sync because of missing value of: '
+            missing_fields = []
             if not template[SHARED_NAME_FIELD]:
                 has_error = True
-                message += ' ' + SHARED_NAME_FIELD
+                missing_fields.append(SHARED_NAME_FIELD)
             if not record[PRODUCT_DEFAULT_CODE_FIELD]:
                 has_error = True
-                message += ' ' + PRODUCT_DEFAULT_CODE_FIELD
-            if (not template[PRODUCT_DESCRIPTION_SALE_FIELD] and
-                    not template[PRODUCT_AMAZON_DESCRIPTION_FIELD]):
+                missing_fields.append(PRODUCT_DEFAULT_CODE_FIELD)
+            if not template[PRODUCT_AMAZON_DESCRIPTION_FIELD]:
                 has_error = True
-                message += (' ' + PRODUCT_DESCRIPTION_SALE_FIELD + ' or ' +
-                            PRODUCT_AMAZON_DESCRIPTION_FIELD)
+                missing_fields.append(PRODUCT_AMAZON_DESCRIPTION_FIELD)
             if has_error:
-                raise ValidationError(message)
+                missing_fields = ', '.join(missing_fields)
+                raise ValidationError(message + missing_fields)

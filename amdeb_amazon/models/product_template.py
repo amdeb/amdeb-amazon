@@ -9,7 +9,7 @@ from ..models_access.amazon_product_access import AmazonProductAccess
 from ..model_names.product_template import PRODUCT_TEMPLATE_TABLE
 
 
-class product_template(models.Model):
+class ProductTemplate(models.Model):
     _inherit = [PRODUCT_TEMPLATE_TABLE]
 
     def _get_creation_status(self):
