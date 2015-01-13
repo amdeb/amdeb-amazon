@@ -4,13 +4,13 @@ from openerp import api, models, fields
 from openerp.exceptions import ValidationError
 
 from ..model_names.shared_names import(
-    SHARED_NAME_FIELD, MODEL_NAME_FIELD, RECORD_ID_FIELD,
+    SHARED_NAME_FIELD, MODEL_NAME_FIELD,
+    RECORD_ID_FIELD, PRODUCT_SKU_FIELD,
 )
 from ..models_access.amazon_product_access import AmazonProductAccess
 from ..model_names.product_product import (
     PRODUCT_PRODUCT_TABLE,
     AMAZON_SYNC_ACTIVE_FIELD,
-    PRODUCT_DEFAULT_CODE_FIELD,
     PRODUCT_TEMPLATE_ID_FIELD,
     PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD,
 )
@@ -71,9 +71,9 @@ class ProductProduct(models.Model):
             if not template[SHARED_NAME_FIELD]:
                 has_error = True
                 missing_fields.append(SHARED_NAME_FIELD)
-            if not record[PRODUCT_DEFAULT_CODE_FIELD]:
+            if not record[PRODUCT_SKU_FIELD]:
                 has_error = True
-                missing_fields.append(PRODUCT_DEFAULT_CODE_FIELD)
+                missing_fields.append(PRODUCT_SKU_FIELD)
             if not template[PRODUCT_AMAZON_DESCRIPTION_FIELD]:
                 has_error = True
                 missing_fields.append(PRODUCT_AMAZON_DESCRIPTION_FIELD)

@@ -87,7 +87,7 @@ class BaseTransformer(object):
         To be called and extended in subclass to convert more fields
         """
         sync_value = {'ID': sync_op.id}
-        sku = self._odoo_product.get_sku(sync_op)
+        sku = OdooProductAccess.get_sku(self._product)
         BaseTransformer._check_string(sync_value, 'SKU', sku)
         return sync_value
 

@@ -1,13 +1,14 @@
 # -*- coding: utf-8 -*-
 
 from ..model_names.shared_names import(
-    SHARED_NAME_FIELD, MODEL_NAME_FIELD, RECORD_ID_FIELD,
+    SHARED_NAME_FIELD, MODEL_NAME_FIELD,
+    RECORD_ID_FIELD, PRODUCT_SKU_FIELD,
 )
 from ..model_names.product_product import(
     PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD,
     AMAZON_SYNC_ACTIVE_FIELD,
-    PRODUCT_DEFAULT_CODE_FIELD,
     PRODUCT_ATTRIBUTE_ID_FIELD,
+    PRODUCT_TEMPLATE_ID_FIELD,
 )
 from ..model_names.product_template import (
     PRODUCT_IS_PRODUCT_VARIANT_FIELD,
@@ -92,15 +93,19 @@ class OdooProductAccess(object):
         product = self.get_product(sync_head)
         return self.is_sync_active_product(product)
 
-    def get_sku(self, sync_head):
+    @staticmethod
+    def get_sku(product):
         # for a template that has multi variants,
         # we create a customized SKU
-        product = self.get_product(sync_head)
-        if self.is_multi_variant_template(product):
-            sku = 'Template_' + str(sync_head[RECORD_ID_FIELD])
-        else:
-            sku = product[PRODUCT_DEFAULT_CODE_FIELD]
+        sku = product[PRODUCT_SKU_FIELD]
+        if sku:
+            sku = sku.strip()
         return sku
+
+    @staticmethod
+    def get_template_sku(product):
+        template = product[PRODUCT_TEMPLATE_ID_FIELD]
+        return OdooProductAccess.get_sku(template)
 
     @staticmethod
     def get_attributes(product):

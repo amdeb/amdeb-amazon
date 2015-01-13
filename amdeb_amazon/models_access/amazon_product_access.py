@@ -28,6 +28,26 @@ class AmazonProductAccess(SyncHeadAccess):
         self._table = env[AMAZON_PRODUCT_TABLE]
         self._odoo_product = OdooProductAccess(env)
 
+    def upsert_creation(self, product_operation, product_sku):
+        amazon_product = self.search_by_head(product_operation)
+        if amazon_product:
+            if AmazonProductAccess.is_created(amazon_product):
+                # once in created status, never change it.
+                _logger.debug("Amazon creation status is created, skip.")
+            else:
+                amazon_product[AMAZON_CREATION_STATUS_FIELD] = (
+                    PRODUCT_CREATION_WAITING)
+                _logger.debug("Change amazon creation to waiting status.")
+        else:
+            values = {
+                MODEL_NAME_FIELD: product_operation[MODEL_NAME_FIELD],
+                RECORD_ID_FIELD: product_operation[RECORD_ID_FIELD],
+                TEMPLATE_ID_FIELD: product_operation[TEMPLATE_ID_FIELD],
+                PRODUCT_SKU_FIELD: product_sku,
+            }
+            self._table.create(values)
+            _logger.debug("Insert a new amazon product record. ")
+
     def search_by_head(self, sync_head):
         model_name = sync_head[MODEL_NAME_FIELD]
         record_id = sync_head[RECORD_ID_FIELD]
@@ -92,27 +112,6 @@ class AmazonProductAccess(SyncHeadAccess):
         ]
         variants = self._table.search(search_domain)
         return variants
-
-    def upsert_creation(self, product_operation):
-        amazon_product = self.search_by_head(product_operation)
-        if amazon_product:
-            if AmazonProductAccess.is_created(amazon_product):
-                # once in created status, never change it.
-                _logger.debug("Amazon creation status is created, skip.")
-            else:
-                amazon_product[AMAZON_CREATION_STATUS_FIELD] = (
-                    PRODUCT_CREATION_WAITING)
-                _logger.debug("Change amazon creation to waiting status.")
-        else:
-            product_sku = self._odoo_product.get_sku(product_operation)
-            values = {
-                MODEL_NAME_FIELD: product_operation[MODEL_NAME_FIELD],
-                RECORD_ID_FIELD: product_operation[RECORD_ID_FIELD],
-                TEMPLATE_ID_FIELD: product_operation[TEMPLATE_ID_FIELD],
-                PRODUCT_SKU_FIELD: product_sku,
-            }
-            self._table.create(values)
-            _logger.debug("Insert a new amazon product record. ")
 
     def _update_creation_status(self, sync_head, creation_status):
         # insert a new record if it doesn't exist
