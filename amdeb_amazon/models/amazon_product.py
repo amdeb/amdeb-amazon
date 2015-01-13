@@ -5,11 +5,10 @@ from openerp import models, fields
 from ..model_names.product_template import PRODUCT_TEMPLATE_TABLE
 from ..model_names.product_product import PRODUCT_PRODUCT_TABLE
 from ..model_names.amazon_product import (
-    AMAZON_PRODUCT_TABLE,
-    PRODUCT_CREATION_WAITING,
-    PRODUCT_CREATION_CREATED,
-    PRODUCT_CREATION_ERROR,
+    AMAZON_PRODUCT_TABLE, PRODUCT_CREATION_WAITING,
+    PRODUCT_CREATION_CREATED, PRODUCT_CREATION_ERROR,
 )
+
 
 class AmazonProductSync(models.Model):
     """
