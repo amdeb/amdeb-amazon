@@ -4,10 +4,10 @@ from ..model_names.shared_names import(
     SHARED_NAME_FIELD, MODEL_NAME_FIELD,
     RECORD_ID_FIELD, PRODUCT_SKU_FIELD,
 )
+from ..model_names.product_attribute import PRODUCT_ATTRIBUTE_ID_FIELD
 from ..model_names.product_product import(
     PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD,
     AMAZON_SYNC_ACTIVE_FIELD,
-    PRODUCT_ATTRIBUTE_ID_FIELD,
     PRODUCT_TEMPLATE_ID_FIELD,
 )
 from ..model_names.product_template import (
@@ -16,6 +16,7 @@ from ..model_names.product_template import (
     PRODUCT_VARIANT_IDS_FIELD,
     PRODUCT_BULLET_POINT_PREFIX,
     PRODUCT_BULLET_POINT_COUNT,
+    PRODUCT_ATTRIBUTE_LINE_IDS_FIELD,
 )
 
 
@@ -108,7 +109,7 @@ class OdooProductAccess(object):
         return OdooProductAccess.get_sku(template)
 
     @staticmethod
-    def get_attributes(product):
+    def get_variant_attributes(product):
         result = []
         rel_attr_table = product[PRODUCT_ATTRIBUTE_VALUE_IDS_FIELD]
         for attr_value in rel_attr_table:
@@ -116,6 +117,16 @@ class OdooProductAccess(object):
             name = attr_value[PRODUCT_ATTRIBUTE_ID_FIELD][SHARED_NAME_FIELD]
             result.append((name, value))
 
+        return result
+
+    @staticmethod
+    def get_template_attribute_names(product_template):
+        result = []
+        product_attr_line_table = product_template[
+            PRODUCT_ATTRIBUTE_LINE_IDS_FIELD]
+        for attr_line in product_attr_line_table:
+            name = attr_line[PRODUCT_ATTRIBUTE_ID_FIELD][SHARED_NAME_FIELD]
+            result.append(name)
         return result
 
     @staticmethod

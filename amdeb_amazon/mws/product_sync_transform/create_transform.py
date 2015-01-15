@@ -8,6 +8,10 @@ from ...model_names.product_template import (
     PRODUCT_AMAZON_DESCRIPTION_FIELD,
     PRODUCT_PRODUCT_BRAND_FIELD,
 )
+from ...model_names.product_attribute import (
+    PRODUCT_ATTRIBUTE_COLOR_VALUE,
+    PRODUCT_ATTRIBUTE_SIZE_VALUE,
+)
 from .base_transfomer import BaseTransformer
 
 _logger = logging.getLogger(__name__)
@@ -36,26 +40,39 @@ class CreateTransformer(BaseTransformer):
         sync_value['ItemType'] = 'handbags'
 
     def _convert_variation(self, sync_value):
-        has_color = False
-        has_size = False
-        attributes = OdooProductAccess.get_attributes(self._product)
+        has_attribute = False
+        attributes = OdooProductAccess.get_variant_attributes(self._product)
         for attr in attributes:
-            if attr[0] == 'Color':
-                sync_value['Color'] = attr[1]
-                has_color = True
-            if attr[0] == 'Size':
-                sync_value['Size'] = attr[1]
-                has_size = True
+            if attr[0] == PRODUCT_ATTRIBUTE_COLOR_VALUE:
+                sync_value[PRODUCT_ATTRIBUTE_COLOR_VALUE] = attr[1]
+                has_attribute = True
+            if attr[0] == PRODUCT_ATTRIBUTE_SIZE_VALUE:
+                sync_value[PRODUCT_ATTRIBUTE_SIZE_VALUE] = attr[1]
+                has_attribute = True
 
+        if not has_attribute:
+            _logger.warning("No variant attribute found in sync transform.")
+            sync_value = None
+        return sync_value
+
+    def _get_variant_theme(self, sync_value):
+        attr_names = OdooProductAccess.get_template_attribute_names(
+            self._product
+        )
+
+        has_color = PRODUCT_ATTRIBUTE_COLOR_VALUE in attr_names
+        has_size = PRODUCT_ATTRIBUTE_SIZE_VALUE in attr_names
         if has_color and has_size:
             sync_value['VariationTheme'] = 'SizeColor'
         elif has_color:
-            sync_value['VariationTheme'] = 'Color'
+            sync_value['VariationTheme'] = PRODUCT_ATTRIBUTE_COLOR_VALUE
         elif has_size:
-            sync_value['VariationTheme'] = 'Size'
+            sync_value['VariationTheme'] = PRODUCT_ATTRIBUTE_SIZE_VALUE
         else:
-            _logger.warning("No variant attribute found in sync transform.")
+            _logger.warning("No variant attribute found for multi-variant "
+                            "template. Skip sync transform.")
             sync_value = None
+
         return sync_value
 
     def _convert_sync(self, sync_op):
@@ -73,7 +90,6 @@ class CreateTransformer(BaseTransformer):
 
             if OdooProductAccess.is_multi_variant_template(self._product):
                 sync_value['Parentage'] = 'parent'
+                sync_value = self._get_variant_theme(sync_value)
 
-                # ToDo get from table
-                sync_value['VariationTheme'] = 'Color'
         return sync_value
