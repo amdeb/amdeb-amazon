@@ -12,6 +12,12 @@ from ...model_names.product_template import (
     PRODUCT_BULLET_POINT_COUNT,
 )
 from ...models_access import OdooProductAccess, ProductSyncAccess
+from ..amazon_names import (
+    AMAZON_BULLET_POINT_FIELD,
+    AMAZON_TITLE_FIELD,
+    AMAZON_BRAND_FIELD,
+    AMAZON_DESCRIPTION_FIELD,
+)
 from .base_transfomer import BaseTransformer
 
 _logger = logging.getLogger(__name__)
@@ -34,7 +40,7 @@ class UpdateTransformer(BaseTransformer):
             bullet_points = OdooProductAccess.get_bullet_points(self._product)
             if bullet_points:
                 self._has_mws_data = True
-                sync_value['BulletPoint'] = bullet_points
+                sync_value[AMAZON_BULLET_POINT_FIELD] = bullet_points
 
     def _convert_description(self, write_field_names, sync_value):
         description = None
@@ -43,20 +49,21 @@ class UpdateTransformer(BaseTransformer):
 
         if description:
             self._has_mws_data = True
-            self._add_string(sync_value, 'Description', description)
+            self._add_string(
+                sync_value, AMAZON_DESCRIPTION_FIELD, description)
 
     def _convert_title(self, write_field_names, sync_value):
         if SHARED_NAME_FIELD in write_field_names:
             self._has_mws_data = True
         title = self._product[SHARED_NAME_FIELD]
-        self._check_string(sync_value, 'Title', title)
+        self._check_string(sync_value, AMAZON_TITLE_FIELD, title)
 
     def _convert_brand(self, write_field_names, sync_value):
         if PRODUCT_PRODUCT_BRAND_FIELD in write_field_names:
             brand = self._product[PRODUCT_PRODUCT_BRAND_FIELD]
             if brand:
                 self._has_mws_data = True
-                self._add_string(sync_value, 'Brand', brand)
+                self._add_string(sync_value, AMAZON_BRAND_FIELD, brand)
 
     def _convert_sync(self, sync_op):
         # we skip update that doesn't have data to be synced to Amazon

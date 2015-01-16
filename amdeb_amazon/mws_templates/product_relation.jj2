@@ -4,13 +4,13 @@
     <MessageType>Relationship</MessageType>
     {% for message in FeedMessages %}
     <Message>
-        <MessageID>{{ message['ID'] }}</MessageID>
+        <MessageID>{{ message['MessageID'] }}</MessageID>
         <OperationType>Update</OperationType>
         <Relationship>
             <ParentSKU>{{ message['ParentSKU'] }}</ParentSKU>
-            {% for variant in message['Variants'] %}
+            {% for variant_sku in message['Variants'] %}
             <Relation>
-                <SKU>{{ variant }}</SKU>
+                <SKU>{{ variant_sku }}</SKU>
                 <Type>Variation</Type>
             </Relation>
             {% endfor %}

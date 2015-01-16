@@ -3,6 +3,7 @@
 import logging
 
 from ...model_names.product_product import PRODUCT_LST_PRICE_FIELD
+from ..amazon_names import AMAZON_STANDARD_PRICE_FIELD
 from .base_transfomer import BaseTransformer
 
 _logger = logging.getLogger(__name__)
@@ -19,7 +20,7 @@ class PriceTransformer(BaseTransformer):
         # The 'lst_price' has the extra price for variant
         standard_price = self._product[PRODUCT_LST_PRICE_FIELD]
         if standard_price >= 0.01:
-            sync_value['StandardPrice'] = self._product[
+            sync_value[AMAZON_STANDARD_PRICE_FIELD] = self._product[
                 PRODUCT_LST_PRICE_FIELD]
         else:
             message = "Invalid price {} in Sync transformation".format(

@@ -12,6 +12,7 @@ from ...model_names.product_sync import (
     SYNC_TYPE_FIELD,
     SYNC_DELETE, SYNC_CREATE, SYNC_DEACTIVATE,
 )
+from ..amazon_names import AMAZON_ID_FIELD, AMAZON_SKU_FIELD
 
 _logger = logging.getLogger(__name__)
 
@@ -86,9 +87,9 @@ class BaseTransformer(object):
         """
         To be called and extended in subclass to convert more fields
         """
-        sync_value = {'ID': sync_op.id}
+        sync_value = {AMAZON_ID_FIELD: sync_op.id}
         sku = OdooProductAccess.get_sku(self._product)
-        BaseTransformer._check_string(sync_value, 'SKU', sku)
+        BaseTransformer._check_string(sync_value, AMAZON_SKU_FIELD, sku)
         return sync_value
 
     def _check_stop(self, sync_op):

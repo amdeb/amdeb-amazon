@@ -4,7 +4,7 @@
     <MessageType>Price</MessageType>
     {% for message in FeedMessages %}
     <Message>
-        <MessageID>{{ message['ID'] }}</MessageID>
+        <MessageID>{{ message['MessageID'] }}</MessageID>
         <OperationType>Update</OperationType>
         <Price>
             <SKU>{{ message['SKU'] }}</SKU>

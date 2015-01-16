@@ -4,11 +4,11 @@
     <MessageType>Inventory</MessageType>
     {% for message in FeedMessages %}
     <Message>
-        <MessageID>{{ message['ID'] }}</MessageID>
+        <MessageID>{{ message['MessageID'] }}</MessageID>
         <OperationType>Update</OperationType>
         <Inventory>
             <SKU>{{ message['SKU'] }}</SKU>
-            <Quantity>{{ message['quantity'] }}</Quantity>
+            <Quantity>{{ message['Quantity'] }}</Quantity>
         </Inventory>
     </Message>
     {% endfor %}

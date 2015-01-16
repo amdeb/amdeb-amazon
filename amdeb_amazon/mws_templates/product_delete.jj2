@@ -7,7 +7,7 @@
     {% for message in FeedMessages %}
     {% import 'product_macro.jj2' as macros with context %}
     <Message>
-        <MessageID>{{ message['ID'] }}</MessageID>
+        <MessageID>{{ message['MessageID'] }}</MessageID>
         <OperationType>Delete</OperationType>
         <Product>
             <SKU>{{ message['SKU'] }}</SKU>

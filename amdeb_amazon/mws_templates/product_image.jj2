@@ -4,7 +4,7 @@
     <MessageType>ProductImage</MessageType>
     {% for message in FeedMessages %}
         <Message>
-            <MessageID>{{ message['ID'] }}</MessageID>
+            <MessageID>{{ message['MessageID'] }}</MessageID>
             <OperationType>Update</OperationType>
             <ProductImage>
                 <SKU>{{ message['SKU'] }}</SKU>
@@ -15,7 +15,7 @@
         {% for number in range(1, 9) %}
         <Message>
             {# make sure the numbers are unique in a request #}
-            <MessageID>{{ number * 100000 + message['ID'] }}</MessageID>
+            <MessageID>{{ number * 100000 + message['MessageID'] }}</MessageID>
             <OperationType>Update</OperationType>
             <ProductImage>
                 <SKU>{{ message['SKU'] }}</SKU>

@@ -12,6 +12,13 @@ from ...model_names.product_attribute import (
     PRODUCT_ATTRIBUTE_COLOR_VALUE,
     PRODUCT_ATTRIBUTE_SIZE_VALUE,
 )
+from ..amazon_names import (
+    AMAZON_TITLE_FIELD, AMAZON_ITEM_TYPE_FIELD,
+    AMAZON_DEPARTMENT_FIELD, AMAZON_BULLET_POINT_FIELD,
+    AMAZON_VARIATION_THEME, AMAZON_DESCRIPTION_FIELD,
+    AMAZON_PARENTAGE_FIELD, AMAZON_BRAND_FIELD,
+    AMAZON_PARENTAGE_PARENT_VALUE, AMAZON_PARENTAGE_CHILD_VALUE,
+)
 from .base_transfomer import BaseTransformer
 
 _logger = logging.getLogger(__name__)
@@ -20,24 +27,21 @@ _logger = logging.getLogger(__name__)
 class CreateTransformer(BaseTransformer):
     def _convert_description(self, sync_value):
         title = self._product[SHARED_NAME_FIELD]
-        self._check_string(sync_value, 'Title', title)
+        self._check_string(sync_value, AMAZON_TITLE_FIELD, title)
 
         description = self._product[PRODUCT_AMAZON_DESCRIPTION_FIELD]
         self._check_string(sync_value, 'Description', description)
 
         # Todo: required fields
-        sync_value['Department'] = "womens"
-        sync_value['ItemType'] = 'handbags'
+        sync_value[AMAZON_DEPARTMENT_FIELD] = "womens"
+        sync_value[AMAZON_ITEM_TYPE_FIELD] = 'handbags'
 
         brand = self._product[PRODUCT_PRODUCT_BRAND_FIELD]
-        self._check_string(sync_value, 'Brand', brand)
+        self._check_string(sync_value, AMAZON_BRAND_FIELD, brand)
 
         bullet_points = OdooProductAccess.get_bullet_points(self._product)
         if bullet_points:
-            sync_value['BulletPoint'] = bullet_points
-
-        sync_value['Department'] = "womens"
-        sync_value['ItemType'] = 'handbags'
+            sync_value[AMAZON_BULLET_POINT_FIELD] = bullet_points
 
     def _convert_variation(self, sync_value):
         has_attribute = False
@@ -63,11 +67,11 @@ class CreateTransformer(BaseTransformer):
         has_color = PRODUCT_ATTRIBUTE_COLOR_VALUE in attr_names
         has_size = PRODUCT_ATTRIBUTE_SIZE_VALUE in attr_names
         if has_color and has_size:
-            sync_value['VariationTheme'] = 'SizeColor'
+            sync_value[AMAZON_VARIATION_THEME] = 'SizeColor'
         elif has_color:
-            sync_value['VariationTheme'] = PRODUCT_ATTRIBUTE_COLOR_VALUE
+            sync_value[AMAZON_VARIATION_THEME] = PRODUCT_ATTRIBUTE_COLOR_VALUE
         elif has_size:
-            sync_value['VariationTheme'] = PRODUCT_ATTRIBUTE_SIZE_VALUE
+            sync_value[AMAZON_VARIATION_THEME] = PRODUCT_ATTRIBUTE_SIZE_VALUE
         else:
             _logger.warning("No variant attribute found for multi-variant "
                             "template. Skip sync transform.")
@@ -82,14 +86,15 @@ class CreateTransformer(BaseTransformer):
         # 2) a multi-variant template 3) a single-variant template
         if OdooProductAccess.is_product_variant(self._product):
             # this is an independent variant
-            sync_value['Parentage'] = 'child'
+            sync_value[AMAZON_PARENTAGE_FIELD] = AMAZON_PARENTAGE_CHILD_VALUE
             sync_value = self._convert_variation(sync_value)
         else:
-            if 'Description' not in sync_value:
-                self._raise_exception('Description')
+            if AMAZON_DESCRIPTION_FIELD not in sync_value:
+                self._raise_exception(AMAZON_DESCRIPTION_FIELD)
 
             if OdooProductAccess.is_multi_variant_template(self._product):
-                sync_value['Parentage'] = 'parent'
+                sync_value[AMAZON_PARENTAGE_FIELD] = (
+                    AMAZON_PARENTAGE_PARENT_VALUE)
                 sync_value = self._get_variant_theme(sync_value)
 
         return sync_value
