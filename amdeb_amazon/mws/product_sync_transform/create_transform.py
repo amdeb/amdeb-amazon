@@ -18,6 +18,8 @@ from ..amazon_names import (
     AMAZON_VARIATION_THEME, AMAZON_DESCRIPTION_FIELD,
     AMAZON_PARENTAGE_FIELD, AMAZON_BRAND_FIELD,
     AMAZON_PARENTAGE_PARENT_VALUE, AMAZON_PARENTAGE_CHILD_VALUE,
+    AMAZON_COLOR_FIELD, AMAZON_SIZE_FIELD,
+    AMAZON_SIZE_COLOR_VALUE,
 )
 from .base_transfomer import BaseTransformer
 
@@ -30,7 +32,7 @@ class CreateTransformer(BaseTransformer):
         self._check_string(sync_value, AMAZON_TITLE_FIELD, title)
 
         description = self._product[PRODUCT_AMAZON_DESCRIPTION_FIELD]
-        self._check_string(sync_value, 'Description', description)
+        self._check_string(sync_value, AMAZON_DESCRIPTION_FIELD, description)
 
         # Todo: required fields
         sync_value[AMAZON_DEPARTMENT_FIELD] = "womens"
@@ -48,10 +50,10 @@ class CreateTransformer(BaseTransformer):
         attributes = OdooProductAccess.get_variant_attributes(self._product)
         for attr in attributes:
             if attr[0] == PRODUCT_ATTRIBUTE_COLOR_VALUE:
-                sync_value[PRODUCT_ATTRIBUTE_COLOR_VALUE] = attr[1]
+                sync_value[AMAZON_COLOR_FIELD] = attr[1]
                 has_attribute = True
             if attr[0] == PRODUCT_ATTRIBUTE_SIZE_VALUE:
-                sync_value[PRODUCT_ATTRIBUTE_SIZE_VALUE] = attr[1]
+                sync_value[AMAZON_SIZE_FIELD] = attr[1]
                 has_attribute = True
 
         if not has_attribute:
@@ -67,11 +69,11 @@ class CreateTransformer(BaseTransformer):
         has_color = PRODUCT_ATTRIBUTE_COLOR_VALUE in attr_names
         has_size = PRODUCT_ATTRIBUTE_SIZE_VALUE in attr_names
         if has_color and has_size:
-            sync_value[AMAZON_VARIATION_THEME] = 'SizeColor'
+            sync_value[AMAZON_VARIATION_THEME] = AMAZON_SIZE_COLOR_VALUE
         elif has_color:
-            sync_value[AMAZON_VARIATION_THEME] = PRODUCT_ATTRIBUTE_COLOR_VALUE
+            sync_value[AMAZON_VARIATION_THEME] = AMAZON_COLOR_FIELD
         elif has_size:
-            sync_value[AMAZON_VARIATION_THEME] = PRODUCT_ATTRIBUTE_SIZE_VALUE
+            sync_value[AMAZON_VARIATION_THEME] = AMAZON_SIZE_FIELD
         else:
             _logger.warning("No variant attribute found for multi-variant "
                             "template. Skip sync transform.")
