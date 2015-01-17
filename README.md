@@ -4,12 +4,16 @@
 Amdeb Amazon Integration
 ============
 
+**This project is under heavy development and is not stable for production
+use. Contributions are very welcome.**
+
 This is an Odoo module that integrates Odoo with Amazon 
-Marketplace Web Service (MWS). It supports the following functions:
+Marketplace Web Service (MWS). It plans to implement the 
+following functions:
 
 * Product Synchronization
     - Upload newly created product data
-    - Upload product data update: price, quantity, images, keywords etc
+    - Upload product data update: price, quantity, images, and inventory.
     - Upload product deletion
 * Order Synchronization
     - Download newly created order data
@@ -33,7 +37,3 @@ Following are several manual synchronization examples:
 
 Authorized Odoo users should be able to check the synchronization logs and 
 should be notified when there is any error. 
-
-A product SKU is used as the identifier in Amazon MWS. We use 
-the `default_code` attribute to store the product SKU. Don't change this
-attribute after a product is synchronized to Amazon.  
