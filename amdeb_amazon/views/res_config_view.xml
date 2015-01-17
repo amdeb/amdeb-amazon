@@ -36,7 +36,7 @@
                         <group string="Product Integration Settings">
                             <field name="default_product_brand" />
                             <field name="default_amazon_department" />
-                            <field name="default_product_item_type" />
+                            <field name="default_amazon_item_type" />
                             <field name="default_image_location" />
                         </group>
 
