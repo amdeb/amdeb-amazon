@@ -7,6 +7,9 @@ from ...model_names.shared_names import SHARED_NAME_FIELD
 from ...model_names.product_template import (
     PRODUCT_AMAZON_DESCRIPTION_FIELD,
     PRODUCT_PRODUCT_BRAND_FIELD,
+    PRODUCT_AMAZON_DEPARTMENT_FIELD,
+    PRODUCT_AMAZON_ITEM_TYPE_FIELD,
+
 )
 from ...model_names.product_attribute import (
     PRODUCT_ATTRIBUTE_COLOR_VALUE,
@@ -25,21 +28,22 @@ from .base_transfomer import BaseTransformer
 
 _logger = logging.getLogger(__name__)
 
+# list of required amazon fields and their corresponding model fields
+_required_fields = [
+    (AMAZON_DESCRIPTION_FIELD, PRODUCT_AMAZON_DESCRIPTION_FIELD),
+    (AMAZON_TITLE_FIELD, SHARED_NAME_FIELD),
+    (AMAZON_BRAND_FIELD, PRODUCT_PRODUCT_BRAND_FIELD),
+    (AMAZON_DEPARTMENT_FIELD, PRODUCT_AMAZON_DEPARTMENT_FIELD),
+    (AMAZON_ITEM_TYPE_FIELD, PRODUCT_AMAZON_ITEM_TYPE_FIELD),
+]
+
 
 class CreateTransformer(BaseTransformer):
     def _convert_description(self, sync_value):
-        title = self._product[SHARED_NAME_FIELD]
-        self._check_string(sync_value, AMAZON_TITLE_FIELD, title)
 
-        description = self._product[PRODUCT_AMAZON_DESCRIPTION_FIELD]
-        self._check_string(sync_value, AMAZON_DESCRIPTION_FIELD, description)
-
-        # Todo: required fields
-        sync_value[AMAZON_DEPARTMENT_FIELD] = "womens"
-        sync_value[AMAZON_ITEM_TYPE_FIELD] = 'handbags'
-
-        brand = self._product[PRODUCT_PRODUCT_BRAND_FIELD]
-        self._check_string(sync_value, AMAZON_BRAND_FIELD, brand)
+        for required_field in _required_fields:
+            field_value = self._product[required_field[1]]
+            self._check_string(sync_value, required_field[0], field_value)
 
         bullet_points = OdooProductAccess.get_bullet_points(self._product)
         if bullet_points:

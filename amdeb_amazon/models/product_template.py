@@ -5,8 +5,14 @@ from openerp import models, fields
 from ..model_names.shared_names import (
     MODEL_NAME_FIELD, RECORD_ID_FIELD,
 )
+from ..models_access import ResConfigAccess
 from ..models_access.amazon_product_access import AmazonProductAccess
-from ..model_names.product_template import PRODUCT_TEMPLATE_TABLE
+from ..model_names.product_template import (
+    PRODUCT_TEMPLATE_TABLE,
+    PRODUCT_PRODUCT_BRAND_FIELD,
+    PRODUCT_AMAZON_DEPARTMENT_FIELD,
+    PRODUCT_AMAZON_ITEM_TYPE_FIELD,
+)
 
 
 class ProductTemplate(models.Model):
@@ -20,6 +26,19 @@ class ProductTemplate(models.Model):
 
         amazon_product = AmazonProductAccess(self.env)
         return amazon_product.get_creation_status(sync_head)
+
+    def _get_default_brand(self):
+        amazon_settings = ResConfigAccess.get_settings(self.env)
+        # during model initialization, the setting is ready
+        return amazon_settings.get(PRODUCT_PRODUCT_BRAND_FIELD, '')
+
+    def _get_default_department(self):
+        amazon_settings = ResConfigAccess.get_settings(self.env)
+        return amazon_settings.get(PRODUCT_AMAZON_DEPARTMENT_FIELD, '')
+
+    def _get_default_item_type(self):
+        amazon_settings = ResConfigAccess.get_settings(self.env)
+        return amazon_settings.get(PRODUCT_AMAZON_ITEM_TYPE_FIELD, '')
 
     amazon_creation_status = fields.Boolean(
         string="Amazon Creation Status",
@@ -44,6 +63,17 @@ class ProductTemplate(models.Model):
 
     product_brand = fields.Char(
         string="Product Brand",
+        default=_get_default_brand,
+    )
+
+    amazon_department = fields.Char(
+        string="Amazon Department",
+        default=_get_default_department,
+    )
+
+    amazon_item_type = fields.Char(
+        string="Amazon Item Type",
+        default=_get_default_item_type,
     )
 
     amazon_description = fields.Text(

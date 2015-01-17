@@ -16,8 +16,20 @@ from ..model_names.product_product import (
 )
 from ..model_names.product_template import (
     PRODUCT_TEMPLATE_TABLE,
+    PRODUCT_PRODUCT_BRAND_FIELD,
     PRODUCT_AMAZON_DESCRIPTION_FIELD,
+    PRODUCT_AMAZON_DEPARTMENT_FIELD,
+    PRODUCT_AMAZON_ITEM_TYPE_FIELD,
 )
+
+_required_fields = [
+    SHARED_NAME_FIELD,
+    PRODUCT_SKU_FIELD,
+    PRODUCT_PRODUCT_BRAND_FIELD,
+    PRODUCT_AMAZON_DESCRIPTION_FIELD,
+    PRODUCT_AMAZON_DEPARTMENT_FIELD,
+    PRODUCT_AMAZON_ITEM_TYPE_FIELD,
+]
 
 
 class ProductProduct(models.Model):
@@ -68,15 +80,11 @@ class ProductProduct(models.Model):
             has_error = False
             message = 'Unable to enable sync because of missing value of: '
             missing_fields = []
-            if not template[SHARED_NAME_FIELD]:
-                has_error = True
-                missing_fields.append(SHARED_NAME_FIELD)
-            if not record[PRODUCT_SKU_FIELD]:
-                has_error = True
-                missing_fields.append(PRODUCT_SKU_FIELD)
-            if not template[PRODUCT_AMAZON_DESCRIPTION_FIELD]:
-                has_error = True
-                missing_fields.append(PRODUCT_AMAZON_DESCRIPTION_FIELD)
+
+            for required_field in _required_fields:
+                if not template[required_field]:
+                    has_error = True
+                    missing_fields.append(required_field)
             if has_error:
                 missing_fields = ', '.join(missing_fields)
                 raise ValidationError(message + missing_fields)

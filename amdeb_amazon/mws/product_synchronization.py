@@ -2,9 +2,7 @@
 
 import logging
 
-from ..model_names.amazon_setting import (
-    IR_VALUES_TABLE, AMAZON_SETTINGS_TABLE,
-)
+from ..models_access import ResConfigAccess
 from ..models_access import ProductOperationAccess
 from .connector import Boto
 from .product_operation_transform import ProductOperationTransformer
@@ -20,8 +18,7 @@ class ProductSynchronization(object):
 
     def __init__(self, env):
         self._env = env
-        ir_values = env[IR_VALUES_TABLE]
-        settings = ir_values.get_defaults_dict(AMAZON_SETTINGS_TABLE)
+        settings = ResConfigAccess.get_settings(env)
         self._mws = Boto(settings)
 
     def synchronize(self):

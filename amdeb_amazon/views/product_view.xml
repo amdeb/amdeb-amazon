@@ -8,15 +8,21 @@
             <field name="arch" type="xml">
                 <page string="Sales" position="after">
                     <page string="Amazon" groups="amdeb_amazon.group_amdeb_amazon_user,base.partner_root">
-                        <group>
+                        <group string="Amazon Synchronization">
                             <field name="amazon_sync_active" attrs="{'invisible': [('is_product_variant', '=', False), ('product_variant_count','>', 1)]}" />
                             <field name="amazon_image_trigger" attrs="{'invisible': [('is_product_variant', '=', False), ('product_variant_count','>', 1)]}" />
-                            <field name="product_brand" />
-                            <field name="product_sku" attrs="{'invisible': [('is_product_variant', '=', True), ('product_variant_count','=', 1)]}" />
-                            <field name="amazon_description" />
                             <field name="amazon_creation_status" />
                         </group>
-                        <group>
+
+                        <group string="Product Data" col="4">
+                            <field name="product_sku" attrs="{'invisible': [('is_product_variant', '=', True), ('product_variant_count','=', 1)]}" />
+                            <field name="product_brand" />
+                            <field name="amazon_department" />
+                            <field name="amazon_item_type" />
+                        </group>
+
+                        <group string="Product Description">
+                            <field name="amazon_description" />
                             <field name="amazon_bullet_point1" />
                             <field name="amazon_bullet_point2" />
                             <field name="amazon_bullet_point3" />

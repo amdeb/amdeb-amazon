@@ -28,11 +28,18 @@
                             <field name="default_secret_key" />
                         </group>
 
-                        <group string="Integration Settings">
-                            <field name="default_image_location" />
+                        <group string="Synchronization Settings">
                             <field name="default_synchronization_interval" />
                             <field name="default_active_flag" />
                         </group>
+
+                        <group string="Product Integration Settings">
+                            <field name="default_product_brand" />
+                            <field name="default_amazon_department" />
+                            <field name="default_product_item_type" />
+                            <field name="default_image_location" />
+                        </group>
+
                     </sheet>
                 </form>
             </field>

@@ -42,12 +42,38 @@ class Configuration(models.TransientModel):
         default_model=AMAZON_SETTINGS_TABLE,
     )
 
+    default_product_brand = fields.Char(
+        string='Product Brand',
+        help="This is the default value for product brand.",
+        default_model=AMAZON_SETTINGS_TABLE,
+    )
+
+    default_amazon_department = fields.Char(
+        string='Amazon Department',
+        help="This is the default value for Amazon Product Department such"
+             "as womens, mens, baby-boys etc found in an Amazon "
+             "Browse Tree Guide (BTG) file.",
+        default='womens',
+        default_model=AMAZON_SETTINGS_TABLE,
+    )
+
+    default_amazon_item_type = fields.Char(
+        string='Amazon Item Type',
+        help="This is the default value for Amazon Product item type "
+             "such as apparel-accessories, pants, handbags, etc found "
+             "in an Amazon Browse Tree Guide (BTG) file.",
+        default='handbags',
+        default_model=AMAZON_SETTINGS_TABLE,
+    )
+
     default_image_location = fields.Char(
         string='Product Image Location',
         required=True,
-        help="The product image location without trailing slash. "
-             "Image name uses a pattern of SKU_main.jpg, SKU_1.jpg, "
-             "SKU_2.jpg, ... SKU_8.jpg. The SKU is the product SKU.",
+        help="The product image HTTP location without trailing slash. "
+             "The location is public-accessible http (not https) url. Image "
+             "name uses a pattern of SKU_main.jpg, SKU_1.jpg, "
+             "SKU_2.jpg, ..., SKU_8.jpg. The SKU is the product SKU. "
+             "Image size must be smaller than 10MB.",
         default_model=AMAZON_SETTINGS_TABLE,
     )
 
