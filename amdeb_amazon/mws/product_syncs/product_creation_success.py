@@ -55,7 +55,7 @@ class ProductCreationSuccess(object):
             }
             if self._amazon_product.is_created_by_head(template_head):
                 self._product_sync.insert_sync_if_new(
-                    completed, SYNC_RELATION)
+                    template_head, SYNC_RELATION)
                 self._is_new_sync_added = True
             else:
                 log_template = "Product template is not created for a " \

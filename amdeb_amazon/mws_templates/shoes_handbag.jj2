@@ -12,7 +12,7 @@
     {# this is a required element, tag order matters !!! #}
     <ClassificationData>
         {# MWS shows warning if this tag is missing #}
-        <Department>{{ message['Department'] }}</Department>
+        {{ macros.add_tag('Department') }}
         <ModelNumber>{{ message['SKU'] }}</ModelNumber>
     </ClassificationData>
 </Shoes>
